@@ -7,706 +7,898 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Anek+Latin:wght@400;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        /* FONTES E ANIMAÇÕES */
         @font-face {
             font-family: 'DiscoDiva';
             src: url('https://raw.githubusercontent.com/eriadesign/privateday/main/discodiva-base.otf') format('opentype');
-            font-weight: normal;
-            font-style: normal;
-            font-display: swap;
+            font-weight: normal; font-style: normal; font-display: swap;
         }
-
         .font-poppins { font-family: 'Poppins', sans-serif; }
         .font-discodiva { font-family: 'DiscoDiva', cursive, serif; letter-spacing: 0.02em; }
 
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-fade-in-up {
-            animation: fadeInUp 0.3s ease-out forwards;
-        }
-        
-        /* SCROLLBAR CUSTOMIZADA VINTAGE */
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #DB7944; border-radius: 4px; opacity: 0.5; }
+        ::-webkit-scrollbar-thumb { background: #DB7944; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #a6460f; }
-        
-        /* FUNDOS E EFEITOS DA LP */
-        .film-grain {
-            position: fixed; 
-            top: 0; left: 0; width: 100%; height: 100%;
-            pointer-events: none;
-            z-index: 9999;
-            opacity: 0.03;
-            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
-        }
 
-        .dance-floor-bg {
-            background-image: radial-gradient(ellipse at center, #0B2A47 0%, #1a1a1a 60%, #050505 100%);
+        .film-grain {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 9999; opacity: 0.025;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
         }
 
         .vintage-btn {
             background: linear-gradient(135deg, #0B2A47 0%, #932621 100%);
             color: #FFF7EB;
-            box-shadow: 0 4px 15px rgba(147, 38, 33, 0.3);
+            box-shadow: 0 4px 15px rgba(147,38,33,0.35);
             transition: all 0.3s ease;
         }
-        .vintage-btn:hover {
-            box-shadow: 0 6px 20px rgba(147, 38, 33, 0.5);
-            transform: translateY(-2px);
+        .vintage-btn:hover { box-shadow: 0 6px 22px rgba(147,38,33,0.55); transform: translateY(-2px); }
+
+        /* ── PISTA 80s: LADRILHOS ── */
+        .dance-tiles {
+            position: absolute; inset: 0;
+            display: grid;
+            grid-template-columns: repeat(14, 1fr);
+            grid-template-rows: repeat(9, 1fr);
+            pointer-events: none;
         }
+        .tile {
+            border: 1px solid rgba(255,255,255,0.04);
+        }
+        @keyframes t-pink   { 0%,100%{background:transparent;box-shadow:none} 50%{background:rgba(255,0,200,.35);box-shadow:inset 0 0 18px rgba(255,0,200,.7),0 0 12px rgba(255,0,200,.4)} }
+        @keyframes t-cyan   { 0%,100%{background:transparent;box-shadow:none} 50%{background:rgba(0,255,255,.35);box-shadow:inset 0 0 18px rgba(0,255,255,.7),0 0 12px rgba(0,255,255,.4)} }
+        @keyframes t-yellow { 0%,100%{background:transparent;box-shadow:none} 50%{background:rgba(255,220,0,.35);box-shadow:inset 0 0 18px rgba(255,220,0,.7),0 0 12px rgba(255,220,0,.4)} }
+        @keyframes t-orange { 0%,100%{background:transparent;box-shadow:none} 50%{background:rgba(255,100,0,.35);box-shadow:inset 0 0 18px rgba(255,100,0,.7),0 0 12px rgba(255,100,0,.4)} }
+        @keyframes t-purple { 0%,100%{background:transparent;box-shadow:none} 50%{background:rgba(160,0,255,.35);box-shadow:inset 0 0 18px rgba(160,0,255,.7),0 0 12px rgba(160,0,255,.4)} }
+        @keyframes t-green  { 0%,100%{background:transparent;box-shadow:none} 50%{background:rgba(0,255,100,.35);box-shadow:inset 0 0 18px rgba(0,255,100,.7),0 0 12px rgba(0,255,100,.4)} }
+        .t-pink   { animation: t-pink   var(--dur,2s) ease-in-out var(--del,0s) infinite; }
+        .t-cyan   { animation: t-cyan   var(--dur,2s) ease-in-out var(--del,0s) infinite; }
+        .t-yellow { animation: t-yellow var(--dur,2s) ease-in-out var(--del,0s) infinite; }
+        .t-orange { animation: t-orange var(--dur,2s) ease-in-out var(--del,0s) infinite; }
+        .t-purple { animation: t-purple var(--dur,2s) ease-in-out var(--del,0s) infinite; }
+        .t-green  { animation: t-green  var(--dur,2s) ease-in-out var(--del,0s) infinite; }
+
+        /* ── VINIL GIRATÓRIO ── */
+        @keyframes spin-vinyl { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+        .spin-vinyl { transform-origin: center; animation: spin-vinyl 2s linear infinite; }
+
+        /* ── EQUALIZER ── */
+        @keyframes eq1 { 0%,100%{height:3px} 50%{height:10px} }
+        @keyframes eq2 { 0%,100%{height:6px} 50%{height:3px}  }
+        @keyframes eq3 { 0%,100%{height:8px} 50%{height:4px}  }
+        @keyframes eq4 { 0%,100%{height:2px} 50%{height:12px} }
+        @keyframes eq5 { 0%,100%{height:10px} 50%{height:2px} }
+
+        /* ── DJ AVATAR ── */
+        @keyframes dj-bounce { 0%,100%{transform:translateY(0) scale(1.12)} 50%{transform:translateY(-7px) scale(1.18)} }
+        .dj-bounce { animation: dj-bounce .75s ease-in-out infinite; }
+
+        /* ── AVATAR MODAL ── */
+        @keyframes fadeInUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+        .fade-in-up { animation: fadeInUp .3s ease-out forwards; }
+
+        .modal-wrap {
+            background: #0d0d0d;
+            border: 1px solid rgba(219,121,68,.25);
+            color: #FFF7EB;
+        }
+
+        .av-btn {
+            padding: 5px 10px; font-size: 11px; border-radius: 8px;
+            border: 1px solid; white-space: nowrap; transition: all .18s ease;
+            font-weight: 500; cursor: pointer;
+        }
+        .av-btn-on  { background:#DB7944; color:#fff; border-color:#DB7944; box-shadow:0 0 8px rgba(219,121,68,.5); }
+        .av-btn-off { background:rgba(255,247,235,.04); border-color:rgba(255,247,235,.14); color:rgba(255,247,235,.65); }
+        .av-btn-off:hover { background:rgba(255,247,235,.1); border-color:rgba(255,247,235,.35); color:#fff; }
+
+        /* ── GLOW DA CABINE ── */
+        @keyframes booth-glow {
+            0%,100% { box-shadow: 0 0 16px rgba(255,0,200,.5), 0 0 32px rgba(255,0,200,.2); }
+            33%      { box-shadow: 0 0 16px rgba(0,255,255,.5), 0 0 32px rgba(0,255,255,.2); }
+            66%      { box-shadow: 0 0 16px rgba(255,220,0,.5),  0 0 32px rgba(255,220,0,.2);  }
+        }
+        .booth-glow { animation: booth-glow 3s ease-in-out infinite; }
+
+        @keyframes my-turn-pulse {
+            0%,100% { opacity:1; transform:scale(1); }
+            50%      { opacity:.8; transform:scale(1.04); }
+        }
+        .my-turn-badge { animation: my-turn-pulse .9s ease-in-out infinite; }
     </style>
 </head>
-<body class="bg-[#1a1a1a] text-[#FFF7EB] font-poppins overflow-hidden h-screen flex flex-col relative">
+<body class="bg-[#050505] text-[#FFF7EB] font-poppins overflow-hidden h-screen flex flex-col relative">
 
-    <!-- TEXTURA DE FILME -->
     <div class="film-grain"></div>
 
-    <!-- TELA DE CARREGAMENTO -->
-    <div id="loadingScreen" class="fixed inset-0 bg-[#1a1a1a] z-[100] flex flex-col items-center justify-center text-[#FFF7EB]">
+    <!-- CARREGAMENTO -->
+    <div id="loadingScreen" class="fixed inset-0 bg-[#050505] z-[100] flex flex-col items-center justify-center">
         <img src="https://raw.githubusercontent.com/eriadesign/privateday/main/globo.webp" alt="Globo" class="w-24 h-24 mb-6 animate-pulse">
         <h1 class="font-discodiva text-4xl tracking-widest text-[#DB7944]">Carregando a pista...</h1>
     </div>
 
     <!-- HEADER -->
-    <header class="bg-[#1a1a1a] border-b border-[#FFF7EB]/10 p-4 flex justify-between items-center shadow-md z-10 relative">
-        <div class="flex items-center gap-4">
-            <img src="https://raw.githubusercontent.com/eriadesign/privateday/main/globo.webp" alt="AUVP Globo" class="h-10 md:h-14 w-auto object-contain drop-shadow-lg">
+    <header class="bg-[#0a0a0a] border-b border-[#FFF7EB]/8 p-3 flex justify-between items-center z-10 relative shadow-lg">
+        <div class="flex items-center gap-3">
+            <img src="https://raw.githubusercontent.com/eriadesign/privateday/main/globo.webp" alt="AUVP" class="h-10 md:h-13 w-auto object-contain drop-shadow-lg">
             <div>
-                <h1 class="font-discodiva text-2xl md:text-3xl text-[#FFF7EB] tracking-wide drop-shadow-md leading-none">
-                    PRIVATE DAY
-                </h1>
-                <p class="text-[10px] md:text-xs text-[#DB7944] uppercase tracking-[0.2em] font-semibold mt-1">Esquenta 2026</p>
+                <h1 class="font-discodiva text-2xl md:text-3xl text-[#FFF7EB] tracking-wide leading-none">PRIVATE DAY</h1>
+                <p class="text-[10px] md:text-xs text-[#DB7944] uppercase tracking-[.2em] font-semibold mt-1">Esquenta 2026</p>
             </div>
         </div>
-        <div class="flex items-center gap-3 md:gap-4">
-            <div class="flex items-center gap-2 text-xs md:text-sm text-[#FFF7EB]/80 bg-black/40 px-3 py-1.5 rounded-full border border-[#FFF7EB]/10">
+        <div class="flex items-center gap-3">
+            <div class="flex items-center gap-2 text-xs text-[#FFF7EB]/70 bg-black/50 px-3 py-1.5 rounded-full border border-[#FFF7EB]/8">
                 <span id="icon-users" class="text-[#DB7944]"></span>
                 <span id="onlineCount">0 online</span>
             </div>
-            <button id="openSettingsBtn" class="flex items-center gap-2 bg-black/40 hover:bg-[#FFF7EB]/10 border border-[#FFF7EB]/10 p-1.5 md:p-2 rounded-lg transition">
-                <img id="headerAvatar" src="" alt="Avatar" class="w-8 h-8 rounded-full bg-[#1a1a1a] hidden" />
-                <span id="headerName" class="font-medium hidden sm:block text-[#FFF7EB]">Investidor</span>
+            <button id="openSettingsBtn" class="flex items-center gap-2 bg-black/50 hover:bg-[#FFF7EB]/8 border border-[#FFF7EB]/10 p-1.5 rounded-lg transition">
+                <img id="headerAvatar" src="" alt="" class="w-8 h-8 rounded-full bg-[#111] hidden"/>
+                <span id="headerName" class="font-medium hidden sm:block text-[#FFF7EB] text-sm">Investidor</span>
                 <span id="headerCrown" class="text-[#DB7944] hidden"></span>
             </button>
         </div>
     </header>
 
-    <!-- MAIN CONTENT AREA -->
+    <!-- MAIN -->
     <main class="flex-1 flex flex-col lg:flex-row overflow-hidden relative">
-        
-        <!-- ESQUERDA: Pista de Dança & Video -->
-        <section class="flex-1 flex flex-col relative border-r border-[#FFF7EB]/10">
-            
-            <!-- YOUTUBE PLAYER -->
-            <div id="playerContainer" class="bg-[#050505] aspect-video lg:h-72 w-full shrink-0 border-b border-[#FFF7EB]/10 relative z-20 shadow-2xl flex items-center justify-center group">
-                <!-- Conteúdo gerado via JS -->
-            </div>
+
+        <!-- ESQUERDA -->
+        <section class="flex-1 flex flex-col relative border-r border-[#FFF7EB]/8">
+
+            <!-- PLAYER -->
+            <div id="playerContainer" class="bg-[#030303] aspect-video lg:h-72 w-full shrink-0 border-b border-[#FFF7EB]/8 relative z-20 shadow-2xl flex items-center justify-center group overflow-hidden"></div>
 
             <!-- PISTA DE DANÇA -->
-            <div id="danceFloor" class="flex-1 relative overflow-hidden dance-floor-bg cursor-crosshair">
-                
-                <!-- Luzes da Pista -->
-                <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-[#DB7944]/10 rounded-full blur-3xl animate-pulse mix-blend-screen pointer-events-none"></div>
-                <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-[#932621]/15 rounded-full blur-3xl animate-pulse mix-blend-screen pointer-events-none" style="animation-delay: 1.5s;"></div>
-                
-                <!-- Marca D'água DiscoDiva -->
-                <div class="absolute inset-0 flex items-center justify-center pointer-events-none opacity-5">
-                   <h1 class="font-discodiva text-[10rem] md:text-[15rem] text-[#FFF7EB]">AUVP</h1>
+            <div id="danceFloor" class="flex-1 relative overflow-hidden cursor-crosshair" style="background:#050505;">
+
+                <!-- Ladrilhos 80s -->
+                <div class="dance-tiles" id="danceTiles"></div>
+
+                <!-- Luzes de palco ambiente -->
+                <div class="absolute top-0 left-1/4 w-72 h-72 rounded-full blur-3xl animate-pulse mix-blend-screen pointer-events-none" style="background:rgba(255,0,200,.06)"></div>
+                <div class="absolute top-0 right-1/4 w-72 h-72 rounded-full blur-3xl animate-pulse mix-blend-screen pointer-events-none" style="background:rgba(0,255,255,.06);animation-delay:.8s"></div>
+                <div class="absolute bottom-0 left-1/2 -translate-x-1/2 w-96 h-48 rounded-full blur-3xl animate-pulse mix-blend-screen pointer-events-none" style="background:rgba(219,121,68,.07);animation-delay:1.6s"></div>
+
+                <!-- Watermark -->
+                <div class="absolute inset-0 flex items-center justify-center pointer-events-none" style="opacity:.025">
+                    <h1 class="font-discodiva text-[9rem] md:text-[14rem] text-[#FFF7EB]">AUVP</h1>
                 </div>
 
-                <div class="absolute top-4 left-4 text-xs text-[#FFF7EB]/50 pointer-events-none bg-black/50 px-3 py-1 rounded-full border border-[#FFF7EB]/10 backdrop-blur-sm">
-                  Clique na pista para se mover
+                <div class="absolute top-3 left-3 text-[10px] text-[#FFF7EB]/40 pointer-events-none bg-black/60 px-3 py-1 rounded-full border border-[#FFF7EB]/8 backdrop-blur-sm z-10">
+                    Clique na pista para se mover
                 </div>
 
-                <!-- Camada onde os utilizadores serão renderizados -->
+                <!-- Cabine de DJ (canto inferior direito) -->
+                <div id="djBooth" class="absolute z-10" style="right:10px;bottom:10px;pointer-events:none;"></div>
+
+                <!-- Avatares -->
                 <div id="usersLayer" class="absolute inset-0 w-full h-full pointer-events-none"></div>
             </div>
         </section>
 
         <!-- DIREITA: Chat & Fila -->
-        <aside class="w-full lg:w-96 flex flex-col bg-[#1a1a1a] h-[50vh] lg:h-auto shrink-0 z-30 shadow-[-10px_0_20px_rgba(0,0,0,0.5)] border-t lg:border-t-0 border-[#FFF7EB]/10">
-            
-            <div class="flex border-b border-[#FFF7EB]/10 bg-black/20">
+        <aside class="w-full lg:w-96 flex flex-col bg-[#0a0a0a] h-[50vh] lg:h-auto shrink-0 z-30 border-t lg:border-t-0 border-[#FFF7EB]/8" style="box-shadow:-8px 0 24px rgba(0,0,0,.6)">
+
+            <div class="flex border-b border-[#FFF7EB]/8 bg-black/30">
                 <div class="flex-1 text-center py-3 text-sm font-semibold text-[#DB7944] border-b-2 border-[#DB7944] flex items-center justify-center gap-2">
                     <span id="icon-message"></span> Chat ao Vivo
                 </div>
             </div>
 
-            <!-- LISTA DE MENSAGENS -->
-            <div id="chatMessages" class="flex-1 overflow-y-auto p-4 space-y-4">
-                <!-- Mensagens renderizadas via JS -->
-            </div>
+            <div id="chatMessages" class="flex-1 overflow-y-auto p-4 space-y-4"></div>
 
-            <!-- INPUT DO CHAT -->
-            <div class="p-3 bg-black/20 border-t border-[#FFF7EB]/10">
+            <div class="p-3 bg-black/30 border-t border-[#FFF7EB]/8">
                 <form id="chatForm" class="flex gap-2">
                     <input type="text" id="chatInput" placeholder="Mande uma mensagem pra galera..." maxlength="200"
-                        class="flex-1 bg-black/40 border border-[#FFF7EB]/10 rounded-full px-4 py-2 text-sm focus:outline-none focus:border-[#DB7944] transition text-[#FFF7EB] font-light" />
+                        class="flex-1 bg-black/50 border border-[#FFF7EB]/10 rounded-full px-4 py-2 text-sm focus:outline-none focus:border-[#DB7944] transition text-[#FFF7EB] font-light"/>
                     <button type="submit" id="chatSubmit" disabled
-                        class="bg-[#DB7944] text-[#FFF7EB] p-2 rounded-full hover:bg-[#c45d1b] transition disabled:opacity-50 disabled:cursor-not-allowed shadow-lg">
+                        class="bg-[#DB7944] text-white p-2 rounded-full hover:bg-[#c45d1b] transition disabled:opacity-40 disabled:cursor-not-allowed shadow-lg">
                         <span id="icon-send"></span>
                     </button>
                 </form>
             </div>
 
-            <!-- SESSÃO: FILA DE MÚSICAS -->
-            <div class="border-t-[6px] border-[#0B2A47] bg-black/20 flex flex-col h-1/3 min-h-[250px]">
-                <div class="p-3 bg-black/40 border-b border-[#FFF7EB]/10 flex justify-between items-center">
+            <!-- FILA DO DJ -->
+            <div class="border-t-[5px] border-[#0B2A47] bg-black/20 flex flex-col h-1/3 min-h-[240px]">
+                <div class="p-3 bg-black/40 border-b border-[#FFF7EB]/8 flex justify-between items-center">
                     <h3 class="text-sm font-semibold flex items-center gap-2 text-[#FFF7EB]">
                         <span id="icon-music-small" class="text-[#DB7944]"></span> Fila do DJ
                     </h3>
-                    <span id="queueCount" class="text-xs bg-black/60 border border-[#FFF7EB]/10 px-2 py-1 rounded text-[#FFF7EB]/70">0 vídeos</span>
+                    <span id="queueCount" class="text-xs bg-black/60 border border-[#FFF7EB]/10 px-2 py-1 rounded text-[#FFF7EB]/60">0 vídeos</span>
                 </div>
-                
-                <div id="queueList" class="flex-1 overflow-y-auto p-2 space-y-2">
-                    <!-- Fila renderizada via JS -->
-                </div>
-
-                <div class="p-3 bg-black/40 border-t border-[#FFF7EB]/10">
-                   <form id="queueForm" class="flex gap-2">
+                <div id="queueList" class="flex-1 overflow-y-auto p-2 space-y-2"></div>
+                <div class="p-3 bg-black/40 border-t border-[#FFF7EB]/8">
+                    <form id="queueForm" class="flex gap-2">
                         <input type="text" id="videoUrlInput" placeholder="Cole o link do YouTube..."
-                            class="flex-1 bg-black/60 border border-[#FFF7EB]/10 rounded px-3 py-2 text-xs focus:outline-none focus:border-[#DB7944] transition text-[#FFF7EB] font-light" />
-                        <button type="submit" class="bg-[#0B2A47] text-[#FFF7EB] p-2 rounded hover:bg-[#071d33] transition flex items-center justify-center shadow-lg" title="Adicionar à fila">
+                            class="flex-1 bg-black/60 border border-[#FFF7EB]/10 rounded px-3 py-2 text-xs focus:outline-none focus:border-[#DB7944] transition text-[#FFF7EB] font-light"/>
+                        <button type="submit" class="bg-[#0B2A47] text-white p-2 rounded hover:bg-[#071d33] transition shadow-lg" title="Adicionar à fila">
                             <span id="icon-plus"></span>
                         </button>
-                   </form>
+                    </form>
                 </div>
             </div>
         </aside>
     </main>
 
-    <!-- MODAL DE DEFINIÇÕES (Perfil / Ingresso) -->
-    <div id="settingsModal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
-        <div class="bg-[#FFF7EB] text-[#1a1a1a] border border-[#1a1a1a]/10 p-6 rounded-2xl w-full max-w-md shadow-2xl max-h-[90vh] overflow-y-auto relative">
-            <div class="absolute inset-0 opacity-[0.03] pointer-events-none" style="background-image: url('data:image/svg+xml,%3Csvg viewBox=\'0 0 200 200\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noise\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.8\' numOctaves=\'3\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noise)\'/%3E%3C/svg%3E');"></div>
-            
-            <h2 class="font-discodiva text-3xl md:text-4xl mb-6 flex items-center gap-3 drop-shadow-sm relative z-10">
-                <span id="icon-settings" class="text-[#DB7944]"></span> Crie seu Avatar
+    <!-- MODAL DE AVATAR (DARK) -->
+    <div id="settingsModal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 flex items-center justify-center p-4">
+        <div class="modal-wrap rounded-2xl w-full max-w-lg shadow-2xl max-h-[92vh] overflow-y-auto relative p-6">
+
+            <h2 class="font-discodiva text-3xl md:text-4xl mb-5 flex items-center gap-3 text-[#DB7944]">
+                <span id="icon-settings"></span> Crie seu Avatar
             </h2>
-            
-            <div class="space-y-5 relative z-10">
+
+            <div class="space-y-4">
+                <!-- Nome -->
                 <div>
-                    <label class="block text-sm font-medium text-[#1a1a1a]/80 mb-1">Seu Nome / Apelido</label>
-                    <input type="text" id="profileName" class="w-full bg-white border border-[#1a1a1a]/20 rounded-lg px-4 py-2 focus:outline-none focus:border-[#DB7944] focus:ring-1 focus:ring-[#DB7944] transition text-[#1a1a1a] font-light shadow-inner" placeholder="Como quer ser chamado?" />
+                    <label class="block text-xs font-medium text-[#FFF7EB]/50 mb-1 uppercase tracking-widest">Seu Nome / Apelido</label>
+                    <input type="text" id="profileName"
+                        class="w-full bg-black/60 border border-[#FFF7EB]/15 rounded-lg px-4 py-2.5 focus:outline-none focus:border-[#DB7944] focus:ring-1 focus:ring-[#DB7944] transition text-[#FFF7EB] font-light text-sm"
+                        placeholder="Como quer ser chamado?"/>
                 </div>
 
-                <div class="bg-[#FAEEE0] p-4 rounded-xl border border-[#1a1a1a]/10 shadow-sm">
+                <!-- Preview + Customização -->
+                <div class="bg-black/40 rounded-xl border border-[#FFF7EB]/10 p-4">
+                    <!-- Preview -->
                     <div class="flex items-center justify-center mb-5">
-                        <div id="avatarPreviewContainer" class="w-24 h-24 bg-white rounded-full overflow-hidden flex items-center justify-center shadow-lg transition-all" style="box-shadow: 0 0 0 4px #DB7944;">
-                            <img id="avatarPreviewImage" src="" alt="Preview Avatar" class="w-full h-full object-cover" />
+                        <div id="avatarPreviewContainer" class="w-28 h-28 rounded-full bg-[#111] overflow-hidden shadow-xl transition-all relative">
+                            <img id="avatarPreviewImage" src="" alt="Preview" class="w-full h-full object-cover"/>
                         </div>
                     </div>
 
-                    <div class="space-y-4">
+                    <div class="space-y-4" id="avatarSections">
+                        <!-- Cabelo -->
                         <div>
-                            <label class="block text-xs font-medium text-[#1a1a1a]/60 mb-2 uppercase tracking-wide">Estilo / Chapéu</label>
-                            <div id="avatarTops" class="flex gap-2 overflow-x-auto pb-2 scrollbar-thin"></div>
+                            <label class="block text-[10px] font-bold text-[#DB7944] mb-2 uppercase tracking-widest">Cabelo / Chapéu</label>
+                            <div id="avatarTops" class="flex gap-1.5 overflow-x-auto pb-1"></div>
                         </div>
-
+                        <!-- Acessórios -->
                         <div>
-                            <label class="block text-xs font-medium text-[#1a1a1a]/60 mb-2 uppercase tracking-wide">Roupas</label>
-                            <div id="avatarClothes" class="flex gap-2 overflow-x-auto pb-2 scrollbar-thin"></div>
+                            <label class="block text-[10px] font-bold text-[#DB7944] mb-2 uppercase tracking-widest">Acessórios</label>
+                            <div id="avatarAccessories" class="flex gap-1.5 overflow-x-auto pb-1"></div>
                         </div>
-
+                        <!-- Barba -->
                         <div>
-                            <label class="block text-xs font-medium text-[#1a1a1a]/60 mb-2 uppercase tracking-wide">Olhos</label>
-                            <div id="avatarEyes" class="flex gap-2 overflow-x-auto pb-2 scrollbar-thin"></div>
+                            <label class="block text-[10px] font-bold text-[#DB7944] mb-2 uppercase tracking-widest">Barba / Bigode</label>
+                            <div id="avatarFacialHair" class="flex gap-1.5 overflow-x-auto pb-1"></div>
                         </div>
-
+                        <!-- Roupas -->
                         <div>
-                            <label class="block text-xs font-medium text-[#1a1a1a]/60 mb-2 uppercase tracking-wide">Boca</label>
-                            <div id="avatarMouths" class="flex gap-2 overflow-x-auto pb-2 scrollbar-thin"></div>
+                            <label class="block text-[10px] font-bold text-[#DB7944] mb-2 uppercase tracking-widest">Roupas</label>
+                            <div id="avatarClothes" class="flex gap-1.5 overflow-x-auto pb-1"></div>
                         </div>
-
+                        <!-- Olhos -->
                         <div>
-                            <label class="block text-xs font-medium text-[#1a1a1a]/60 mb-2 uppercase tracking-wide">Tom de Pele</label>
-                            <div id="avatarSkin" class="flex gap-2 mt-1"></div>
+                            <label class="block text-[10px] font-bold text-[#DB7944] mb-2 uppercase tracking-widest">Olhos</label>
+                            <div id="avatarEyes" class="flex gap-1.5 overflow-x-auto pb-1"></div>
+                        </div>
+                        <!-- Sobrancelhas -->
+                        <div>
+                            <label class="block text-[10px] font-bold text-[#DB7944] mb-2 uppercase tracking-widest">Sobrancelhas</label>
+                            <div id="avatarEyebrows" class="flex gap-1.5 overflow-x-auto pb-1"></div>
+                        </div>
+                        <!-- Boca -->
+                        <div>
+                            <label class="block text-[10px] font-bold text-[#DB7944] mb-2 uppercase tracking-widest">Boca</label>
+                            <div id="avatarMouths" class="flex gap-1.5 overflow-x-auto pb-1"></div>
+                        </div>
+                        <!-- Tom de pele -->
+                        <div>
+                            <label class="block text-[10px] font-bold text-[#DB7944] mb-2 uppercase tracking-widest">Tom de Pele</label>
+                            <div id="avatarSkin" class="flex gap-2 flex-wrap"></div>
+                        </div>
+                        <!-- Cor do cabelo -->
+                        <div>
+                            <label class="block text-[10px] font-bold text-[#DB7944] mb-2 uppercase tracking-widest">Cor do Cabelo</label>
+                            <div id="avatarHairColor" class="flex gap-2 flex-wrap"></div>
+                        </div>
+                        <!-- Cor da roupa -->
+                        <div>
+                            <label class="block text-[10px] font-bold text-[#DB7944] mb-2 uppercase tracking-widest">Cor da Roupa</label>
+                            <div id="avatarClothingColor" class="flex gap-2 flex-wrap"></div>
                         </div>
                     </div>
                 </div>
 
+                <!-- Cor da Aura -->
                 <div>
-                    <label class="block text-sm font-medium text-[#1a1a1a]/80 mb-2">Cor da Aura na Pista</label>
-                    <div id="avatarColors" class="flex gap-2"></div>
+                    <label class="block text-xs font-medium text-[#FFF7EB]/50 mb-2 uppercase tracking-widest">Cor da Aura na Pista</label>
+                    <div id="avatarColors" class="flex gap-2 flex-wrap"></div>
                 </div>
 
-                <div class="pt-4 border-t border-[#1a1a1a]/10 mt-6">
-                    <label class="flex items-center gap-3 cursor-pointer p-4 bg-[#FAEEE0] rounded-xl border border-[#1a1a1a]/10 hover:border-[#DB7944]/50 transition group shadow-sm">
-                        <input type="checkbox" id="profileVIP" class="w-5 h-5 accent-[#DB7944]" />
+                <!-- VIP -->
+                <div class="border-t border-[#FFF7EB]/8 pt-4">
+                    <label class="flex items-center gap-3 cursor-pointer p-4 bg-black/40 rounded-xl border border-[#FFF7EB]/10 hover:border-[#DB7944]/40 transition group">
+                        <input type="checkbox" id="profileVIP" class="w-5 h-5 accent-[#DB7944]"/>
                         <div>
-                            <div class="font-bold text-[#932621] flex items-center gap-2 text-sm md:text-base">
+                            <div class="font-bold text-[#DB7944] flex items-center gap-2 text-sm">
                                 Já tenho meu ingresso! <span id="icon-crown-small"></span>
                             </div>
-                            <div class="text-xs text-[#1a1a1a]/60 group-hover:text-[#1a1a1a]/80 mt-0.5">Ativa a coroa e luzes especiais no seu avatar.</div>
+                            <div class="text-xs text-[#FFF7EB]/40 mt-0.5">Ativa a coroa e brilho especial no avatar.</div>
                         </div>
                     </label>
                 </div>
 
-                <button id="saveProfileBtn" class="vintage-btn w-full mt-6 font-medium py-3.5 rounded-lg tracking-wide text-base">
+                <button id="saveProfileBtn" class="vintage-btn w-full font-medium py-3.5 rounded-lg tracking-wide text-base">
                     Entrar na Festa
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- SCRIPT DA APLICAÇÃO -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, doc, setDoc, onSnapshot, addDoc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, doc, setDoc, onSnapshot, addDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // --- ÍCONES SVG ---
+        // ── ÍCONES ──
         const Icons = {
-            users: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>`,
-            crown: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m2 4 3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14"></path></svg>`,
-            settings: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>`,
-            play: `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>`,
-            music: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>`,
-            musicBig: `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>`,
-            plus: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>`,
-            send: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>`,
-            message: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>`
+            users:    `<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`,
+            crown:    `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m2 4 3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14"/></svg>`,
+            settings: `<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>`,
+            play:     `<svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>`,
+            music:    `<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>`,
+            musicBig: `<svg xmlns="http://www.w3.org/2000/svg" width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>`,
+            plus:     `<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`,
+            send:     `<svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>`,
+            message:  `<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>`,
+            headphones:`<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></svg>`
         };
 
-        // Injetar Ícones Estáticos
-        document.getElementById('icon-users').innerHTML = Icons.users;
-        document.getElementById('icon-message').innerHTML = Icons.message;
-        document.getElementById('icon-send').innerHTML = Icons.send;
-        document.getElementById('icon-music-small').innerHTML = Icons.music;
-        document.getElementById('icon-plus').innerHTML = Icons.plus;
-        document.getElementById('icon-settings').innerHTML = Icons.settings;
-        document.getElementById('icon-crown-small').innerHTML = Icons.crown;
+        ['icon-users','icon-message','icon-send','icon-music-small','icon-plus','icon-settings','icon-crown-small'].forEach(id => {
+            const key = { 'icon-users':'users','icon-message':'message','icon-send':'send','icon-music-small':'music','icon-plus':'plus','icon-settings':'settings','icon-crown-small':'crown' }[id];
+            document.getElementById(id).innerHTML = Icons[key];
+        });
 
-        // --- CONFIGURAÇÃO FIREBASE ---
+        // ── FIREBASE ──
         const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
+        const app   = initializeApp(firebaseConfig);
+        const auth  = getAuth(app);
+        const db    = getFirestore(app);
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'auvp-preparty-default';
 
-        // --- DADOS DO AVATAR ---
-        const AVATAR_TOPS = ['shortHair', 'longHair', 'eyepatch', 'hat', 'hijab', 'turban', 'winterHat1'];
-        const AVATAR_CLOTHES = ['hoodie', 'blazerAndShirt', 'blazerAndSweater', 'collarAndSweater', 'graphicShirt', 'overall'];
-        const AVATAR_EYES = ['default', 'close', 'cry', 'dizzy', 'eyeRoll', 'happy', 'hearts', 'side', 'squint', 'surprised', 'wink', 'winkWacky'];
-        const AVATAR_MOUTHS = ['default', 'concerned', 'disbelief', 'eating', 'grimace', 'sad', 'scream', 'serious', 'smile', 'smirk', 'twinkle', 'vomit'];
-        const SKIN_COLORS = ['ffdbb4', 'edb98a', 'd08b5b', 'ae5d29', '614335'];
-        // Paleta baseada no guia da Landing Page
-        const COLORS = ['#DB7944', '#0B2A47', '#932621', '#a6460f', '#10b981', '#8b5cf6', '#ec4899'];
+        // ── DADOS DO AVATAR (COMPLETO) ──
+        const TOPS = [
+            {v:'shortHair',l:'Curto'}, {v:'longHair',l:'Longo'}, {v:'noHair',l:'Careca'},
+            {v:'eyepatch',l:'Tapa-olho'}, {v:'hat',l:'Chapéu'}, {v:'hijab',l:'Hijab'},
+            {v:'turban',l:'Turbante'}, {v:'winterHat1',l:'Gorro 1'}, {v:'winterHat2',l:'Gorro 2'},
+            {v:'winterHat3',l:'Gorro 3'}, {v:'winterHat4',l:'Gorro 4'}
+        ];
+        const ACCESSORIES = [
+            {v:'blank',l:'Nenhum'}, {v:'kurt',l:'Kurt'}, {v:'prescription01',l:'Óculos 1'},
+            {v:'prescription02',l:'Óculos 2'}, {v:'round',l:'Redondos'},
+            {v:'sunglasses',l:'Sol'}, {v:'wayfarers',l:'Wayfarers'}
+        ];
+        const FACIAL_HAIR = [
+            {v:'blank',l:'Nenhuma'}, {v:'beardMedium',l:'Barba Média'},
+            {v:'beardLight',l:'Barba Leve'}, {v:'beardMajestic',l:'Barba Majestosa'},
+            {v:'moustacheFancy',l:'Bigode Fancy'}, {v:'moustacheMagnum',l:'Bigode Magnum'}
+        ];
+        const CLOTHES = [
+            {v:'hoodie',l:'Moletom'}, {v:'blazerAndShirt',l:'Blazer+Camisa'},
+            {v:'blazerAndSweater',l:'Blazer+Suéter'}, {v:'collarAndSweater',l:'Gola+Suéter'},
+            {v:'graphicShirt',l:'Camiseta'}, {v:'overall',l:'Macacão'},
+            {v:'shirtCrewNeck',l:'Crew Neck'}, {v:'shirtScoopNeck',l:'Scoop Neck'},
+            {v:'shirtVNeck',l:'V-Neck'}
+        ];
+        const EYES = [
+            {v:'default',l:'Normal'}, {v:'close',l:'Fechados'}, {v:'cry',l:'Chorando'},
+            {v:'dizzy',l:'Tonto'}, {v:'eyeRoll',l:'Revirados'}, {v:'happy',l:'Feliz'},
+            {v:'hearts',l:'Coração'}, {v:'side',l:'Lado'}, {v:'squint',l:'Semicerrados'},
+            {v:'surprised',l:'Surpreso'}, {v:'wink',l:'Piscada'}, {v:'winkWacky',l:'Maluca'},
+            {v:'xDizzy',l:'X Tonto'}
+        ];
+        const EYEBROWS = [
+            {v:'default',l:'Normal'}, {v:'angry',l:'Raivosas'}, {v:'angryNatural',l:'Raiva Natural'},
+            {v:'defaultNatural',l:'Natural'}, {v:'flatNatural',l:'Flat'},
+            {v:'frownNatural',l:'Franzidas'}, {v:'raisedExcited',l:'Empinadas'},
+            {v:'raisedExcitedNatural',l:'Empinadas 2'}, {v:'sadConcerned',l:'Tristes'},
+            {v:'sadConcernedNatural',l:'Tristes 2'}, {v:'unibrowNatural',l:'Monocelha'}
+        ];
+        const MOUTHS = [
+            {v:'default',l:'Normal'}, {v:'concerned',l:'Preocupado'}, {v:'disbelief',l:'Incrédulo'},
+            {v:'eating',l:'Comendo'}, {v:'grimace',l:'Careta'}, {v:'sad',l:'Triste'},
+            {v:'scream',l:'Gritando'}, {v:'serious',l:'Sério'}, {v:'smile',l:'Sorrindo'},
+            {v:'tongue',l:'Língua'}, {v:'twinkle',l:'Twinkle'}, {v:'vomit',l:'Enjoado'}
+        ];
+        const SKIN_COLORS = [
+            {v:'ffd5dc',l:'Rosado'}, {v:'ffdbb4',l:'Muito Claro'}, {v:'edb98a',l:'Claro'},
+            {v:'d08b5b',l:'Médio'}, {v:'ae5d29',l:'Bronze'}, {v:'614335',l:'Escuro'}, {v:'3d1a00',l:'Muito Escuro'}
+        ];
+        const HAIR_COLORS = [
+            {v:'auburn',hex:'#A55728',l:'Castanho'}, {v:'black',hex:'#2C1B18',l:'Preto'},
+            {v:'blonde',hex:'#B58143',l:'Loiro'}, {v:'blondeGolden',hex:'#D6B370',l:'Loiro Dourado'},
+            {v:'brown',hex:'#724133',l:'Marrom'}, {v:'brownDark',hex:'#4A312C',l:'Marrom Escuro'},
+            {v:'pastelPink',hex:'#F59797',l:'Rosa Pastel'}, {v:'platinum',hex:'#ECDCBF',l:'Platinado'},
+            {v:'red',hex:'#C93305',l:'Ruivo'}, {v:'silverGray',hex:'#E8E1E1',l:'Grisalho'}
+        ];
+        const CLOTHING_COLORS = [
+            {v:'black',hex:'#262E33',l:'Preto'}, {v:'blue01',hex:'#65C9FF',l:'Azul Claro'},
+            {v:'blue02',hex:'#5199E4',l:'Azul Médio'}, {v:'blue03',hex:'#25557C',l:'Azul Escuro'},
+            {v:'gray01',hex:'#E6E6E6',l:'Cinza Claro'}, {v:'gray02',hex:'#929598',l:'Cinza Escuro'},
+            {v:'heather',hex:'#3C4F5C',l:'Heather'}, {v:'pastelBlue',hex:'#B1E2FF',l:'Azul Pastel'},
+            {v:'pastelGreen',hex:'#A7FFC4',l:'Verde Pastel'}, {v:'pastelOrange',hex:'#FFDEB5',l:'Laranja Pastel'},
+            {v:'pastelRed',hex:'#FFAFB9',l:'Rosa Averm.'}, {v:'pastelYellow',hex:'#FFFFB1',l:'Amarelo Pastel'},
+            {v:'pink',hex:'#FF488E',l:'Rosa'}, {v:'red',hex:'#FF5C5C',l:'Vermelho'},
+            {v:'white',hex:'#FFFFFF',l:'Branco'}
+        ];
+        const AURA_COLORS = [
+            '#DB7944','#0B2A47','#932621','#a6460f',
+            '#10b981','#8b5cf6','#ec4899','#00ffff',
+            '#ffff00','#ff00cc','#00ff88','#ff6600'
+        ];
 
-        // --- ESTADO GLOBAL ---
+        // ── ESTADO ──
         let currentUser = null;
         let activeUsers = [];
         let chatMessages = [];
         let queue = [];
         let currentVideo = null;
-        
+
         let localProfile = {
             name: 'Investidor',
-            avatarConfig: { top: 'shortHair', clothing: 'hoodie', eyes: 'default', mouth: 'default', skinColor: 'edb98a' },
+            avatarConfig: {
+                top: 'shortHair', accessories: 'blank', facialHair: 'blank',
+                clothing: 'hoodie', eyes: 'default', eyebrows: 'default',
+                mouth: 'default', skinColor: 'edb98a', hairColor: 'brown', clothingColor: 'heather'
+            },
             color: '#DB7944',
             isVIP: false
         };
 
-        const getAvatarUrl = (config) => {
-            return `https://api.dicebear.com/8.x/avataaars/svg?top=${config?.top || 'shortHair'}&clothing=${config?.clothing || 'hoodie'}&eyes=${config?.eyes || 'default'}&mouth=${config?.mouth || 'default'}&skinColor=${config?.skinColor || 'edb98a'}&backgroundColor=transparent`;
-        };
+        function getAvatarUrl(config) {
+            const c = config || localProfile.avatarConfig;
+            const p = new URLSearchParams({
+                top: c.top || 'shortHair',
+                accessories: c.accessories || 'blank',
+                facialHair: c.facialHair || 'blank',
+                clothing: c.clothing || 'hoodie',
+                eyes: c.eyes || 'default',
+                eyebrows: c.eyebrows || 'default',
+                mouth: c.mouth || 'default',
+                skinColor: c.skinColor || 'edb98a',
+                hairColor: c.hairColor || 'brown',
+                clothingColor: c.clothingColor || 'heather',
+                backgroundColor: 'transparent'
+            });
+            return `https://api.dicebear.com/8.x/avataaars/svg?${p}`;
+        }
 
-        // --- 1. AUTENTICAÇÃO MANDATÓRIA ---
-        async function initAuth() {
-            try {
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
-                    await signInAnonymously(auth);
+        // ── LADRILHOS 80s ──
+        function buildDanceTiles() {
+            const el = document.getElementById('danceTiles');
+            const colors = ['t-pink','t-cyan','t-yellow','t-orange','t-purple','t-green'];
+            for (let i = 0; i < 14 * 9; i++) {
+                const tile = document.createElement('div');
+                tile.className = 'tile';
+                if (Math.random() < 0.38) {
+                    tile.classList.add(colors[Math.floor(Math.random() * colors.length)]);
+                    tile.style.setProperty('--del', `${(Math.random() * 5).toFixed(2)}s`);
+                    tile.style.setProperty('--dur', `${(1.4 + Math.random() * 3.2).toFixed(2)}s`);
                 }
-            } catch (err) {
-                console.error("Erro na Autenticação:", err);
+                el.appendChild(tile);
             }
         }
 
-        onAuthStateChanged(auth, (u) => {
+        // ── MESA DE DJ ──
+        // Position the DJ avatar here in % of dance floor
+        const DJ_X = 89; // right area
+        const DJ_Y = 78; // lower area (near the booth element at bottom-right)
+
+        function renderDJBooth() {
+            const el = document.getElementById('djBooth');
+            const playing = currentVideo && currentVideo.videoId;
+            const djUid  = currentVideo?.addedByUid || '';
+            const djName = currentVideo?.addedByName || '';
+            const isMe   = currentUser && djUid === currentUser.uid;
+            const djUser = activeUsers.find(u => u.id === djUid);
+            const djColor = djUser?.color || '#DB7944';
+            const djAvatar = djUser ? getAvatarUrl(djUser.avatarConfig) : '';
+
+            const glowClass = playing ? 'booth-glow' : '';
+            const borderColor = playing ? (isMe ? '#ff00cc' : '#DB7944') : 'rgba(255,255,255,.12)';
+
+            el.innerHTML = `
+<div class="${glowClass} rounded-2xl p-2.5 transition-all" style="background:#0a0a0a;border:1px solid ${borderColor};min-width:148px;">
+  <p class="text-center text-[9px] uppercase tracking-[.2em] text-[#DB7944] font-bold mb-1.5">🎛 Mesa de DJ</p>
+
+  <!-- SVG DA MESA -->
+  <svg width="140" height="72" viewBox="0 0 140 72" xmlns="http://www.w3.org/2000/svg">
+    <!-- base da mesa -->
+    <rect x="2" y="40" width="136" height="28" rx="5" fill="#111" stroke="#2a2a2a" stroke-width="1"/>
+    <!-- reflexo da mesa -->
+    <rect x="2" y="40" width="136" height="6" rx="5" fill="#222"/>
+
+    <!-- Toca-disco esquerdo -->
+    <g transform="translate(28,24)">
+      ${playing ? `<circle r="22" fill="#0d0d0d" stroke="#1a1a1a" stroke-width="1" class="spin-vinyl" style="transform-box:fill-box;transform-origin:center"/>
+      <circle r="16" fill="none" stroke="#1a1a1a" stroke-width="1" class="spin-vinyl" style="transform-box:fill-box;transform-origin:center"/>
+      <circle r="10" fill="none" stroke="#222" stroke-width="1" class="spin-vinyl" style="transform-box:fill-box;transform-origin:center"/>` : `<circle r="22" fill="#0d0d0d" stroke="#1a1a1a" stroke-width="1"/>
+      <circle r="16" fill="none" stroke="#1a1a1a" stroke-width="1"/>
+      <circle r="10" fill="none" stroke="#222" stroke-width="1"/>`}
+      <circle r="3.5" fill="#DB7944"/>
+      <circle r="1" fill="#060606"/>
+    </g>
+    <!-- braço do toca-disco esq -->
+    <line x1="50" y1="8" x2="40" y2="22" stroke="#DB7944" stroke-width="1.5" stroke-linecap="round" opacity=".8"/>
+
+    <!-- Toca-disco direito -->
+    <g transform="translate(112,24)">
+      ${playing ? `<circle r="22" fill="#0d0d0d" stroke="#1a1a1a" stroke-width="1" class="spin-vinyl" style="transform-box:fill-box;transform-origin:center;animation-delay:.4s"/>
+      <circle r="16" fill="none" stroke="#1a1a1a" stroke-width="1" class="spin-vinyl" style="transform-box:fill-box;transform-origin:center;animation-delay:.4s"/>
+      <circle r="10" fill="none" stroke="#222" stroke-width="1" class="spin-vinyl" style="transform-box:fill-box;transform-origin:center;animation-delay:.4s"/>` : `<circle r="22" fill="#0d0d0d" stroke="#1a1a1a" stroke-width="1"/>
+      <circle r="16" fill="none" stroke="#1a1a1a" stroke-width="1"/>
+      <circle r="10" fill="none" stroke="#222" stroke-width="1"/>`}
+      <circle r="3.5" fill="#DB7944"/>
+      <circle r="1" fill="#060606"/>
+    </g>
+    <!-- braço do toca-disco dir -->
+    <line x1="134" y1="8" x2="124" y2="22" stroke="#DB7944" stroke-width="1.5" stroke-linecap="round" opacity=".8"/>
+
+    <!-- Mixer central -->
+    <rect x="57" y="14" width="26" height="32" rx="3" fill="#0d0d0d" stroke="#2a2a2a" stroke-width="1"/>
+    <!-- knobs -->
+    <circle cx="65" cy="22" r="3" fill="#DB7944" stroke="#a6460f" stroke-width=".5"/>
+    <circle cx="75" cy="22" r="3" fill="#00ffff" stroke="#00cccc" stroke-width=".5"/>
+    <circle cx="70" cy="32" r="4" fill="#ff00cc" stroke="#cc0099" stroke-width=".5"/>
+    <!-- fader -->
+    <rect x="64" y="40" width="12" height="1.5" rx="1" fill="#333"/>
+    <rect x="68" y="38" width="4" height="5" rx="1" fill="#555"/>
+
+    <!-- Equalizer bars EQ -->
+    ${playing ? `
+    <rect x="6"  y="58" width="3" height="8" rx="1" fill="#00ff88" style="animation:eq1 .28s ease-in-out infinite;transform-origin:bottom;transform-box:fill-box"/>
+    <rect x="11" y="55" width="3" height="11" rx="1" fill="#00ff88" style="animation:eq3 .35s ease-in-out infinite;transform-origin:bottom;transform-box:fill-box;animation-delay:.1s"/>
+    <rect x="16" y="60" width="3" height="6" rx="1" fill="#00ff88" style="animation:eq2 .42s ease-in-out infinite;transform-origin:bottom;transform-box:fill-box;animation-delay:.07s"/>
+    <rect x="21" y="56" width="3" height="10" rx="1" fill="#00ccff" style="animation:eq4 .31s ease-in-out infinite;transform-origin:bottom;transform-box:fill-box;animation-delay:.18s"/>
+    <rect x="26" y="59" width="3" height="7" rx="1" fill="#00ccff" style="animation:eq5 .38s ease-in-out infinite;transform-origin:bottom;transform-box:fill-box;animation-delay:.05s"/>
+
+    <rect x="108" y="57" width="3" height="9"  rx="1" fill="#ff00cc" style="animation:eq2 .33s ease-in-out infinite;transform-origin:bottom;transform-box:fill-box"/>
+    <rect x="113" y="54" width="3" height="12" rx="1" fill="#ff00cc" style="animation:eq4 .29s ease-in-out infinite;transform-origin:bottom;transform-box:fill-box;animation-delay:.12s"/>
+    <rect x="118" y="60" width="3" height="6"  rx="1" fill="#ff6600" style="animation:eq1 .4s ease-in-out infinite;transform-origin:bottom;transform-box:fill-box;animation-delay:.08s"/>
+    <rect x="123" y="56" width="3" height="10" rx="1" fill="#ff6600" style="animation:eq3 .35s ease-in-out infinite;transform-origin:bottom;transform-box:fill-box;animation-delay:.2s"/>
+    <rect x="128" y="58" width="3" height="8"  rx="1" fill="#ffff00" style="animation:eq5 .44s ease-in-out infinite;transform-origin:bottom;transform-box:fill-box;animation-delay:.06s"/>
+    ` : `
+    <rect x="6" y="63" width="3" height="3" rx="1" fill="#333"/>
+    <rect x="11" y="63" width="3" height="3" rx="1" fill="#333"/>
+    <rect x="16" y="63" width="3" height="3" rx="1" fill="#333"/>
+    <rect x="21" y="63" width="3" height="3" rx="1" fill="#333"/>
+    <rect x="26" y="63" width="3" height="3" rx="1" fill="#333"/>
+    <rect x="108" y="63" width="3" height="3" rx="1" fill="#333"/>
+    <rect x="113" y="63" width="3" height="3" rx="1" fill="#333"/>
+    <rect x="118" y="63" width="3" height="3" rx="1" fill="#333"/>
+    <rect x="123" y="63" width="3" height="3" rx="1" fill="#333"/>
+    <rect x="128" y="63" width="3" height="3" rx="1" fill="#333"/>
+    `}
+  </svg>
+
+  <!-- DJ atual -->
+  ${playing && djName ? `
+  <div class="flex items-center gap-2 justify-center mt-1.5">
+    ${djAvatar ? `<img src="${djAvatar}" class="w-7 h-7 rounded-full bg-[#111] ${isMe ? 'dj-bounce' : ''}" style="box-shadow:0 0 8px ${djColor}80"/>` : ''}
+    <div>
+      <p class="text-[8px] text-[#FFF7EB]/40">🎧 Na mesa agora:</p>
+      <p class="text-[10px] font-bold truncate max-w-[85px]" style="color:${djColor}">${djName}${isMe ? ' (Você!)' : ''}</p>
+    </div>
+  </div>` : `<p class="text-center text-[9px] text-[#FFF7EB]/25 mt-1">Pista livre...</p>`}
+</div>`;
+        }
+
+        // ── AUTH ──
+        async function initAuth() {
+            try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token)
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                else
+                    await signInAnonymously(auth);
+            } catch(e) { console.error('Auth error', e); }
+        }
+
+        onAuthStateChanged(auth, u => {
             currentUser = u;
             if (u) {
                 document.getElementById('loadingScreen').style.display = 'none';
+                buildDanceTiles();
+                renderDJBooth();
                 setupFirebaseListeners();
                 startHeartbeat();
             }
         });
-
         initAuth();
 
-        // --- 2. LISTENERS FIREBASE ---
+        // ── FIREBASE LISTENERS ──
         function setupFirebaseListeners() {
             if (!currentUser) return;
+            const base = ['artifacts', appId, 'public', 'data'];
+            const usersRef  = collection(db, ...base, 'users');
+            const chatRef   = collection(db, ...base, 'chat');
+            const queueRef  = collection(db, ...base, 'queue');
+            const playerRef = collection(db, ...base, 'player');
 
-            const usersRef = collection(db, 'artifacts', appId, 'public', 'data', 'users');
-            const chatRef = collection(db, 'artifacts', appId, 'public', 'data', 'chat');
-            const queueRef = collection(db, 'artifacts', appId, 'public', 'data', 'queue');
-            const playerRef = collection(db, 'artifacts', appId, 'public', 'data', 'player');
-
-            // Listeners
-            onSnapshot(usersRef, (snapshot) => {
-                const usersList = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+            onSnapshot(usersRef, snap => {
                 const now = Date.now();
-                activeUsers = usersList.filter(u => u.lastUpdate && (now - u.lastUpdate) < 120000);
+                activeUsers = snap.docs.map(d => ({id:d.id,...d.data()}))
+                    .filter(u => u.lastUpdate && (now - u.lastUpdate) < 120000);
                 renderUsers();
-            }, (err) => console.error(err));
+                renderDJBooth();
+            }, console.error);
 
-            onSnapshot(chatRef, (snapshot) => {
-                const msgs = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-                msgs.sort((a, b) => a.timestamp - b.timestamp);
+            onSnapshot(chatRef, snap => {
+                const msgs = snap.docs.map(d => ({id:d.id,...d.data()}));
+                msgs.sort((a,b) => a.timestamp - b.timestamp);
                 chatMessages = msgs.slice(-50);
                 renderChat();
-            }, (err) => console.error(err));
+            }, console.error);
 
-            onSnapshot(queueRef, (snapshot) => {
-                const q = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-                q.sort((a, b) => a.timestamp - b.timestamp);
+            onSnapshot(queueRef, snap => {
+                const q = snap.docs.map(d => ({id:d.id,...d.data()}));
+                q.sort((a,b) => a.timestamp - b.timestamp);
                 queue = q;
                 renderQueue();
-            }, (err) => console.error(err));
+            }, console.error);
 
-            onSnapshot(playerRef, (snapshot) => {
-                const state = snapshot.docs.map(d => ({ id: d.id, ...d.data() })).find(s => s.id === 'state');
-                if (state) {
-                    currentVideo = state;
-                    renderPlayer();
-                }
-            }, (err) => console.error(err));
+            onSnapshot(playerRef, snap => {
+                const state = snap.docs.map(d => ({id:d.id,...d.data()})).find(s => s.id === 'state');
+                if (state) { currentVideo = state; renderPlayer(); renderDJBooth(); renderUsers(); }
+            }, console.error);
         }
 
-        // --- 3. HEARTBEAT E POSIÇÃO ---
+        // ── PRESENÇA ──
         async function updatePresence(x = null, y = null) {
             if (!currentUser) return;
-            const myUserRef = doc(db, 'artifacts', appId, 'public', 'data', 'users', currentUser.uid);
-            
-            let dataToUpdate = { ...localProfile, lastUpdate: Date.now() };
-            if (x !== null && y !== null) {
-                dataToUpdate.x = x;
-                dataToUpdate.y = y;
-            } else {
+            const ref = doc(db, 'artifacts', appId, 'public', 'data', 'users', currentUser.uid);
+            const data = { ...localProfile, lastUpdate: Date.now() };
+            if (x !== null && y !== null) { data.x = x; data.y = y; }
+            else {
                 const me = activeUsers.find(u => u.id === currentUser.uid);
-                if (me && me.x) dataToUpdate.x = me.x;
-                else dataToUpdate.x = 50;
-                
-                if (me && me.y) dataToUpdate.y = me.y;
-                else dataToUpdate.y = 50;
+                data.x = me?.x ?? 50;
+                data.y = me?.y ?? 50;
             }
-
-            try {
-                await setDoc(myUserRef, dataToUpdate, { merge: true });
-            } catch (e) { console.error("Erro a atualizar presença", e); }
+            try { await setDoc(ref, data, {merge:true}); } catch(e) { console.error(e); }
         }
 
         function startHeartbeat() {
             updatePresence();
-            setInterval(() => updatePresence(), 30000); // 30s
+            setInterval(() => updatePresence(), 30000);
         }
 
-        // Evento da Pista de Dança
-        document.getElementById('danceFloor').addEventListener('click', (e) => {
+        document.getElementById('danceFloor').addEventListener('click', e => {
             if (!currentUser) return;
-            const rect = e.currentTarget.getBoundingClientRect();
-            const x = ((e.clientX - rect.left) / rect.width) * 100;
-            const y = ((e.clientY - rect.top) / rect.height) * 100;
-            updatePresence(x, y);
+            const r = e.currentTarget.getBoundingClientRect();
+            updatePresence(((e.clientX - r.left) / r.width) * 100, ((e.clientY - r.top) / r.height) * 100);
         });
 
-        // --- 4. RENDERIZAÇÃO DA INTERFACE ---
-
+        // ── RENDER USUÁRIOS ──
         function renderUsers() {
             document.getElementById('onlineCount').innerText = `${activeUsers.length} online`;
-            const usersLayer = document.getElementById('usersLayer');
-            usersLayer.innerHTML = '';
+            const layer = document.getElementById('usersLayer');
+            layer.innerHTML = '';
 
             activeUsers.forEach(u => {
+                const isDJ   = !!(currentVideo?.videoId) && currentVideo?.addedByUid === u.id;
+                const isMe   = u.id === currentUser?.uid;
+                const posX   = isDJ ? DJ_X : (u.x ?? 50);
+                const posY   = isDJ ? DJ_Y : (u.y ?? 50);
+                const color  = u.color || '#DB7944';
+                const vipGlow = `0 0 22px rgba(219,121,68,.7), 0 0 44px rgba(219,121,68,.3), 0 0 0 3px #DB7944`;
+                const djGlow  = `0 0 20px rgba(255,0,200,.8), 0 0 40px rgba(255,0,200,.4), 0 0 0 3px #ff00cc`;
+                const normGlow = `0 0 14px ${color}60, 0 0 0 2px ${color}`;
+                const shadow  = isDJ ? djGlow : (u.isVIP ? vipGlow : normGlow);
+                const bounce  = isDJ ? 'dj-bounce' : (u.isVIP ? 'animate-bounce' : '');
+                const speed   = isDJ ? '.75s' : '2s';
+
                 const el = document.createElement('div');
-                el.className = `absolute transform -translate-x-1/2 -translate-y-1/2 transition-all duration-700 ease-out flex flex-col items-center pointer-events-none`;
-                el.style.left = `${u.x || 50}%`;
-                el.style.top = `${u.y || 50}%`;
-                el.style.zIndex = u.id === currentUser?.uid ? 50 : 10;
-
-                const avatarUrl = getAvatarUrl(u.avatarConfig);
-                const crownHtml = u.isVIP ? `<div class="absolute -top-5 left-1/2 transform -translate-x-1/2 text-[#DB7944] drop-shadow-md" style="width: 22px; height: 22px;">${Icons.crown}</div>` : '';
-                const vipClass = u.isVIP ? 'animate-bounce' : '';
-                
-                // Brilho VIP adaptado para o tom vintage (Laranja) ou a cor escolhida
-                const vipShadow = u.isVIP ? `0 0 20px rgba(219,121,68,0.6), 0 0 0 3px #DB7944` : `0 0 0 2px ${u.color}`;
-
+                el.className = 'absolute transform -translate-x-1/2 -translate-y-1/2 transition-all duration-700 ease-out flex flex-col items-center pointer-events-none';
+                el.style.cssText = `left:${posX}%;top:${posY}%;z-index:${isMe?50:isDJ?40:10}`;
                 el.innerHTML = `
-                    <div class="relative group">
-                        <div class="w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-transform hover:scale-110 bg-[#FFF7EB] overflow-hidden ${vipClass}" style="box-shadow: ${vipShadow}; animation-duration: 2s;">
-                            <img src="${avatarUrl}" alt="${u.name}" class="w-full h-full object-cover" />
-                        </div>
-                        ${crownHtml}
-                        <div class="mt-2 bg-black/80 text-[#FFF7EB] text-xs px-2 py-1 rounded-md whitespace-nowrap border border-[#FFF7EB]/10 shadow-md flex items-center gap-1 font-light backdrop-blur-sm">
-                            <span style="color: ${u.color}">●</span>
-                            ${u.name} ${u.id === currentUser?.uid ? '(Você)' : ''}
-                        </div>
-                    </div>
-                `;
-                usersLayer.appendChild(el);
+<div class="relative">
+  ${isDJ ? `<div class="absolute -top-4 -right-3 text-[#ff00cc]" style="width:15px;height:15px">${Icons.headphones}</div>` : ''}
+  ${u.isVIP ? `<div class="absolute -top-5 left-1/2 -translate-x-1/2 text-[#DB7944]" style="width:20px;height:20px">${Icons.crown}</div>` : ''}
+  <div class="w-14 h-14 rounded-full overflow-hidden bg-[#111] ${bounce}" style="box-shadow:${shadow};animation-duration:${speed}">
+    <img src="${getAvatarUrl(u.avatarConfig)}" alt="${u.name}" class="w-full h-full object-cover"/>
+  </div>
+  <div class="mt-1.5 px-2 py-0.5 rounded text-[10px] whitespace-nowrap border backdrop-blur-sm flex items-center gap-1 font-light" style="background:rgba(0,0,0,.85);border-color:${isDJ?'rgba(255,0,204,.25)':color+'25'}">
+    <span style="color:${isDJ?'#ff00cc':color}">●</span>
+    ${u.name}${isMe?' (Você)':''}${isDJ?' 🎧':''}
+  </div>
+</div>`;
+                layer.appendChild(el);
             });
         }
 
+        // ── RENDER CHAT ──
         function renderChat() {
-            const container = document.getElementById('chatMessages');
-            container.innerHTML = '';
-
-            if (chatMessages.length === 0) {
-                container.innerHTML = `<div class="text-center text-[#FFF7EB]/40 text-sm mt-10 font-light">Seja o primeiro a mandar mensagem!</div>`;
+            const c = document.getElementById('chatMessages');
+            c.innerHTML = '';
+            if (!chatMessages.length) {
+                c.innerHTML = `<div class="text-center text-[#FFF7EB]/30 text-sm mt-10 font-light">Seja o primeiro a mandar mensagem!</div>`;
                 return;
             }
-
             chatMessages.forEach(msg => {
                 const div = document.createElement('div');
-                div.className = 'animate-fade-in-up';
-                
-                const time = new Date(msg.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                const crown = msg.isVIP ? `<span class="text-[#DB7944] mr-1" style="width: 12px; height: 12px; display: inline-block;">${Icons.crown}</span>` : '';
-                const borderClass = msg.isVIP ? 'border-l-2 pl-3' : '';
-
+                div.className = 'fade-in-up';
+                const time = new Date(msg.timestamp).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+                const crown = msg.isVIP ? `<span class="text-[#DB7944]" style="width:11px;height:11px;display:inline-block">${Icons.crown}</span>` : '';
                 div.innerHTML = `
-                    <div class="flex items-baseline gap-2 mb-1">
-                        <span class="font-semibold text-sm flex items-center tracking-wide" style="color: ${msg.color}">
-                            ${crown} ${msg.name}
-                        </span>
-                        <span class="text-[10px] text-[#FFF7EB]/40">${time}</span>
-                    </div>
-                    <div class="text-sm text-[#FFF7EB]/90 break-words font-light ${borderClass}" style="border-color: ${msg.color}">
-                        ${msg.text}
-                    </div>
-                `;
-                container.appendChild(div);
+<div class="flex items-baseline gap-1.5 mb-0.5">
+  <span class="font-semibold text-xs flex items-center gap-1 tracking-wide" style="color:${msg.color}">${crown}${msg.name}</span>
+  <span class="text-[9px] text-[#FFF7EB]/30">${time}</span>
+</div>
+<div class="text-xs text-[#FFF7EB]/85 break-words font-light${msg.isVIP?' border-l-2 pl-2':''}" style="${msg.isVIP?`border-color:${msg.color}`:''}">
+  ${msg.text}
+</div>`;
+                c.appendChild(div);
             });
-
-            container.scrollTop = container.scrollHeight;
+            c.scrollTop = c.scrollHeight;
         }
 
+        // ── RENDER FILA ──
         function renderQueue() {
             document.getElementById('queueCount').innerText = `${queue.length} vídeos`;
-            const container = document.getElementById('queueList');
-            container.innerHTML = '';
-
-            if (queue.length === 0) {
-                container.innerHTML = `<div class="text-xs text-[#FFF7EB]/40 text-center mt-6 font-light">A fila está vazia. Adicione o próximo hit!</div>`;
+            const c = document.getElementById('queueList');
+            c.innerHTML = '';
+            if (!queue.length) {
+                c.innerHTML = `<div class="text-[11px] text-[#FFF7EB]/30 text-center mt-6 font-light">Fila vazia. Adicione o próximo hit!</div>`;
                 return;
             }
-
-            queue.forEach((item, index) => {
+            queue.forEach((item, i) => {
+                const mine = currentUser && item.addedByUid === currentUser.uid;
                 const div = document.createElement('div');
-                div.className = "flex items-center gap-3 bg-black/20 p-2 rounded border border-[#FFF7EB]/10 hover:border-[#DB7944]/50 transition group";
+                div.className = `flex items-center gap-2.5 bg-black/25 p-2 rounded border transition ${mine?'border-[#DB7944]/35':'border-[#FFF7EB]/8 hover:border-[#DB7944]/35'}`;
                 div.innerHTML = `
-                    <div class="text-[#FFF7EB]/40 font-mono text-xs w-4">${index + 1}.</div>
-                    <img src="https://img.youtube.com/vi/${item.videoId}/default.jpg" alt="thumbnail" class="w-12 h-9 object-cover rounded shadow-sm" />
-                    <div class="flex-1 overflow-hidden">
-                        <p class="text-xs text-[#FFF7EB]/60 truncate font-light">Sugerido por: <span class="text-[#FFF7EB] font-medium">${item.addedByName}</span></p>
-                    </div>
-                `;
-                container.appendChild(div);
+<span class="text-[#FFF7EB]/30 font-mono text-xs w-4">${i+1}.</span>
+<img src="https://img.youtube.com/vi/${item.videoId}/default.jpg" class="w-11 h-8 object-cover rounded shadow"/>
+<div class="flex-1 overflow-hidden">
+  <p class="text-[10px] text-[#FFF7EB]/55 truncate">por: <span class="${mine?'text-[#DB7944]':'text-[#FFF7EB]'} font-medium">${item.addedByName}</span></p>
+  ${mine?'<p class="text-[9px] text-[#DB7944]/55 mt-0.5">Sua música 🎵</p>':''}
+</div>`;
+                c.appendChild(div);
             });
         }
 
+        // ── RENDER PLAYER ──
         function renderPlayer() {
-            const container = document.getElementById('playerContainer');
-            if (currentVideo && currentVideo.videoId) {
-                container.innerHTML = `
-                    <iframe class="w-full h-full" src="https://www.youtube.com/embed/${currentVideo.videoId}?autoplay=1&controls=1&enablejsapi=1" title="YouTube video player" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen></iframe>
-                    <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition">
-                        <button onclick="window.playNextVideo()" class="bg-black/80 backdrop-blur-md text-[#FFF7EB] border border-[#FFF7EB]/20 text-xs px-3 py-1.5 rounded-full hover:bg-[#DB7944] hover:border-[#DB7944] transition flex items-center gap-1 shadow-lg">
-                            ${Icons.play} Pular Música
-                        </button>
-                    </div>
-                `;
+            const c = document.getElementById('playerContainer');
+            if (currentVideo?.videoId) {
+                const isMe = currentUser && currentVideo.addedByUid === currentUser.uid;
+                c.innerHTML = `
+<iframe class="w-full h-full" src="https://www.youtube.com/embed/${currentVideo.videoId}?autoplay=1&controls=1&enablejsapi=1"
+  frameBorder="0" allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture" allowFullScreen></iframe>
+${isMe?`<div class="absolute top-2 left-2 bg-[#ff00cc] text-white text-[10px] px-3 py-1 rounded-full font-bold shadow-lg my-turn-badge">🎧 É a sua vez na mesa!</div>`:''}
+<div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition">
+  <button onclick="window.playNextVideo()" class="bg-black/80 backdrop-blur-md text-[#FFF7EB] border border-[#FFF7EB]/20 text-xs px-3 py-1.5 rounded-full hover:bg-[#DB7944] hover:border-[#DB7944] transition flex items-center gap-1 shadow-lg">
+    ${Icons.play} Pular
+  </button>
+</div>`;
             } else {
-                container.innerHTML = `
-                    <div class="text-center flex flex-col items-center">
-                        <div class="mb-4 text-[#FFF7EB]/10">${Icons.musicBig}</div>
-                        <p class="text-[#FFF7EB]/50 font-medium tracking-wide">Nenhuma música tocando.</p>
-                        <p class="text-sm text-[#FFF7EB]/30 font-light mt-1">Adicione um vídeo na fila ao lado!</p>
-                    </div>
-                `;
+                c.innerHTML = `
+<div class="text-center flex flex-col items-center">
+  <div class="mb-3 text-[#FFF7EB]/10">${Icons.musicBig}</div>
+  <p class="text-[#FFF7EB]/45 font-medium tracking-wide text-sm">Nenhuma música tocando.</p>
+  <p class="text-xs text-[#FFF7EB]/25 font-light mt-1">Adicione um vídeo na fila!</p>
+</div>`;
             }
         }
 
-        // --- 5. AÇÕES DO CHAT E YOUTUBE ---
-        
-        document.getElementById('chatInput').addEventListener('input', (e) => {
+        // ── CHAT ──
+        document.getElementById('chatInput').addEventListener('input', e => {
             document.getElementById('chatSubmit').disabled = !e.target.value.trim();
         });
-
-        document.getElementById('chatForm').addEventListener('submit', async (e) => {
+        document.getElementById('chatForm').addEventListener('submit', async e => {
             e.preventDefault();
-            const input = document.getElementById('chatInput');
-            const text = input.value.trim();
+            const inp = document.getElementById('chatInput');
+            const text = inp.value.trim();
             if (!currentUser || !text) return;
-
-            const chatRef = collection(db, 'artifacts', appId, 'public', 'data', 'chat');
-            await addDoc(chatRef, {
-                uid: currentUser.uid,
-                name: localProfile.name,
-                isVIP: localProfile.isVIP,
-                color: localProfile.color,
-                text: text,
-                timestamp: Date.now()
-            });
-            input.value = '';
+            const ref = collection(db, 'artifacts', appId, 'public', 'data', 'chat');
+            await addDoc(ref, {uid:currentUser.uid, name:localProfile.name, isVIP:localProfile.isVIP, color:localProfile.color, text, timestamp:Date.now()});
+            inp.value = '';
             document.getElementById('chatSubmit').disabled = true;
         });
 
-        const extractYouTubeId = (url) => {
-            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
-            const match = url.match(regExp);
-            return (match && match[2].length === 11) ? match[2] : null;
+        // ── FILA ──
+        const extractYouTubeId = url => {
+            const m = url.match(/^.*(youtu\.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/);
+            return m && m[2].length === 11 ? m[2] : null;
         };
 
-        document.getElementById('queueForm').addEventListener('submit', async (e) => {
+        document.getElementById('queueForm').addEventListener('submit', async e => {
             e.preventDefault();
-            const input = document.getElementById('videoUrlInput');
             if (!currentUser) return;
-            
-            const videoId = extractYouTubeId(input.value);
-            if (!videoId) {
-                alert("Por favor, insira um link válido do YouTube.");
-                return;
-            }
-
-            const queueRef = collection(db, 'artifacts', appId, 'public', 'data', 'queue');
-            await addDoc(queueRef, {
-                videoId,
-                addedByName: localProfile.name,
-                timestamp: Date.now()
-            });
-            input.value = '';
-            
-            if (!currentVideo || !currentVideo.videoId) {
-                window.playNextVideo(videoId);
-            }
+            const inp = document.getElementById('videoUrlInput');
+            const videoId = extractYouTubeId(inp.value);
+            if (!videoId) { alert('Link do YouTube inválido.'); return; }
+            const ref = collection(db, 'artifacts', appId, 'public', 'data', 'queue');
+            await addDoc(ref, {videoId, addedByName:localProfile.name, addedByUid:currentUser.uid, timestamp:Date.now()});
+            inp.value = '';
+            if (!currentVideo?.videoId) window.playNextVideo(videoId);
         });
 
-        window.playNextVideo = async (overrideVideoId = null) => {
+        window.playNextVideo = async (overrideId = null) => {
             if (!currentUser) return;
-            let nextVideoId = overrideVideoId;
-            let videoDocId = null;
-
-            if (!nextVideoId && queue.length > 0) {
-                nextVideoId = queue[0].videoId;
-                videoDocId = queue[0].id;
+            let vid = overrideId, docId = null;
+            let byName = localProfile.name, byUid = currentUser.uid;
+            if (!vid && queue.length > 0) {
+                vid = queue[0].videoId; docId = queue[0].id;
+                byName = queue[0].addedByName || byName;
+                byUid  = queue[0].addedByUid  || byUid;
             }
-
             const stateRef = doc(db, 'artifacts', appId, 'public', 'data', 'player', 'state');
-            
-            if (nextVideoId) {
-                await setDoc(stateRef, { videoId: nextVideoId, startedAt: Date.now() });
-                if (videoDocId) {
-                    const itemRef = doc(db, 'artifacts', appId, 'public', 'data', 'queue', videoDocId);
-                    await deleteDoc(itemRef);
-                }
+            if (vid) {
+                await setDoc(stateRef, {videoId:vid, startedAt:Date.now(), addedByName:byName, addedByUid:byUid});
+                if (docId) await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'queue', docId));
             } else {
-                await setDoc(stateRef, { videoId: null, startedAt: null });
+                await setDoc(stateRef, {videoId:null, startedAt:null, addedByName:null, addedByUid:null});
             }
         };
 
-        // --- 6. GESTÃO DO MODAL DE PERFIL ---
-        
+        // ── MODAL DO AVATAR ──
         function renderSettingsModal() {
-            // Preview
             document.getElementById('avatarPreviewImage').src = getAvatarUrl(localProfile.avatarConfig);
-            document.getElementById('avatarPreviewContainer').style.boxShadow = `0 0 0 4px ${localProfile.color}`;
-            
-            // Name & VIP
+            const c = localProfile.color;
+            document.getElementById('avatarPreviewContainer').style.cssText =
+                `box-shadow: 0 0 0 3px ${c}, 0 0 24px ${c}60`;
             document.getElementById('profileName').value = localProfile.name;
             document.getElementById('profileVIP').checked = localProfile.isVIP;
 
-            // Classes base para os botões do construtor
-            const activeClass = "bg-[#DB7944] text-[#FFF7EB] border-[#DB7944] shadow-sm";
-            const inactiveClass = "bg-white border-[#1a1a1a]/20 text-[#1a1a1a]/70 hover:border-[#1a1a1a]/50";
+            function btns(containerId, options, key) {
+                document.getElementById(containerId).innerHTML = options.map(opt =>
+                    `<button type="button" onclick="window.updateAvatar('${key}','${opt.v}')" class="av-btn ${localProfile.avatarConfig[key]===opt.v?'av-btn-on':'av-btn-off'}">${opt.l}</button>`
+                ).join('');
+            }
+            btns('avatarTops',        TOPS,        'top');
+            btns('avatarAccessories', ACCESSORIES, 'accessories');
+            btns('avatarFacialHair',  FACIAL_HAIR, 'facialHair');
+            btns('avatarClothes',     CLOTHES,     'clothing');
+            btns('avatarEyes',        EYES,        'eyes');
+            btns('avatarEyebrows',    EYEBROWS,    'eyebrows');
+            btns('avatarMouths',      MOUTHS,      'mouth');
 
-            // Render Tops
-            const topsContainer = document.getElementById('avatarTops');
-            topsContainer.innerHTML = AVATAR_TOPS.map(t => 
-                `<button type="button" onclick="window.updateAvatar('top', '${t}')" class="px-3 py-1.5 text-xs rounded-lg border whitespace-nowrap transition font-medium ${localProfile.avatarConfig.top === t ? activeClass : inactiveClass}">${t}</button>`
-            ).join('');
+            const circles = (id, items, key, colorFn, selectedFn) => {
+                document.getElementById(id).innerHTML = items.map(s =>
+                    `<button type="button" onclick="window.updateAvatar('${key}','${s.v}')" title="${s.l}"
+                        class="w-7 h-7 rounded-full border-2 transition ${selectedFn(s.v)?'border-[#DB7944] scale-110 shadow-md shadow-[#DB7944]/30':'border-[#FFF7EB]/10 opacity-60 hover:opacity-100'}"
+                        style="background:${colorFn(s)}"></button>`
+                ).join('');
+            };
+            circles('avatarSkin',          SKIN_COLORS,    'skinColor',     s=>`#${s.v}`,      v=>localProfile.avatarConfig.skinColor===v);
+            circles('avatarHairColor',     HAIR_COLORS,    'hairColor',     s=>s.hex,          v=>localProfile.avatarConfig.hairColor===v);
+            circles('avatarClothingColor', CLOTHING_COLORS,'clothingColor', s=>s.hex,          v=>localProfile.avatarConfig.clothingColor===v);
 
-            // Render Clothes
-            const clothesContainer = document.getElementById('avatarClothes');
-            clothesContainer.innerHTML = AVATAR_CLOTHES.map(c => 
-                `<button type="button" onclick="window.updateAvatar('clothing', '${c}')" class="px-3 py-1.5 text-xs rounded-lg border whitespace-nowrap transition font-medium ${localProfile.avatarConfig.clothing === c ? activeClass : inactiveClass}">${c}</button>`
-            ).join('');
-
-            // Render Eyes
-            const eyesContainer = document.getElementById('avatarEyes');
-            eyesContainer.innerHTML = AVATAR_EYES.map(e => 
-                `<button type="button" onclick="window.updateAvatar('eyes', '${e}')" class="px-3 py-1.5 text-xs rounded-lg border whitespace-nowrap transition font-medium ${localProfile.avatarConfig.eyes === e ? activeClass : inactiveClass}">${e}</button>`
-            ).join('');
-
-            // Render Mouths
-            const mouthsContainer = document.getElementById('avatarMouths');
-            mouthsContainer.innerHTML = AVATAR_MOUTHS.map(m => 
-                `<button type="button" onclick="window.updateAvatar('mouth', '${m}')" class="px-3 py-1.5 text-xs rounded-lg border whitespace-nowrap transition font-medium ${localProfile.avatarConfig.mouth === m ? activeClass : inactiveClass}">${m}</button>`
-            ).join('');
-
-            // Render Skin
-            const skinContainer = document.getElementById('avatarSkin');
-            skinContainer.innerHTML = SKIN_COLORS.map(s => 
-                `<button type="button" onclick="window.updateAvatar('skinColor', '${s}')" class="w-7 h-7 rounded-full border-2 transition ${localProfile.avatarConfig.skinColor === s ? 'border-[#DB7944] scale-110 shadow-md' : 'border-black/10 opacity-80 hover:opacity-100'}" style="background-color: #${s}"></button>`
-            ).join('');
-
-            // Render Colors
-            const colorContainer = document.getElementById('avatarColors');
-            colorContainer.innerHTML = COLORS.map(c => 
-                `<button type="button" onclick="window.updateProfileColor('${c}')" class="w-8 h-8 rounded-full transition border-2 ${localProfile.color === c ? 'scale-110 border-[#1a1a1a] shadow-md' : 'border-transparent opacity-60 hover:opacity-100'}" style="background-color: ${c}"></button>`
+            document.getElementById('avatarColors').innerHTML = AURA_COLORS.map(col =>
+                `<button type="button" onclick="window.updateProfileColor('${col}')"
+                    class="w-8 h-8 rounded-full transition border-2 ${localProfile.color===col?'scale-110 border-white shadow-lg':'border-transparent opacity-55 hover:opacity-100'}"
+                    style="background:${col};${localProfile.color===col?`box-shadow:0 0 12px ${col}90`:''}"></button>`
             ).join('');
         }
 
-        window.updateAvatar = (key, value) => {
-            localProfile.avatarConfig[key] = value;
-            renderSettingsModal();
-        };
+        window.updateAvatar = (key, val) => { localProfile.avatarConfig[key] = val; renderSettingsModal(); };
+        window.updateProfileColor = col => { localProfile.color = col; renderSettingsModal(); };
 
-        window.updateProfileColor = (color) => {
-            localProfile.color = color;
-            renderSettingsModal();
-        };
-
-        document.getElementById('profileName').addEventListener('input', (e) => {
+        document.getElementById('profileName').addEventListener('input', e => {
             localProfile.name = e.target.value || 'Investidor';
         });
-
-        document.getElementById('profileVIP').addEventListener('change', (e) => {
+        document.getElementById('profileVIP').addEventListener('change', e => {
             localProfile.isVIP = e.target.checked;
         });
-
         document.getElementById('saveProfileBtn').addEventListener('click', () => {
-            updatePresence(); // Save to Firebase
-            
-            // Update Header
-            document.getElementById('headerAvatar').src = getAvatarUrl(localProfile.avatarConfig);
-            document.getElementById('headerAvatar').classList.remove('hidden');
-            document.getElementById('headerName').innerText = localProfile.name;
-            document.getElementById('headerName').classList.remove('hidden');
-            
-            if(localProfile.isVIP) {
-                document.getElementById('headerCrown').innerHTML = Icons.crown;
-                document.getElementById('headerCrown').classList.remove('hidden');
-            } else {
-                document.getElementById('headerCrown').classList.add('hidden');
-            }
-
+            updatePresence();
+            const ha = document.getElementById('headerAvatar');
+            ha.src = getAvatarUrl(localProfile.avatarConfig);
+            ha.classList.remove('hidden');
+            const hn = document.getElementById('headerName');
+            hn.innerText = localProfile.name;
+            hn.classList.remove('hidden');
+            const hc = document.getElementById('headerCrown');
+            if (localProfile.isVIP) { hc.innerHTML = Icons.crown; hc.classList.remove('hidden'); }
+            else hc.classList.add('hidden');
             document.getElementById('settingsModal').classList.add('hidden');
         });
-
         document.getElementById('openSettingsBtn').addEventListener('click', () => {
             renderSettingsModal();
             document.getElementById('settingsModal').classList.remove('hidden');
         });
 
-        // Setup Inicial do Modal
         renderSettingsModal();
-
     </script>
 </body>
 </html>
