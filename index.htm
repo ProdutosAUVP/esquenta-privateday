@@ -381,12 +381,12 @@
             {v:'winterHat3',l:'Gorro 3'}, {v:'winterHat4',l:'Gorro 4'}
         ];
         const ACCESSORIES = [
-            {v:'blank',l:'Nenhum'}, {v:'kurt',l:'Kurt'}, {v:'prescription01',l:'Óculos 1'},
+            {v:'',l:'Nenhum'}, {v:'kurt',l:'Kurt'}, {v:'prescription01',l:'Óculos 1'},
             {v:'prescription02',l:'Óculos 2'}, {v:'round',l:'Redondos'},
-            {v:'sunglasses',l:'Sol'}, {v:'wayfarers',l:'Wayfarers'}
+            {v:'sunglasses',l:'Sol'}, {v:'wayfarers',l:'Wayfarers'}, {v:'eyepatch',l:'Tapa-olho'}
         ];
         const FACIAL_HAIR = [
-            {v:'blank',l:'Nenhuma'}, {v:'beardMedium',l:'Barba Média'},
+            {v:'',l:'Nenhuma'}, {v:'beardMedium',l:'Barba Média'},
             {v:'beardLight',l:'Barba Leve'}, {v:'beardMajestic',l:'Barba Majestosa'},
             {v:'moustacheFancy',l:'Bigode Fancy'}, {v:'moustacheMagnum',l:'Bigode Magnum'}
         ];
@@ -421,22 +421,24 @@
             {v:'ffd5dc',l:'Rosado'}, {v:'ffdbb4',l:'Muito Claro'}, {v:'edb98a',l:'Claro'},
             {v:'d08b5b',l:'Médio'}, {v:'ae5d29',l:'Bronze'}, {v:'614335',l:'Escuro'}, {v:'3d1a00',l:'Muito Escuro'}
         ];
+        // v = hex sem # (formato exato que a API DiceBear v8 aceita)
         const HAIR_COLORS = [
-            {v:'auburn',hex:'#A55728',l:'Castanho'}, {v:'black',hex:'#2C1B18',l:'Preto'},
-            {v:'blonde',hex:'#B58143',l:'Loiro'}, {v:'blondeGolden',hex:'#D6B370',l:'Loiro Dourado'},
-            {v:'brown',hex:'#724133',l:'Marrom'}, {v:'brownDark',hex:'#4A312C',l:'Marrom Escuro'},
-            {v:'pastelPink',hex:'#F59797',l:'Rosa Pastel'}, {v:'platinum',hex:'#ECDCBF',l:'Platinado'},
-            {v:'red',hex:'#C93305',l:'Ruivo'}, {v:'silverGray',hex:'#E8E1E1',l:'Grisalho'}
+            {v:'a55728',l:'Castanho'}, {v:'2c1b18',l:'Preto'},
+            {v:'b58143',l:'Loiro'}, {v:'d6b370',l:'Loiro Dourado'},
+            {v:'724133',l:'Marrom'}, {v:'4a312c',l:'Marrom Escuro'},
+            {v:'f59797',l:'Rosa Pastel'}, {v:'ecdcbf',l:'Platinado'},
+            {v:'c93305',l:'Ruivo'}, {v:'e8e1e1',l:'Grisalho'}
         ];
-        const CLOTHING_COLORS = [
-            {v:'black',hex:'#262E33',l:'Preto'}, {v:'blue01',hex:'#65C9FF',l:'Azul Claro'},
-            {v:'blue02',hex:'#5199E4',l:'Azul Médio'}, {v:'blue03',hex:'#25557C',l:'Azul Escuro'},
-            {v:'gray01',hex:'#E6E6E6',l:'Cinza Claro'}, {v:'gray02',hex:'#929598',l:'Cinza Escuro'},
-            {v:'heather',hex:'#3C4F5C',l:'Heather'}, {v:'pastelBlue',hex:'#B1E2FF',l:'Azul Pastel'},
-            {v:'pastelGreen',hex:'#A7FFC4',l:'Verde Pastel'}, {v:'pastelOrange',hex:'#FFDEB5',l:'Laranja Pastel'},
-            {v:'pastelRed',hex:'#FFAFB9',l:'Rosa Averm.'}, {v:'pastelYellow',hex:'#FFFFB1',l:'Amarelo Pastel'},
-            {v:'pink',hex:'#FF488E',l:'Rosa'}, {v:'red',hex:'#FF5C5C',l:'Vermelho'},
-            {v:'white',hex:'#FFFFFF',l:'Branco'}
+        // clothesColor: hex sem # (parâmetro correto da API é clothesColor, não clothingColor)
+        const CLOTHES_COLORS = [
+            {v:'262e33',l:'Preto'}, {v:'65c9ff',l:'Azul Claro'},
+            {v:'5199e4',l:'Azul Médio'}, {v:'25557c',l:'Azul Escuro'},
+            {v:'e6e6e6',l:'Cinza Claro'}, {v:'929598',l:'Cinza Escuro'},
+            {v:'3c4f5c',l:'Heather'}, {v:'b1e2ff',l:'Azul Pastel'},
+            {v:'a7ffc4',l:'Verde Pastel'}, {v:'ffdeb5',l:'Laranja Pastel'},
+            {v:'ffafb9',l:'Rosa Averm.'}, {v:'ffffb1',l:'Amarelo Pastel'},
+            {v:'ff488e',l:'Rosa'}, {v:'ff5c5c',l:'Vermelho'},
+            {v:'ffffff',l:'Branco'}
         ];
         const AURA_COLORS = [
             '#DB7944','#0B2A47','#932621','#a6460f',
@@ -454,9 +456,9 @@
         let localProfile = {
             name: 'Investidor',
             avatarConfig: {
-                top: 'shortHair', accessories: 'blank', facialHair: 'blank',
+                top: 'shortHair', accessories: '', facialHair: '',
                 clothing: 'hoodie', eyes: 'default', eyebrows: 'default',
-                mouth: 'default', skinColor: 'edb98a', hairColor: 'brown', clothingColor: 'heather'
+                mouth: 'default', skinColor: 'edb98a', hairColor: '724133', clothesColor: '3c4f5c'
             },
             color: '#DB7944',
             isVIP: false
@@ -464,20 +466,22 @@
 
         function getAvatarUrl(config) {
             const c = config || localProfile.avatarConfig;
-            const p = new URLSearchParams({
-                top: c.top || 'shortHair',
-                accessories: c.accessories || 'blank',
-                facialHair: c.facialHair || 'blank',
-                clothing: c.clothing || 'hoodie',
-                eyes: c.eyes || 'default',
-                eyebrows: c.eyebrows || 'default',
-                mouth: c.mouth || 'default',
-                skinColor: c.skinColor || 'edb98a',
-                hairColor: c.hairColor || 'brown',
-                clothingColor: c.clothingColor || 'heather',
+            // Parâmetros base — confirmados válidos na API DiceBear v8 avataaars
+            const params = {
+                top:             c.top        || 'shortHair',
+                clothing:        c.clothing   || 'hoodie',
+                eyes:            c.eyes       || 'default',
+                eyebrows:        c.eyebrows   || 'default',
+                mouth:           c.mouth      || 'default',
+                skinColor:       c.skinColor  || 'edb98a',
+                hairColor:       c.hairColor  || '724133',  // hex sem #
+                clothesColor:    c.clothesColor || '3c4f5c', // parâmetro correto: clothesColor
                 backgroundColor: 'transparent'
-            });
-            return `https://api.dicebear.com/8.x/avataaars/svg?${p}`;
+            };
+            // Opcionais: só inclui se tiver valor válido (string não vazia)
+            if (c.accessories) params.accessories = c.accessories;
+            if (c.facialHair)  params.facialHair  = c.facialHair;
+            return `https://api.dicebear.com/8.x/avataaars/svg?${new URLSearchParams(params)}`;
         }
 
         // ── LADRILHOS 80s ──
@@ -933,9 +937,9 @@ ${isMe?`<div class="absolute top-2 left-2 bg-[#ff00cc] text-white text-[10px] px
                         style="background:${colorFn(s)}"></button>`
                 ).join('');
             };
-            circles('avatarSkin',          SKIN_COLORS,    'skinColor',     s=>`#${s.v}`,      v=>localProfile.avatarConfig.skinColor===v);
-            circles('avatarHairColor',     HAIR_COLORS,    'hairColor',     s=>s.hex,          v=>localProfile.avatarConfig.hairColor===v);
-            circles('avatarClothingColor', CLOTHING_COLORS,'clothingColor', s=>s.hex,          v=>localProfile.avatarConfig.clothingColor===v);
+            circles('avatarSkin',          SKIN_COLORS,  'skinColor',   s=>`#${s.v}`, v=>localProfile.avatarConfig.skinColor===v);
+            circles('avatarHairColor',     HAIR_COLORS,  'hairColor',   s=>`#${s.v}`, v=>localProfile.avatarConfig.hairColor===v);
+            circles('avatarClothingColor', CLOTHES_COLORS,'clothesColor',s=>`#${s.v}`, v=>localProfile.avatarConfig.clothesColor===v);
 
             document.getElementById('avatarColors').innerHTML = AURA_COLORS.map(col =>
                 `<button type="button" onclick="window.updateProfileColor('${col}')"
