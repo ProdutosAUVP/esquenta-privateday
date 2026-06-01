@@ -351,11 +351,27 @@
         });
 
         // ── FIREBASE ──
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
-        const app   = initializeApp(firebaseConfig);
-        const auth  = getAuth(app);
-        const db    = getFirestore(app);
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'auvp-preparty-default';
+        // Ao hospedar fora do ambiente Claude (ex: GitHub Pages), preencha os campos abaixo
+        // com os dados do seu projeto Firebase (console.firebase.google.com → Configurações do Projeto).
+        const FIREBASE_CONFIG_FALLBACK = {
+            apiKey:            "",   // <- cole sua apiKey aqui
+            authDomain:        "",
+            projectId:         "",
+            storageBucket:     "",
+            messagingSenderId: "",
+            appId:             ""
+        };
+        const APP_ID_FALLBACK = 'auvp-preparty-default'; // altere se necessário
+
+        const firebaseConfig = typeof __firebase_config !== 'undefined'
+            ? JSON.parse(__firebase_config)
+            : FIREBASE_CONFIG_FALLBACK;
+        const appId = typeof __app_id !== 'undefined' ? __app_id : APP_ID_FALLBACK;
+
+        const configValida = !!(firebaseConfig.apiKey);
+        const app   = configValida ? initializeApp(firebaseConfig) : null;
+        const auth  = configValida ? getAuth(app) : null;
+        const db    = configValida ? getFirestore(app) : null;
 
         // ── DADOS DO AVATAR (COMPLETO) ──
         const TOPS = [
@@ -584,31 +600,86 @@
 </div>`;
         }
 
+        // ── INICIALIZAÇÃO DA UI (chamada após auth OK ou em modo offline) ──
+        // iniciarUI não toca em currentUser — o caller define currentUser antes de chamar
+        function iniciarUI() {
+            document.getElementById('loadingScreen').style.display = 'none';
+            buildDanceTiles();
+            renderDJBooth();
+            renderPlayer();
+            renderQueue();
+            renderChat();
+            renderSettingsModal();
+            if (currentUser) {
+                setupFirebaseListeners();
+                startHeartbeat();
+            }
+        }
+
+        // Timeout de segurança: se em 10 s nada acontecer, mostra o app mesmo assim
+        const authTimeout = setTimeout(() => {
+            if (document.getElementById('loadingScreen').style.display !== 'none') {
+                console.warn('Auth timeout – abrindo sem Firebase');
+                currentUser = null;
+                iniciarUI();
+            }
+        }, 10000);
+
         // ── AUTH ──
         async function initAuth() {
+            if (!configValida) {
+                // Firebase não configurado – mostra aviso no loading e continua em modo visual
+                const ls = document.getElementById('loadingScreen');
+                ls.innerHTML = `
+                    <img src="https://raw.githubusercontent.com/eriadesign/privateday/main/globo.webp" class="w-20 h-20 mb-5 opacity-50">
+                    <h1 class="font-discodiva text-3xl text-[#DB7944] mb-3">Firebase não configurado</h1>
+                    <p class="text-[#FFF7EB]/60 text-sm max-w-xs text-center leading-relaxed">
+                        Para usar o app fora do ambiente Claude, edite o bloco
+                        <code class="text-[#DB7944]">FIREBASE_CONFIG_FALLBACK</code>
+                        no <code class="text-[#DB7944]">index.htm</code>
+                        com os dados do seu projeto Firebase.
+                    </p>
+                    <button onclick="document.getElementById('loadingScreen').style.display='none'"
+                        class="mt-6 px-6 py-2.5 rounded-lg text-sm font-semibold vintage-btn">
+                        Entrar mesmo assim (sem conexão)
+                    </button>`;
+                ls.style.fontFamily = 'Poppins, sans-serif';
+                // não chama iniciarUI aqui — usuário clica no botão
+                document.querySelector('#loadingScreen button')?.addEventListener('click', () => {
+                    clearTimeout(authTimeout);
+                    currentUser = null;
+                    iniciarUI();
+                });
+                return;
+            }
+
             try {
                 if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token)
                     await signInWithCustomToken(auth, __initial_auth_token);
                 else
                     await signInAnonymously(auth);
-            } catch(e) { console.error('Auth error', e); }
+            } catch(e) {
+                console.error('Auth error', e);
+                clearTimeout(authTimeout);
+                currentUser = null;
+                iniciarUI(); // abre o app mesmo com falha de auth
+            }
         }
 
-        onAuthStateChanged(auth, u => {
-            currentUser = u;
-            if (u) {
-                document.getElementById('loadingScreen').style.display = 'none';
-                buildDanceTiles();
-                renderDJBooth();
-                setupFirebaseListeners();
-                startHeartbeat();
-            }
-        });
+        if (auth) {
+            onAuthStateChanged(auth, u => {
+                if (!u) return;
+                clearTimeout(authTimeout);
+                currentUser = u;
+                iniciarUI();
+            });
+        }
+
         initAuth();
 
         // ── FIREBASE LISTENERS ──
         function setupFirebaseListeners() {
-            if (!currentUser) return;
+            if (!currentUser || !db) return;
             const base = ['artifacts', appId, 'public', 'data'];
             const usersRef  = collection(db, ...base, 'users');
             const chatRef   = collection(db, ...base, 'chat');
@@ -645,7 +716,7 @@
 
         // ── PRESENÇA ──
         async function updatePresence(x = null, y = null) {
-            if (!currentUser) return;
+            if (!currentUser || !db) return;
             const ref = doc(db, 'artifacts', appId, 'public', 'data', 'users', currentUser.uid);
             const data = { ...localProfile, lastUpdate: Date.now() };
             if (x !== null && y !== null) { data.x = x; data.y = y; }
@@ -789,6 +860,7 @@ ${isMe?`<div class="absolute top-2 left-2 bg-[#ff00cc] text-white text-[10px] px
             const inp = document.getElementById('chatInput');
             const text = inp.value.trim();
             if (!currentUser || !text) return;
+            if (!db) { alert('Firebase não configurado. Chat indisponível.'); return; }
             const ref = collection(db, 'artifacts', appId, 'public', 'data', 'chat');
             await addDoc(ref, {uid:currentUser.uid, name:localProfile.name, isVIP:localProfile.isVIP, color:localProfile.color, text, timestamp:Date.now()});
             inp.value = '';
@@ -807,6 +879,7 @@ ${isMe?`<div class="absolute top-2 left-2 bg-[#ff00cc] text-white text-[10px] px
             const inp = document.getElementById('videoUrlInput');
             const videoId = extractYouTubeId(inp.value);
             if (!videoId) { alert('Link do YouTube inválido.'); return; }
+            if (!db) { alert('Firebase não configurado. Fila indisponível.'); return; }
             const ref = collection(db, 'artifacts', appId, 'public', 'data', 'queue');
             await addDoc(ref, {videoId, addedByName:localProfile.name, addedByUid:currentUser.uid, timestamp:Date.now()});
             inp.value = '';
@@ -814,7 +887,7 @@ ${isMe?`<div class="absolute top-2 left-2 bg-[#ff00cc] text-white text-[10px] px
         });
 
         window.playNextVideo = async (overrideId = null) => {
-            if (!currentUser) return;
+            if (!currentUser || !db) return;
             let vid = overrideId, docId = null;
             let byName = localProfile.name, byUid = currentUser.uid;
             if (!vid && queue.length > 0) {
