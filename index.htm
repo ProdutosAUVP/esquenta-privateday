@@ -224,6 +224,9 @@
     <div id="settingsModal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 flex items-center justify-center p-4">
         <div class="modal-wrap rounded-2xl w-full max-w-lg shadow-2xl max-h-[92vh] overflow-y-auto relative p-6">
 
+            <button id="closeSettingsBtn" type="button" title="Fechar"
+                class="absolute top-4 right-4 text-[#FFF7EB]/40 hover:text-[#FFF7EB] transition text-xl leading-none px-2">✕</button>
+
             <h2 class="font-discodiva text-3xl md:text-4xl mb-5 flex items-center gap-3 text-[#DB7944]">
                 <span id="icon-settings"></span> Crie seu Avatar
             </h2>
@@ -327,9 +330,11 @@
     </div>
 
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, doc, setDoc, onSnapshot, addDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        // O SDK do Firebase é importado DINAMICAMENTE (em conectarFirebase) em vez de
+        // import estático: se o gstatic.com estiver fora do ar, um import estático
+        // derruba o módulo inteiro e o app trava para sempre na tela de carregamento.
+        let initializeApp, getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken,
+            getFirestore, collection, doc, setDoc, onSnapshot, addDoc, deleteDoc;
 
         // ── ÍCONES ──
         const Icons = {
@@ -342,7 +347,8 @@
             plus:     `<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`,
             send:     `<svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>`,
             message:  `<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>`,
-            headphones:`<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></svg>`
+            headphones:`<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></svg>`,
+            trash:    `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>`
         };
 
         ['icon-users','icon-message','icon-send','icon-music-small','icon-plus','icon-settings','icon-crown-small'].forEach(id => {
@@ -363,22 +369,48 @@
         };
         const APP_ID_FALLBACK = 'auvp-privateday'; // deve bater com o projectId
 
-        const firebaseConfig = typeof __firebase_config !== 'undefined'
-            ? JSON.parse(__firebase_config)
-            : FIREBASE_CONFIG_FALLBACK;
         const appId = typeof __app_id !== 'undefined' ? __app_id : APP_ID_FALLBACK;
 
-        const configValida = !!(firebaseConfig.apiKey);
-        const app   = configValida ? initializeApp(firebaseConfig) : null;
-        const auth  = configValida ? getAuth(app) : null;
-        const db    = configValida ? getFirestore(app) : null;
+        let app = null, auth = null, db = null, configValida = false;
+
+        // Baixa o SDK e inicializa o Firebase; lança erro se a rede falhar ou demorar demais
+        async function conectarFirebase() {
+            const base = 'https://www.gstatic.com/firebasejs/11.6.1/';
+            const timeout = new Promise((_, rej) =>
+                setTimeout(() => rej(new Error('Timeout ao baixar o SDK do Firebase')), 9000));
+            const [appMod, authMod, fsMod] = await Promise.race([
+                Promise.all([
+                    import(base + 'firebase-app.js'),
+                    import(base + 'firebase-auth.js'),
+                    import(base + 'firebase-firestore.js')
+                ]),
+                timeout
+            ]);
+            ({ initializeApp } = appMod);
+            ({ getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } = authMod);
+            ({ getFirestore, collection, doc, setDoc, onSnapshot, addDoc, deleteDoc } = fsMod);
+
+            const firebaseConfig = typeof __firebase_config !== 'undefined'
+                ? JSON.parse(__firebase_config)
+                : FIREBASE_CONFIG_FALLBACK;
+            configValida = !!(firebaseConfig.apiKey);
+            if (!configValida) return;
+            app  = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            db   = getFirestore(app);
+        }
 
         // ── DADOS DO AVATAR (COMPLETO) ──
+        // Todos os valores abaixo pertencem ao enum oficial da API DiceBear v8 (avataaars)
         const TOPS = [
-            {v:'shortHair',l:'Curto'}, {v:'longHair',l:'Longo'}, {v:'noHair',l:'Careca'},
-            {v:'eyepatch',l:'Tapa-olho'}, {v:'hat',l:'Chapéu'}, {v:'hijab',l:'Hijab'},
-            {v:'turban',l:'Turbante'}, {v:'winterHat1',l:'Gorro 1'}, {v:'winterHat2',l:'Gorro 2'},
-            {v:'winterHat3',l:'Gorro 3'}, {v:'winterHat4',l:'Gorro 4'}
+            {v:'shortFlat',l:'Curto'}, {v:'shortWaved',l:'Ondulado'}, {v:'shortCurly',l:'Cacheado'},
+            {v:'theCaesar',l:'Caesar'}, {v:'sides',l:'Rapado'}, {v:'',l:'Careca'},
+            {v:'straight01',l:'Longo Liso'}, {v:'longButNotTooLong',l:'Médio'}, {v:'bob',l:'Chanel'},
+            {v:'curly',l:'Cachos'}, {v:'bigHair',l:'Volumoso'}, {v:'bun',l:'Coque'},
+            {v:'fro',l:'Black Power'}, {v:'dreads',l:'Dreads'}, {v:'miaWallace',l:'Franja'},
+            {v:'shaggy',l:'Shaggy'}, {v:'hat',l:'Chapéu'}, {v:'hijab',l:'Hijab'},
+            {v:'turban',l:'Turbante'}, {v:'winterHat1',l:'Gorro 1'}, {v:'winterHat02',l:'Gorro 2'},
+            {v:'winterHat03',l:'Gorro 3'}, {v:'winterHat04',l:'Gorro 4'}
         ];
         const ACCESSORIES = [
             {v:'',l:'Nenhum'}, {v:'kurt',l:'Kurt'}, {v:'prescription01',l:'Óculos 1'},
@@ -398,23 +430,24 @@
             {v:'shirtVNeck',l:'V-Neck'}
         ];
         const EYES = [
-            {v:'default',l:'Normal'}, {v:'close',l:'Fechados'}, {v:'cry',l:'Chorando'},
-            {v:'dizzy',l:'Tonto'}, {v:'eyeRoll',l:'Revirados'}, {v:'happy',l:'Feliz'},
+            {v:'default',l:'Normal'}, {v:'closed',l:'Fechados'}, {v:'cry',l:'Chorando'},
+            {v:'eyeRoll',l:'Revirados'}, {v:'happy',l:'Feliz'},
             {v:'hearts',l:'Coração'}, {v:'side',l:'Lado'}, {v:'squint',l:'Semicerrados'},
             {v:'surprised',l:'Surpreso'}, {v:'wink',l:'Piscada'}, {v:'winkWacky',l:'Maluca'},
-            {v:'xDizzy',l:'X Tonto'}
+            {v:'xDizzy',l:'Tonto'}
         ];
         const EYEBROWS = [
             {v:'default',l:'Normal'}, {v:'angry',l:'Raivosas'}, {v:'angryNatural',l:'Raiva Natural'},
             {v:'defaultNatural',l:'Natural'}, {v:'flatNatural',l:'Flat'},
             {v:'frownNatural',l:'Franzidas'}, {v:'raisedExcited',l:'Empinadas'},
             {v:'raisedExcitedNatural',l:'Empinadas 2'}, {v:'sadConcerned',l:'Tristes'},
-            {v:'sadConcernedNatural',l:'Tristes 2'}, {v:'unibrowNatural',l:'Monocelha'}
+            {v:'sadConcernedNatural',l:'Tristes 2'}, {v:'unibrowNatural',l:'Monocelha'},
+            {v:'upDown',l:'Arqueadas'}, {v:'upDownNatural',l:'Arqueadas 2'}
         ];
         const MOUTHS = [
             {v:'default',l:'Normal'}, {v:'concerned',l:'Preocupado'}, {v:'disbelief',l:'Incrédulo'},
             {v:'eating',l:'Comendo'}, {v:'grimace',l:'Careta'}, {v:'sad',l:'Triste'},
-            {v:'scream',l:'Gritando'}, {v:'serious',l:'Sério'}, {v:'smile',l:'Sorrindo'},
+            {v:'screamOpen',l:'Gritando'}, {v:'serious',l:'Sério'}, {v:'smile',l:'Sorrindo'},
             {v:'tongue',l:'Língua'}, {v:'twinkle',l:'Twinkle'}, {v:'vomit',l:'Enjoado'}
         ];
         const SKIN_COLORS = [
@@ -453,35 +486,115 @@
         let queue = [];
         let currentVideo = null;
 
+        const AVATAR_DEFAULTS = {
+            top: 'shortFlat', accessories: '', facialHair: '',
+            clothing: 'hoodie', eyes: 'default', eyebrows: 'default',
+            mouth: 'default', skinColor: 'edb98a', hairColor: '724133', clothesColor: '3c4f5c'
+        };
+        const VALID_OPTIONS = {
+            top: new Set(TOPS.map(o => o.v)),
+            accessories: new Set(ACCESSORIES.map(o => o.v)),
+            facialHair: new Set(FACIAL_HAIR.map(o => o.v)),
+            clothing: new Set(CLOTHES.map(o => o.v)),
+            eyes: new Set(EYES.map(o => o.v)),
+            eyebrows: new Set(EYEBROWS.map(o => o.v)),
+            mouth: new Set(MOUTHS.map(o => o.v))
+        };
+        // Valores gravados por versões antigas do app (inválidos na API DiceBear v8)
+        const LEGACY_MAP = {
+            shortHair: 'shortFlat', longHair: 'straight01', noHair: '', eyepatch: 'hat',
+            close: 'closed', dizzy: 'xDizzy', scream: 'screamOpen',
+            winterHat2: 'winterHat02', winterHat3: 'winterHat03', winterHat4: 'winterHat04'
+        };
+
+        // Garante que qualquer config (local, do localStorage ou vinda de outros usuários
+        // via Firestore) só use valores aceitos pela API — evita imagem quebrada e injeção
+        function sanitizeAvatarConfig(cfg) {
+            const out = { ...AVATAR_DEFAULTS };
+            if (!cfg || typeof cfg !== 'object') return out;
+            for (const k of Object.keys(AVATAR_DEFAULTS)) {
+                let v = cfg[k];
+                if (typeof v !== 'string') continue;
+                if (v in LEGACY_MAP && k !== 'accessories') v = LEGACY_MAP[v];
+                if (k === 'skinColor' || k === 'hairColor' || k === 'clothesColor') {
+                    if (/^[0-9a-fA-F]{6}$/.test(v)) out[k] = v;
+                } else if (VALID_OPTIONS[k].has(v)) {
+                    out[k] = v;
+                }
+            }
+            return out;
+        }
+
         let localProfile = {
             name: 'Investidor',
-            avatarConfig: {
-                top: 'shortHair', accessories: '', facialHair: '',
-                clothing: 'hoodie', eyes: 'default', eyebrows: 'default',
-                mouth: 'default', skinColor: 'edb98a', hairColor: '724133', clothesColor: '3c4f5c'
-            },
+            avatarConfig: { ...AVATAR_DEFAULTS },
             color: '#DB7944',
             isVIP: false
         };
 
+        // Restaura o perfil salvo da última visita.
+        // profileReady = usuário já criou o avatar (nesta visita ou numa anterior);
+        // antes disso ele não aparece na pista nem manda mensagens.
+        const PROFILE_KEY = 'auvp-privateday-profile';
+        let profileReady = false;
+        try {
+            const saved = JSON.parse(localStorage.getItem(PROFILE_KEY) || 'null');
+            if (saved && typeof saved === 'object') {
+                if (typeof saved.name === 'string' && saved.name.trim()) localProfile.name = saved.name.trim().slice(0, 30);
+                if (/^#[0-9a-fA-F]{6}$/.test(saved.color || '')) localProfile.color = saved.color;
+                localProfile.isVIP = !!saved.isVIP;
+                localProfile.avatarConfig = sanitizeAvatarConfig(saved.avatarConfig);
+                profileReady = true;
+            }
+        } catch (e) { /* localStorage indisponível ou corrompido — segue com o padrão */ }
+
+        function saveLocalProfile() {
+            try { localStorage.setItem(PROFILE_KEY, JSON.stringify(localProfile)); } catch (e) {}
+        }
+
         function getAvatarUrl(config) {
-            const c = config || localProfile.avatarConfig;
-            // Parâmetros base — confirmados válidos na API DiceBear v8 avataaars
+            const c = sanitizeAvatarConfig(config || localProfile.avatarConfig);
             const params = {
-                top:             c.top        || 'shortHair',
-                clothing:        c.clothing   || 'hoodie',
-                eyes:            c.eyes       || 'default',
-                eyebrows:        c.eyebrows   || 'default',
-                mouth:           c.mouth      || 'default',
-                skinColor:       c.skinColor  || 'edb98a',
-                hairColor:       c.hairColor  || '724133',  // hex sem #
-                clothesColor:    c.clothesColor || '3c4f5c', // parâmetro correto: clothesColor
-                backgroundColor: 'transparent'
+                seed: 'auvp', // trava a aleatoriedade de traços não especificados
+                clothing: c.clothing, eyes: c.eyes, eyebrows: c.eyebrows, mouth: c.mouth,
+                skinColor: c.skinColor, hairColor: c.hairColor, clothesColor: c.clothesColor,
+                facialHairColor: c.hairColor, hatColor: c.clothesColor,
+                backgroundColor: 'transparent',
+                // sem estes, a API usa probabilidade de ~10% e o item escolhido quase nunca aparece
+                topProbability: c.top ? 100 : 0,
+                accessoriesProbability: c.accessories ? 100 : 0,
+                facialHairProbability: c.facialHair ? 100 : 0
             };
-            // Opcionais: só inclui se tiver valor válido (string não vazia)
+            if (c.top) params.top = c.top;
             if (c.accessories) params.accessories = c.accessories;
-            if (c.facialHair)  params.facialHair  = c.facialHair;
+            if (c.facialHair) params.facialHair = c.facialHair;
             return `https://api.dicebear.com/8.x/avataaars/svg?${new URLSearchParams(params)}`;
+        }
+
+        // ── HELPERS DE SEGURANÇA / UI ──
+        const escapeHtml = s => String(s ?? '').replace(/[&<>"']/g, ch =>
+            ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+        // Exatamente 6 dígitos: o código concatena alpha (ex.: `${color}60`) em box-shadows
+        const safeColor = c => /^#[0-9a-fA-F]{6}$/.test(c || '') ? c : '#DB7944';
+        const YT_ID_RE = /^[\w-]{11}$/;
+
+        function toast(msg) {
+            let box = document.getElementById('toastBox');
+            if (!box) {
+                box = document.createElement('div');
+                box.id = 'toastBox';
+                box.className = 'fixed bottom-6 left-1/2 -translate-x-1/2 z-[200] flex flex-col items-center gap-2 pointer-events-none';
+                document.body.appendChild(box);
+            }
+            const el = document.createElement('div');
+            el.className = 'fade-in-up bg-black/90 border border-[#DB7944]/40 text-[#FFF7EB] text-xs px-4 py-2.5 rounded-full shadow-xl';
+            el.textContent = msg;
+            box.appendChild(el);
+            setTimeout(() => {
+                el.style.transition = 'opacity .4s';
+                el.style.opacity = '0';
+                setTimeout(() => el.remove(), 400);
+            }, 2600);
         }
 
         // ── LADRILHOS 80s ──
@@ -509,10 +622,10 @@
             const el = document.getElementById('djBooth');
             const playing = currentVideo && currentVideo.videoId;
             const djUid  = currentVideo?.addedByUid || '';
-            const djName = currentVideo?.addedByName || '';
+            const djName = escapeHtml(String(currentVideo?.addedByName || '').slice(0, 30));
             const isMe   = currentUser && djUid === currentUser.uid;
             const djUser = activeUsers.find(u => u.id === djUid);
-            const djColor = djUser?.color || '#DB7944';
+            const djColor = safeColor(djUser?.color);
             const djAvatar = djUser ? getAvatarUrl(djUser.avatarConfig) : '';
 
             const glowClass = playing ? 'booth-glow' : '';
@@ -605,16 +718,23 @@
         }
 
         // ── INICIALIZAÇÃO DA UI (chamada após auth OK ou em modo offline) ──
-        // iniciarUI não toca em currentUser — o caller define currentUser antes de chamar
+        // iniciarUI não toca em currentUser — o caller define currentUser antes de chamar.
+        // Pode ser chamada mais de uma vez (timeout de auth + auth tardio): os guards
+        // impedem ladrilhos duplicados e listeners/heartbeat em dobro.
+        let uiPronta = false, syncAtivo = false;
         function iniciarUI() {
             document.getElementById('loadingScreen').style.display = 'none';
-            buildDanceTiles();
-            renderDJBooth();
-            renderPlayer();
-            renderQueue();
-            renderChat();
-            renderSettingsModal();
-            if (currentUser) {
+            if (!uiPronta) {
+                uiPronta = true;
+                buildDanceTiles();
+                renderDJBooth();
+                renderPlayer();
+                renderQueue();
+                renderChat();
+                renderSettingsModal();
+            }
+            if (currentUser && !syncAtivo) {
+                syncAtivo = true;
                 setupFirebaseListeners();
                 startHeartbeat();
             }
@@ -631,6 +751,18 @@
 
         // ── AUTH ──
         async function initAuth() {
+            try {
+                await conectarFirebase();
+            } catch (e) {
+                // Sem internet / gstatic bloqueado: abre em modo visitante em vez de travar
+                console.warn('SDK do Firebase não carregou — modo visitante', e);
+                clearTimeout(authTimeout);
+                currentUser = null;
+                iniciarUI();
+                toast('Sem conexão com o servidor — modo visitante.');
+                return;
+            }
+
             if (!configValida) {
                 // Firebase não configurado – mostra aviso no loading e continua em modo visual
                 const ls = document.getElementById('loadingScreen');
@@ -657,6 +789,13 @@
                 return;
             }
 
+            onAuthStateChanged(auth, u => {
+                if (!u) return;
+                clearTimeout(authTimeout);
+                currentUser = u;
+                iniciarUI();
+            });
+
             try {
                 if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token)
                     await signInWithCustomToken(auth, __initial_auth_token);
@@ -667,16 +806,8 @@
                 clearTimeout(authTimeout);
                 currentUser = null;
                 iniciarUI(); // abre o app mesmo com falha de auth
+                toast('Não foi possível conectar — modo visitante.');
             }
-        }
-
-        if (auth) {
-            onAuthStateChanged(auth, u => {
-                if (!u) return;
-                clearTimeout(authTimeout);
-                currentUser = u;
-                iniciarUI();
-            });
         }
 
         initAuth();
@@ -693,21 +824,28 @@
             onSnapshot(usersRef, snap => {
                 const now = Date.now();
                 activeUsers = snap.docs.map(d => ({id:d.id,...d.data()}))
-                    .filter(u => u.lastUpdate && (now - u.lastUpdate) < 120000);
+                    .filter(u => u.lastUpdate && (now - u.lastUpdate) < 120000)
+                    .map(u => ({
+                        ...u,
+                        name: String(u.name || 'Investidor').slice(0, 30),
+                        color: safeColor(u.color),
+                        avatarConfig: sanitizeAvatarConfig(u.avatarConfig)
+                    }));
                 renderUsers();
                 renderDJBooth();
             }, console.error);
 
             onSnapshot(chatRef, snap => {
                 const msgs = snap.docs.map(d => ({id:d.id,...d.data()}));
-                msgs.sort((a,b) => a.timestamp - b.timestamp);
+                msgs.sort((a,b) => (a.timestamp||0) - (b.timestamp||0));
                 chatMessages = msgs.slice(-50);
                 renderChat();
             }, console.error);
 
             onSnapshot(queueRef, snap => {
-                const q = snap.docs.map(d => ({id:d.id,...d.data()}));
-                q.sort((a,b) => a.timestamp - b.timestamp);
+                const q = snap.docs.map(d => ({id:d.id,...d.data()}))
+                    .filter(item => YT_ID_RE.test(item.videoId || ''));
+                q.sort((a,b) => (a.timestamp||0) - (b.timestamp||0));
                 queue = q;
                 renderQueue();
             }, console.error);
@@ -720,11 +858,21 @@
 
         // ── PRESENÇA ──
         async function updatePresence(x = null, y = null) {
-            if (!currentUser || !db) return;
+            // Só publica presença depois que o usuário criou o avatar —
+            // evita "Investidor" fantasma na pista antes do onboarding
+            if (!profileReady || !currentUser || !db) return;
             const ref = doc(db, 'artifacts', appId, 'public', 'data', 'users', currentUser.uid);
-            const data = { ...localProfile, lastUpdate: Date.now() };
-            if (x !== null && y !== null) { data.x = x; data.y = y; }
-            else {
+            const data = {
+                name: String(localProfile.name || 'Investidor').slice(0, 30),
+                avatarConfig: sanitizeAvatarConfig(localProfile.avatarConfig),
+                color: safeColor(localProfile.color),
+                isVIP: !!localProfile.isVIP,
+                lastUpdate: Date.now()
+            };
+            if (x !== null && y !== null) {
+                data.x = Math.max(0, Math.min(100, x));
+                data.y = Math.max(0, Math.min(100, y));
+            } else {
                 const me = activeUsers.find(u => u.id === currentUser.uid);
                 data.x = me?.x ?? 50;
                 data.y = me?.y ?? 50;
@@ -732,12 +880,22 @@
             try { await setDoc(ref, data, {merge:true}); } catch(e) { console.error(e); }
         }
 
+        let heartbeatTimer = null;
         function startHeartbeat() {
             updatePresence();
-            setInterval(() => updatePresence(), 30000);
+            heartbeatTimer = setInterval(() => updatePresence(), 30000);
         }
 
+        // Remove o avatar da pista ao sair
+        window.addEventListener('beforeunload', () => {
+            if (!currentUser || !db) return;
+            try {
+                deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', currentUser.uid));
+            } catch (e) {}
+        });
+
         document.getElementById('danceFloor').addEventListener('click', e => {
+            if (!profileReady) { toast('Crie seu avatar para entrar na pista!'); openSettings(); return; }
             if (!currentUser) return;
             const r = e.currentTarget.getBoundingClientRect();
             updatePresence(((e.clientX - r.left) / r.width) * 100, ((e.clientY - r.top) / r.height) * 100);
@@ -754,7 +912,7 @@
                 const isMe   = u.id === currentUser?.uid;
                 const posX   = isDJ ? DJ_X : (u.x ?? 50);
                 const posY   = isDJ ? DJ_Y : (u.y ?? 50);
-                const color  = u.color || '#DB7944';
+                const color  = safeColor(u.color);
                 const vipGlow = `0 0 22px rgba(219,121,68,.7), 0 0 44px rgba(219,121,68,.3), 0 0 0 3px #DB7944`;
                 const djGlow  = `0 0 20px rgba(255,0,200,.8), 0 0 40px rgba(255,0,200,.4), 0 0 0 3px #ff00cc`;
                 const normGlow = `0 0 14px ${color}60, 0 0 0 2px ${color}`;
@@ -774,7 +932,7 @@
   </div>
   <div class="mt-1.5 px-2 py-0.5 rounded text-[10px] whitespace-nowrap border backdrop-blur-sm flex items-center gap-1 font-light" style="background:rgba(0,0,0,.85);border-color:${isDJ?'rgba(255,0,204,.25)':color+'25'}">
     <span style="color:${isDJ?'#ff00cc':color}">●</span>
-    ${u.name}${isMe?' (Você)':''}${isDJ?' 🎧':''}
+    ${escapeHtml(u.name)}${isMe?' (Você)':''}${isDJ?' 🎧':''}
   </div>
 </div>`;
                 layer.appendChild(el);
@@ -792,15 +950,18 @@
             chatMessages.forEach(msg => {
                 const div = document.createElement('div');
                 div.className = 'fade-in-up';
-                const time = new Date(msg.timestamp).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+                const time = msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) : '';
+                const color = safeColor(msg.color);
+                const name = escapeHtml(String(msg.name || 'Investidor').slice(0, 30));
+                const text = escapeHtml(msg.text);
                 const crown = msg.isVIP ? `<span class="text-[#DB7944]" style="width:11px;height:11px;display:inline-block">${Icons.crown}</span>` : '';
                 div.innerHTML = `
 <div class="flex items-baseline gap-1.5 mb-0.5">
-  <span class="font-semibold text-xs flex items-center gap-1 tracking-wide" style="color:${msg.color}">${crown}${msg.name}</span>
+  <span class="font-semibold text-xs flex items-center gap-1 tracking-wide" style="color:${color}">${crown}${name}</span>
   <span class="text-[9px] text-[#FFF7EB]/30">${time}</span>
 </div>
-<div class="text-xs text-[#FFF7EB]/85 break-words font-light${msg.isVIP?' border-l-2 pl-2':''}" style="${msg.isVIP?`border-color:${msg.color}`:''}">
-  ${msg.text}
+<div class="text-xs text-[#FFF7EB]/85 break-words font-light${msg.isVIP?' border-l-2 pl-2':''}" style="${msg.isVIP?`border-color:${color}`:''}">
+  ${text}
 </div>`;
                 c.appendChild(div);
             });
@@ -818,39 +979,94 @@
             }
             queue.forEach((item, i) => {
                 const mine = currentUser && item.addedByUid === currentUser.uid;
+                const byName = escapeHtml(String(item.addedByName || 'Alguém').slice(0, 30));
                 const div = document.createElement('div');
                 div.className = `flex items-center gap-2.5 bg-black/25 p-2 rounded border transition ${mine?'border-[#DB7944]/35':'border-[#FFF7EB]/8 hover:border-[#DB7944]/35'}`;
                 div.innerHTML = `
-<span class="text-[#FFF7EB]/30 font-mono text-xs w-4">${i+1}.</span>
-<img src="https://img.youtube.com/vi/${item.videoId}/default.jpg" class="w-11 h-8 object-cover rounded shadow"/>
-<div class="flex-1 overflow-hidden">
-  <p class="text-[10px] text-[#FFF7EB]/55 truncate">por: <span class="${mine?'text-[#DB7944]':'text-[#FFF7EB]'} font-medium">${item.addedByName}</span></p>
+<span class="text-[#FFF7EB]/30 font-mono text-xs w-4 shrink-0">${i+1}.</span>
+<img src="https://img.youtube.com/vi/${item.videoId}/default.jpg" loading="lazy" class="w-11 h-8 object-cover rounded shadow shrink-0"/>
+<div class="flex-1 overflow-hidden min-w-0">
+  <p class="text-[10px] text-[#FFF7EB]/55 truncate">por: <span class="${mine?'text-[#DB7944]':'text-[#FFF7EB]'} font-medium">${byName}</span></p>
   ${mine?'<p class="text-[9px] text-[#DB7944]/55 mt-0.5">Sua música 🎵</p>':''}
-</div>`;
+</div>
+${mine?`<button type="button" onclick="window.removeFromQueue('${item.id}')" title="Remover da fila" class="shrink-0 text-[#FFF7EB]/40 hover:text-[#932621] transition p-1">${Icons.trash}</button>`:''}`;
                 c.appendChild(div);
             });
         }
 
         // ── RENDER PLAYER ──
+        // Carrega a YouTube IFrame API uma vez (para detectar o fim do vídeo e avançar sozinho)
+        let ytApiReady = false, ytPlayer = null, renderedKey = null, advanceTimer = null;
+        (function loadYouTubeApi() {
+            const tag = document.createElement('script');
+            tag.src = 'https://www.youtube.com/iframe_api';
+            document.head.appendChild(tag);
+        })();
+        window.onYouTubeIframeAPIReady = () => { ytApiReady = true; renderedKey = null; renderPlayer(); };
+
+        function onPlayerStateChange(e) {
+            if (e.data !== 0) return; // 0 = vídeo terminou
+            // O DJ da vez avança quase na hora; os demais servem de reserva caso o DJ
+            // tenha fechado a aba. O timer é cancelado quando o estado muda no Firestore,
+            // então na prática só um cliente troca a música.
+            const isDJ = currentUser && currentVideo?.addedByUid === currentUser.uid;
+            clearTimeout(advanceTimer);
+            advanceTimer = setTimeout(() => window.playNextVideo(), isDJ ? 400 : 6000 + Math.random() * 4000);
+        }
+
         function renderPlayer() {
             const c = document.getElementById('playerContainer');
-            if (currentVideo?.videoId) {
-                const isMe = currentUser && currentVideo.addedByUid === currentUser.uid;
-                c.innerHTML = `
-<iframe class="w-full h-full" src="https://www.youtube.com/embed/${currentVideo.videoId}?autoplay=1&controls=1&enablejsapi=1"
-  frameBorder="0" allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture" allowFullScreen></iframe>
-${isMe?`<div class="absolute top-2 left-2 bg-[#ff00cc] text-white text-[10px] px-3 py-1 rounded-full font-bold shadow-lg my-turn-badge">🎧 É a sua vez na mesa!</div>`:''}
-<div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition">
-  <button onclick="window.playNextVideo()" class="bg-black/80 backdrop-blur-md text-[#FFF7EB] border border-[#FFF7EB]/20 text-xs px-3 py-1.5 rounded-full hover:bg-[#DB7944] hover:border-[#DB7944] transition flex items-center gap-1 shadow-lg">
-    ${Icons.play} Pular
-  </button>
-</div>`;
-            } else {
+            const vid = YT_ID_RE.test(currentVideo?.videoId || '') ? currentVideo.videoId : null;
+            const key = vid ? `${vid}:${currentVideo.startedAt || 0}` : null;
+
+            if (key !== renderedKey) { clearTimeout(advanceTimer); advanceTimer = null; }
+
+            if (!vid) {
+                renderedKey = null;
+                if (ytPlayer) { try { ytPlayer.destroy(); } catch(e){} ytPlayer = null; }
                 c.innerHTML = `
 <div class="text-center flex flex-col items-center">
   <div class="mb-3 text-[#FFF7EB]/10">${Icons.musicBig}</div>
   <p class="text-[#FFF7EB]/45 font-medium tracking-wide text-sm">Nenhuma música tocando.</p>
   <p class="text-xs text-[#FFF7EB]/25 font-light mt-1">Adicione um vídeo na fila!</p>
+</div>`;
+                return;
+            }
+
+            const isMe = currentUser && currentVideo.addedByUid === currentUser.uid;
+
+            // Só reconstrói o iframe quando o vídeo realmente muda (evita reiniciar a música)
+            if (key !== renderedKey) {
+                renderedKey = key;
+                // Quem entra atrasado começa do ponto em que a festa está
+                const elapsed = currentVideo.startedAt
+                    ? Math.max(0, Math.round((Date.now() - currentVideo.startedAt) / 1000)) : 0;
+                c.innerHTML = `<div id="ytPlayer" class="w-full h-full"></div>
+<div id="playerOverlay" class="absolute inset-0 pointer-events-none"></div>`;
+                if (ytApiReady && window.YT && window.YT.Player) {
+                    if (ytPlayer) { try { ytPlayer.destroy(); } catch(e){} }
+                    ytPlayer = new YT.Player('ytPlayer', {
+                        videoId: vid,
+                        playerVars: { autoplay: 1, controls: 1, rel: 0, start: elapsed },
+                        events: { onStateChange: onPlayerStateChange }
+                    });
+                } else {
+                    // Fallback sem a API (sem auto-avanço)
+                    document.getElementById('ytPlayer').outerHTML =
+                        `<iframe class="w-full h-full" src="https://www.youtube.com/embed/${vid}?autoplay=1&controls=1&rel=0&start=${elapsed}"
+                          frameBorder="0" allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture" allowFullScreen></iframe>`;
+                }
+            }
+
+            // Overlay (badges + botão pular) é atualizado sempre, sem tocar no iframe
+            const overlay = document.getElementById('playerOverlay');
+            if (overlay) {
+                overlay.innerHTML = `
+${isMe?`<div class="absolute top-2 left-2 bg-[#ff00cc] text-white text-[10px] px-3 py-1 rounded-full font-bold shadow-lg my-turn-badge">🎧 É a sua vez na mesa!</div>`:''}
+<div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition pointer-events-auto">
+  <button onclick="window.playNextVideo()" class="bg-black/80 backdrop-blur-md text-[#FFF7EB] border border-[#FFF7EB]/20 text-xs px-3 py-1.5 rounded-full hover:bg-[#DB7944] hover:border-[#DB7944] transition flex items-center gap-1 shadow-lg">
+    ${Icons.play} Pular
+  </button>
 </div>`;
             }
         }
@@ -863,49 +1079,90 @@ ${isMe?`<div class="absolute top-2 left-2 bg-[#ff00cc] text-white text-[10px] px
             e.preventDefault();
             const inp = document.getElementById('chatInput');
             const text = inp.value.trim();
-            if (!currentUser || !text) return;
-            if (!db) { alert('Firebase não configurado. Chat indisponível.'); return; }
+            if (!text) return;
+            if (!profileReady) { toast('Crie seu avatar para conversar!'); openSettings(); return; }
+            if (!currentUser || !db) { toast('Sem conexão — chat indisponível.'); return; }
             const ref = collection(db, 'artifacts', appId, 'public', 'data', 'chat');
-            await addDoc(ref, {uid:currentUser.uid, name:localProfile.name, isVIP:localProfile.isVIP, color:localProfile.color, text, timestamp:Date.now()});
-            inp.value = '';
-            document.getElementById('chatSubmit').disabled = true;
+            try {
+                await addDoc(ref, {uid:currentUser.uid, name:localProfile.name.slice(0,30), isVIP:!!localProfile.isVIP, color:safeColor(localProfile.color), text:text.slice(0,200), timestamp:Date.now()});
+                inp.value = '';
+                document.getElementById('chatSubmit').disabled = true;
+            } catch (err) { console.error(err); toast('Erro ao enviar mensagem.'); }
         });
 
         // ── FILA ──
         const extractYouTubeId = url => {
-            const m = url.match(/^.*(youtu\.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/);
-            return m && m[2].length === 11 ? m[2] : null;
+            if (!url) return null;
+            url = url.trim();
+            // ID puro colado direto
+            if (YT_ID_RE.test(url)) return url;
+            const patterns = [
+                /youtu\.be\/([\w-]{11})/,
+                /[?&]v=([\w-]{11})/,
+                /youtube\.com\/embed\/([\w-]{11})/,
+                /youtube\.com\/shorts\/([\w-]{11})/,
+                /youtube\.com\/live\/([\w-]{11})/,
+                /youtube\.com\/v\/([\w-]{11})/
+            ];
+            for (const re of patterns) {
+                const m = url.match(re);
+                if (m) return m[1];
+            }
+            return null;
         };
 
         document.getElementById('queueForm').addEventListener('submit', async e => {
             e.preventDefault();
-            if (!currentUser) return;
+            if (!profileReady) { toast('Crie seu avatar primeiro!'); openSettings(); return; }
+            if (!currentUser || !db) { toast('Sem conexão — fila indisponível.'); return; }
             const inp = document.getElementById('videoUrlInput');
             const videoId = extractYouTubeId(inp.value);
-            if (!videoId) { alert('Link do YouTube inválido.'); return; }
-            if (!db) { alert('Firebase não configurado. Fila indisponível.'); return; }
+            if (!videoId) { toast('Link do YouTube inválido.'); return; }
+            if (queue.some(q => q.videoId === videoId) || currentVideo?.videoId === videoId) {
+                toast('Esse vídeo já está na fila!'); return;
+            }
             const ref = collection(db, 'artifacts', appId, 'public', 'data', 'queue');
-            await addDoc(ref, {videoId, addedByName:localProfile.name, addedByUid:currentUser.uid, timestamp:Date.now()});
-            inp.value = '';
-            if (!currentVideo?.videoId) window.playNextVideo(videoId);
+            try {
+                const added = await addDoc(ref, {videoId, addedByName:localProfile.name.slice(0,30), addedByUid:currentUser.uid, timestamp:Date.now()});
+                inp.value = '';
+                if (!currentVideo?.videoId) {
+                    // Pista livre: toca direto e tira da fila para não tocar em dobro
+                    const stateRef = doc(db, 'artifacts', appId, 'public', 'data', 'player', 'state');
+                    await setDoc(stateRef, {videoId, startedAt:Date.now(), addedByName:localProfile.name.slice(0,30), addedByUid:currentUser.uid});
+                    await deleteDoc(added);
+                    toast('Tocando agora! 🎧');
+                } else {
+                    toast('Adicionado à fila! 🎵');
+                }
+            } catch (err) { console.error(err); toast('Erro ao adicionar. Tente de novo.'); }
         });
 
-        window.playNextVideo = async (overrideId = null) => {
+        window.removeFromQueue = async (docId) => {
             if (!currentUser || !db) return;
-            let vid = overrideId, docId = null;
-            let byName = localProfile.name, byUid = currentUser.uid;
-            if (!vid && queue.length > 0) {
-                vid = queue[0].videoId; docId = queue[0].id;
-                byName = queue[0].addedByName || byName;
-                byUid  = queue[0].addedByUid  || byUid;
-            }
+            const item = queue.find(q => q.id === docId);
+            if (!item || item.addedByUid !== currentUser.uid) return; // só remove a própria
+            try { await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'queue', docId)); }
+            catch (e) { console.error(e); }
+        };
+
+        // Toca o primeiro da fila (removendo-o) ou libera a pista se a fila estiver vazia
+        window.playNextVideo = async () => {
+            if (!currentUser || !db) return;
             const stateRef = doc(db, 'artifacts', appId, 'public', 'data', 'player', 'state');
-            if (vid) {
-                await setDoc(stateRef, {videoId:vid, startedAt:Date.now(), addedByName:byName, addedByUid:byUid});
-                if (docId) await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'queue', docId));
-            } else {
-                await setDoc(stateRef, {videoId:null, startedAt:null, addedByName:null, addedByUid:null});
-            }
+            try {
+                const next = queue[0];
+                if (next) {
+                    await setDoc(stateRef, {
+                        videoId: next.videoId,
+                        startedAt: Date.now(),
+                        addedByName: String(next.addedByName || 'Investidor').slice(0, 30),
+                        addedByUid: next.addedByUid || currentUser.uid
+                    });
+                    await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'queue', next.id));
+                } else {
+                    await setDoc(stateRef, {videoId:null, startedAt:null, addedByName:null, addedByUid:null});
+                }
+            } catch (e) { console.error(e); }
         };
 
         // ── MODAL DO AVATAR ──
@@ -951,14 +1208,7 @@ ${isMe?`<div class="absolute top-2 left-2 bg-[#ff00cc] text-white text-[10px] px
         window.updateAvatar = (key, val) => { localProfile.avatarConfig[key] = val; renderSettingsModal(); };
         window.updateProfileColor = col => { localProfile.color = col; renderSettingsModal(); };
 
-        document.getElementById('profileName').addEventListener('input', e => {
-            localProfile.name = e.target.value || 'Investidor';
-        });
-        document.getElementById('profileVIP').addEventListener('change', e => {
-            localProfile.isVIP = e.target.checked;
-        });
-        document.getElementById('saveProfileBtn').addEventListener('click', () => {
-            updatePresence();
+        function applyProfileToHeader() {
             const ha = document.getElementById('headerAvatar');
             ha.src = getAvatarUrl(localProfile.avatarConfig);
             ha.classList.remove('hidden');
@@ -968,12 +1218,47 @@ ${isMe?`<div class="absolute top-2 left-2 bg-[#ff00cc] text-white text-[10px] px
             const hc = document.getElementById('headerCrown');
             if (localProfile.isVIP) { hc.innerHTML = Icons.crown; hc.classList.remove('hidden'); }
             else hc.classList.add('hidden');
-            document.getElementById('settingsModal').classList.add('hidden');
-        });
-        document.getElementById('openSettingsBtn').addEventListener('click', () => {
+        }
+
+        function openSettings() {
             renderSettingsModal();
             document.getElementById('settingsModal').classList.remove('hidden');
+        }
+        function closeSettings() {
+            document.getElementById('settingsModal').classList.add('hidden');
+        }
+
+        document.getElementById('profileName').addEventListener('input', e => {
+            localProfile.name = (e.target.value || 'Investidor').slice(0, 30);
         });
+        document.getElementById('profileVIP').addEventListener('change', e => {
+            localProfile.isVIP = e.target.checked;
+        });
+        document.getElementById('saveProfileBtn').addEventListener('click', () => {
+            localProfile.name = (localProfile.name || 'Investidor').trim() || 'Investidor';
+            profileReady = true;
+            saveLocalProfile();
+            updatePresence();
+            applyProfileToHeader();
+            closeSettings();
+            toast(`Bem-vindo à pista, ${localProfile.name}! 🕺`);
+        });
+        document.getElementById('openSettingsBtn').addEventListener('click', openSettings);
+
+        // Fecha o modal pelo ✕, clicando fora ou apertando ESC
+        document.getElementById('closeSettingsBtn').addEventListener('click', closeSettings);
+        document.getElementById('settingsModal').addEventListener('click', e => {
+            if (e.target.id === 'settingsModal') closeSettings();
+        });
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape') closeSettings();
+        });
+
+        // Quem já tem perfil salvo de outra visita pula o onboarding
+        if (profileReady) {
+            applyProfileToHeader();
+            closeSettings();
+        }
 
         renderSettingsModal();
     </script>
