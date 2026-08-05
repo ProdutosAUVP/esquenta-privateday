@@ -1346,17 +1346,35 @@ ${cd}`;
         function hookYtEvents() {
             const f = document.getElementById('ytFrame');
             if (!f) return;
-            f.addEventListener('load', () => {
+            const handshake = () => {
                 try { f.contentWindow.postMessage(JSON.stringify({event:'listening', id:'ytFrame', channel:'widget'}), '*'); } catch(e) {}
+            };
+            f.addEventListener('load', () => {
+                // repete o handshake algumas vezes — uma única tentativa pode se perder
+                handshake();
+                let n = 0;
+                const iv = setInterval(() => { handshake(); if (++n >= 5) clearInterval(iv); }, 700);
                 setTimeout(applyModalAudioDuck, 800);
             });
+        }
+
+        // dispara só uma vez por (vídeo, startedAt), mesmo com eventos repetidos
+        let endedHandledKey = null;
+        function onVideoEnded() {
+            if (!currentVideo?.videoId || countdownActive()) return;
+            const key = `${currentVideo.videoId}_${currentVideo.startedAt || 0}`;
+            if (endedHandledKey === key) return;
+            if (!isLeader()) return;
+            endedHandledKey = key;
+            window.playNextVideo();
         }
         window.addEventListener('message', e => {
             if (e.origin !== 'https://www.youtube.com') return;
             let d; try { d = JSON.parse(e.data); } catch { return; }
-            // playerState 0 = vídeo terminou → líder avança a fila
-            if (d.event === 'onStateChange' && d.info === 0 && currentVideo?.videoId && !countdownActive() && isLeader())
-                window.playNextVideo();
+            // o fim do vídeo chega como onStateChange OU como infoDelivery, dependendo do player
+            const ended = (d.event === 'onStateChange' && d.info === 0) ||
+                          (d.event === 'infoDelivery' && d.info && d.info.playerState === 0);
+            if (ended) onVideoEnded();
         });
 
         // ── "FILTRO" DE ÁUDIO COM O MODAL ABERTO ──
@@ -1423,15 +1441,28 @@ ${cd}`;
             if (!currentUser || !db) return;
             let vid = overrideId, docId = null, title = null;
             let byName = localProfile.name, byUid = currentUser.uid;
-            if (!vid && queue.length > 0) {
-                vid = queue[0].videoId; docId = queue[0].id;
-                title  = queue[0].title || titleCache[vid] || null;
-                byName = queue[0].addedByName || byName;
-                byUid  = queue[0].addedByUid  || byUid;
+            if (!vid) {
+                const list = [...queue];
+                // descarta docs "fantasma": a música que estava tocando ainda na fila
+                // (delete que falhou/atrasou) — senão ela recomeçaria ao terminar
+                while (list.length && currentVideo?.videoId &&
+                       list[0].videoId === currentVideo.videoId &&
+                       (list[0].timestamp || 0) <= (currentVideo.startedAt || Infinity)) {
+                    try { await deleteDoc(pdoc('queue', list[0].id)); } catch(e) {}
+                    list.shift();
+                }
+                if (list.length) {
+                    vid = list[0].videoId; docId = list[0].id;
+                    title  = list[0].title || titleCache[vid] || null;
+                    byName = list[0].addedByName || byName;
+                    byUid  = list[0].addedByUid  || byUid;
+                }
             }
             if (vid) {
+                // apaga da fila ANTES de tocar: se algo falhar no meio, a música é
+                // descartada em vez de ficar presa em loop
+                if (docId) { try { await deleteDoc(pdoc('queue', docId)); } catch(e) {} }
                 await setNowPlaying(vid, byName, byUid, title);
-                if (docId) await deleteDoc(pdoc('queue', docId));
             } else {
                 await setDoc(pdoc('player', 'state'), {videoId:null, startedAt:null, addedByName:null, addedByUid:null, title:null});
                 await setDoc(pdoc('player', 'skipVotes'), {videoId:null, votes:{}});
