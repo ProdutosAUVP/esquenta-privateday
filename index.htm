@@ -105,28 +105,85 @@
             50%      { opacity:.8; transform:scale(1.04); }
         }
         .my-turn-badge { animation: my-turn-pulse .9s ease-in-out infinite; }
+
+        /* ── GLOBO REFLETOR NA PISTA ── */
+        @keyframes ball-sway { 0%,100%{transform:rotate(-4deg)} 50%{transform:rotate(4deg)} }
+        @keyframes ball-shine {
+            0%,100% { filter: drop-shadow(0 0 20px rgba(255,0,200,.55)) brightness(1); }
+            33%     { filter: drop-shadow(0 0 26px rgba(0,255,255,.6)) brightness(1.15); }
+            66%     { filter: drop-shadow(0 0 22px rgba(255,220,0,.55)) brightness(1.05); }
+        }
+        .disco-ball-wrap { transform-origin: top center; animation: ball-sway 6s ease-in-out infinite; }
+        .disco-ball-img  { animation: ball-shine 4s linear infinite; }
+
+        /* ── CONTAGEM REGRESSIVA ── */
+        @keyframes count-glow {
+            0%,100% { text-shadow: 0 0 30px rgba(219,121,68,.9), 0 0 60px rgba(219,121,68,.4); }
+            50%     { text-shadow: 0 0 40px rgba(255,0,200,.9), 0 0 80px rgba(255,0,200,.4); }
+        }
+        .count-glow { animation: count-glow 1s ease-in-out infinite; }
+
+        /* ── PASSINHOS DE DANÇA ── */
+        @keyframes dance-spin { from{transform:rotate(0)} to{transform:rotate(360deg)} }
+        .dance-spin { animation: dance-spin 1s linear infinite; }
+        @keyframes dance-jump { 0%,100%{transform:translateY(0) scaleY(1)} 30%{transform:translateY(-14px) scaleY(1.06)} 60%{transform:translateY(0) scaleY(.92)} }
+        .dance-jump { animation: dance-jump .7s ease-in-out infinite; }
+        @keyframes dance-shake { 0%,100%{transform:rotate(-12deg)} 50%{transform:rotate(12deg)} }
+        .dance-shake { animation: dance-shake .35s ease-in-out infinite; }
+        @keyframes dance-moonwalk { 0%,100%{transform:translateX(-10px) rotate(-4deg)} 50%{transform:translateX(10px) rotate(4deg)} }
+        .dance-moonwalk { animation: dance-moonwalk 1.6s ease-in-out infinite; }
+
+        /* ── REAÇÕES FLUTUANTES ── */
+        @keyframes rx-float {
+            0%   { transform: translate(-50%,0) scale(.6); opacity: 0; }
+            12%  { transform: translate(-50%,-14px) scale(1.2); opacity: 1; }
+            100% { transform: translate(-50%,-130px) scale(1); opacity: 0; }
+        }
+        .rx-float { animation: rx-float 2.6s ease-out forwards; }
+        .rx-btn { transition: transform .15s ease; }
+        .rx-btn:hover { transform: scale(1.3); }
+
+        /* ── TOAST ── */
+        @keyframes toast-in { from{opacity:0;transform:translate(-50%,12px)} to{opacity:1;transform:translate(-50%,0)} }
+        .toast-in { animation: toast-in .25s ease-out forwards; }
+
+        /* ── TABS DO MODAL DE PERSONALIZAÇÃO (mobile) ── */
+        .cfg-tab {
+            padding: 9px 16px; font-size: 12px; font-weight: 600; white-space: nowrap;
+            border-bottom: 2px solid transparent; color: rgba(255,247,235,.5);
+            text-transform: uppercase; letter-spacing: .12em;
+        }
+        .cfg-tab-on { color: #DB7944; border-color: #DB7944; }
+        @media (min-width: 768px) {
+            .cfg-nav { display: none; }
+            .cfg-sec { display: block !important; }
+        }
     </style>
 </head>
-<body class="bg-[#050505] text-[#FFF7EB] font-poppins overflow-hidden h-screen flex flex-col relative">
+<body class="bg-[#050505] text-[#FFF7EB] font-poppins overflow-hidden h-[100dvh] flex flex-col relative">
 
     <div class="film-grain"></div>
 
     <!-- CARREGAMENTO -->
     <div id="loadingScreen" class="fixed inset-0 bg-[#050505] z-[100] flex flex-col items-center justify-center">
-        <img src="https://raw.githubusercontent.com/eriadesign/privateday/main/globo.webp" alt="Globo" class="w-24 h-24 mb-6 animate-pulse">
+        <img src="GLOBO.png" alt="Globo" class="w-24 h-24 mb-6 animate-pulse object-contain">
         <h1 class="font-discodiva text-4xl tracking-widest text-[#DB7944]">Carregando a pista...</h1>
     </div>
 
     <!-- HEADER -->
     <header class="bg-[#0a0a0a] border-b border-[#FFF7EB]/8 p-3 flex justify-between items-center z-10 relative shadow-lg">
-        <div class="flex items-center gap-3">
-            <img src="https://raw.githubusercontent.com/eriadesign/privateday/main/globo.webp" alt="AUVP" class="h-10 md:h-13 w-auto object-contain drop-shadow-lg">
-            <div>
-                <h1 class="font-discodiva text-2xl md:text-3xl text-[#FFF7EB] tracking-wide leading-none">PRIVATE DAY</h1>
-                <p class="text-[10px] md:text-xs text-[#DB7944] uppercase tracking-[.2em] font-semibold mt-1">Esquenta 2026</p>
+        <div class="flex items-center gap-2.5 md:gap-3">
+            <img src="GLOBO.png" alt="AUVP Private Day" class="h-12 md:h-16 w-auto object-contain drop-shadow-lg">
+            <div class="text-center">
+                <img src="LETTERING.png" alt="PRIVATE DAY" class="h-5 md:h-7 w-auto object-contain mx-auto">
+                <p class="text-[10px] md:text-xs text-[#DB7944] uppercase tracking-[.2em] font-semibold leading-none mt-1">Esquenta 2026</p>
             </div>
         </div>
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-2 md:gap-3">
+            <button id="openRankingBtn" title="Ranking da noite"
+                class="flex items-center gap-1.5 text-xs text-[#FFF7EB]/70 bg-black/50 hover:bg-[#FFF7EB]/8 px-3 py-1.5 rounded-full border border-[#FFF7EB]/8 transition">
+                🏆<span class="hidden sm:inline">Ranking</span>
+            </button>
             <div class="flex items-center gap-2 text-xs text-[#FFF7EB]/70 bg-black/50 px-3 py-1.5 rounded-full border border-[#FFF7EB]/8">
                 <span id="icon-users" class="text-[#DB7944]"></span>
                 <span id="onlineCount">0 online</span>
@@ -151,6 +208,9 @@
             <!-- PISTA DE DANÇA -->
             <div id="danceFloor" class="flex-1 relative overflow-hidden cursor-crosshair" style="background:#050505;">
 
+                <!-- Camada WebGL (globo 3D, feixes de luz e partículas) -->
+                <div id="webglLayer" class="absolute inset-0 pointer-events-none"></div>
+
                 <!-- Ladrilhos 80s -->
                 <div class="dance-tiles" id="danceTiles"></div>
 
@@ -164,8 +224,37 @@
                     <h1 class="font-discodiva text-[9rem] md:text-[14rem] text-[#FFF7EB]">AUVP</h1>
                 </div>
 
+                <!-- Globo refletor (fallback 2D; some quando o WebGL assume) -->
+                <div id="cssDiscoBall" class="absolute left-1/2 -translate-x-1/2 top-0 z-[5] pointer-events-none disco-ball-wrap flex flex-col items-center">
+                    <div class="w-px h-6 md:h-10 bg-[#FFF7EB]/25"></div>
+                    <img src="GLOBO.png" alt="Globo refletor" class="disco-ball-img w-20 h-20 md:w-32 md:h-32 object-contain">
+                </div>
+
+                <!-- Área VIP -->
+                <div class="absolute pointer-events-none z-[6] rounded-xl border border-dashed border-[#DB7944]/45"
+                    style="left:72%;top:5%;width:26%;height:27%;background:linear-gradient(135deg,rgba(219,121,68,.07),rgba(255,220,0,.04));box-shadow:inset 0 0 30px rgba(219,121,68,.12)">
+                    <span class="absolute top-1.5 left-1/2 -translate-x-1/2 text-[9px] font-bold uppercase tracking-[.2em] text-[#DB7944]/80 whitespace-nowrap">👑 Área VIP</span>
+                </div>
+
                 <div class="absolute top-3 left-3 text-[10px] text-[#FFF7EB]/40 pointer-events-none bg-black/60 px-3 py-1 rounded-full border border-[#FFF7EB]/8 backdrop-blur-sm z-10">
-                    Clique na pista para se mover
+                    Clique na pista para se mover · Clique em alguém para puxar papo
+                </div>
+
+                <!-- Barra de ações: reações + passinhos -->
+                <div id="actionBar" class="absolute bottom-2.5 left-2.5 z-20 flex items-center gap-1.5 cursor-default">
+                    <div class="flex gap-0.5 bg-black/60 border border-[#FFF7EB]/10 rounded-full px-2 py-1 backdrop-blur-sm">
+                        <button class="rx-btn text-base leading-none p-0.5" onclick="window.sendReaction('🔥')">🔥</button>
+                        <button class="rx-btn text-base leading-none p-0.5" onclick="window.sendReaction('❤️')">❤️</button>
+                        <button class="rx-btn text-base leading-none p-0.5" onclick="window.sendReaction('👏')">👏</button>
+                        <button class="rx-btn text-base leading-none p-0.5" onclick="window.sendReaction('🕺')">🕺</button>
+                        <button class="rx-btn text-base leading-none p-0.5" onclick="window.sendReaction('💃')">💃</button>
+                        <button class="rx-btn text-base leading-none p-0.5" onclick="window.sendReaction('😂')">😂</button>
+                    </div>
+                    <div class="relative">
+                        <button id="danceMenuBtn" title="Escolher passinho"
+                            class="bg-black/60 border border-[#FFF7EB]/10 rounded-full px-3 py-1 text-base leading-none backdrop-blur-sm hover:border-[#DB7944] transition">🕺</button>
+                        <div id="danceMenu" class="hidden absolute bottom-9 left-0 bg-[#0d0d0d] border border-[#DB7944]/30 rounded-xl p-1.5 flex-col gap-1 shadow-2xl w-36"></div>
+                    </div>
                 </div>
 
                 <!-- Cabine de DJ (canto inferior direito) -->
@@ -177,7 +266,7 @@
         </section>
 
         <!-- DIREITA: Chat & Fila -->
-        <aside class="w-full lg:w-96 flex flex-col bg-[#0a0a0a] h-[50vh] lg:h-auto shrink-0 z-30 border-t lg:border-t-0 border-[#FFF7EB]/8" style="box-shadow:-8px 0 24px rgba(0,0,0,.6)">
+        <aside class="w-full lg:w-96 flex flex-col bg-[#0a0a0a] h-[48dvh] lg:h-auto shrink-0 z-30 border-t lg:border-t-0 border-[#FFF7EB]/8" style="box-shadow:-8px 0 24px rgba(0,0,0,.6)">
 
             <div class="flex border-b border-[#FFF7EB]/8 bg-black/30">
                 <div class="flex-1 text-center py-3 text-sm font-semibold text-[#DB7944] border-b-2 border-[#DB7944] flex items-center justify-center gap-2">
@@ -199,7 +288,7 @@
             </div>
 
             <!-- FILA DO DJ -->
-            <div class="border-t-[5px] border-[#0B2A47] bg-black/20 flex flex-col h-1/3 min-h-[240px]">
+            <div class="border-t-[5px] border-[#0B2A47] bg-black/20 flex flex-col h-[38%] min-h-[185px] lg:h-1/3 lg:min-h-[240px]">
                 <div class="p-3 bg-black/40 border-b border-[#FFF7EB]/8 flex justify-between items-center">
                     <h3 class="text-sm font-semibold flex items-center gap-2 text-[#FFF7EB]">
                         <span id="icon-music-small" class="text-[#DB7944]"></span> Fila do DJ
@@ -220,109 +309,137 @@
         </aside>
     </main>
 
-    <!-- MODAL DE AVATAR (DARK) -->
-    <div id="settingsModal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 flex items-center justify-center p-4">
-        <div class="modal-wrap rounded-2xl w-full max-w-lg shadow-2xl max-h-[92vh] overflow-y-auto relative p-6">
+    <!-- RANKING DA NOITE -->
+    <div id="rankingModal" class="hidden fixed inset-0 bg-black/90 backdrop-blur-md z-50 items-center justify-center p-3 md:p-4">
+        <div class="modal-wrap rounded-2xl w-full max-w-md shadow-2xl max-h-[85dvh] overflow-y-auto p-5">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="font-discodiva text-3xl text-[#DB7944]">🏆 Ranking da Noite</h2>
+                <button id="rankingClose" class="text-[#FFF7EB]/50 hover:text-white text-xl px-2 transition">✕</button>
+            </div>
+            <h3 class="text-[10px] font-bold uppercase tracking-[.2em] text-[#DB7944] mb-2">🎧 DJs da noite</h3>
+            <div id="rankingDjs" class="space-y-1.5 mb-5"></div>
+            <h3 class="text-[10px] font-bold uppercase tracking-[.2em] text-[#ff6600] mb-2">🔥 Rumo à festa</h3>
+            <div id="rankingSongs" class="space-y-1.5"></div>
+        </div>
+    </div>
 
-            <h2 class="font-discodiva text-3xl md:text-4xl mb-5 flex items-center gap-3 text-[#DB7944]">
+    <!-- CHAT PRIVADO (DM) -->
+    <div id="dmPanel" class="hidden fixed bottom-3 left-3 md:left-auto md:right-[25.5rem] w-[min(92vw,320px)] z-40 rounded-2xl overflow-hidden shadow-2xl border border-[#DB7944]/30 bg-[#0d0d0d] flex-col" style="height:min(55dvh,420px)">
+        <div class="flex items-center gap-2 p-2.5 bg-black/60 border-b border-[#FFF7EB]/10">
+            <img id="dmAvatar" src="" alt="" class="w-8 h-8 rounded-full bg-[#111]"/>
+            <div class="flex-1 overflow-hidden">
+                <p id="dmName" class="text-sm font-semibold truncate leading-tight"></p>
+                <p class="text-[9px] text-[#FFF7EB]/40 uppercase tracking-widest">Chat privado</p>
+            </div>
+            <button id="dmClose" class="text-[#FFF7EB]/50 hover:text-white text-lg px-2 transition">✕</button>
+        </div>
+        <div id="dmMessages" class="flex-1 overflow-y-auto p-3 space-y-2"></div>
+        <form id="dmForm" class="flex gap-2 p-2.5 bg-black/60 border-t border-[#FFF7EB]/10">
+            <input type="text" id="dmInput" maxlength="200" placeholder="Mensagem privada..."
+                class="flex-1 bg-black/50 border border-[#FFF7EB]/10 rounded-full px-3 py-1.5 text-xs focus:outline-none focus:border-[#DB7944] transition text-[#FFF7EB] font-light"/>
+            <button type="submit" class="bg-[#DB7944] text-white p-1.5 rounded-full hover:bg-[#c45d1b] transition shadow-lg">
+                <span id="icon-send-dm"></span>
+            </button>
+        </form>
+    </div>
+
+    <!-- MODAL DE PERSONALIZAÇÃO -->
+    <div id="settingsModal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 flex items-center justify-center p-3 md:p-4">
+        <div class="modal-wrap rounded-2xl w-full max-w-lg md:max-w-3xl shadow-2xl max-h-[94dvh] overflow-y-auto relative p-4 md:p-6">
+
+            <h2 class="font-discodiva text-3xl md:text-4xl mb-4 flex items-center gap-3 text-[#DB7944]">
                 <span id="icon-settings"></span> Crie seu Avatar
             </h2>
 
-            <div class="space-y-4">
-                <!-- Nome -->
-                <div>
+            <!-- Preview + Nome -->
+            <div class="flex items-center gap-4 mb-4">
+                <div id="avatarPreviewContainer" class="w-20 h-20 md:w-28 md:h-28 shrink-0 rounded-full bg-[#111] overflow-hidden shadow-xl transition-all relative">
+                    <img id="avatarPreviewImage" src="" alt="Preview" class="w-full h-full object-cover"/>
+                </div>
+                <div class="flex-1">
                     <label class="block text-xs font-medium text-[#FFF7EB]/50 mb-1 uppercase tracking-widest">Seu Nome / Apelido</label>
                     <input type="text" id="profileName"
                         class="w-full bg-black/60 border border-[#FFF7EB]/15 rounded-lg px-4 py-2.5 focus:outline-none focus:border-[#DB7944] focus:ring-1 focus:ring-[#DB7944] transition text-[#FFF7EB] font-light text-sm"
                         placeholder="Como quer ser chamado?"/>
                 </div>
+            </div>
 
-                <!-- Preview + Customização -->
-                <div class="bg-black/40 rounded-xl border border-[#FFF7EB]/10 p-4">
-                    <!-- Preview -->
-                    <div class="flex items-center justify-center mb-5">
-                        <div id="avatarPreviewContainer" class="w-28 h-28 rounded-full bg-[#111] overflow-hidden shadow-xl transition-all relative">
-                            <img id="avatarPreviewImage" src="" alt="Preview" class="w-full h-full object-cover"/>
-                        </div>
+            <!-- Navegação por seção (mobile) -->
+            <nav class="cfg-nav flex border-b border-[#FFF7EB]/10 mb-4 -mx-4 px-4 overflow-x-auto">
+                <button type="button" data-tab="estilo" onclick="window.setCfgTab('estilo')" class="cfg-tab cfg-tab-on">Estilo</button>
+                <button type="button" data-tab="rosto" onclick="window.setCfgTab('rosto')" class="cfg-tab">Rosto</button>
+                <button type="button" data-tab="cores" onclick="window.setCfgTab('cores')" class="cfg-tab">Cores</button>
+            </nav>
+
+            <div class="bg-black/40 rounded-xl border border-[#FFF7EB]/10 p-4 space-y-5" id="avatarSections">
+
+                <!-- SEÇÃO: ESTILO -->
+                <div class="cfg-sec space-y-4" data-sec="estilo">
+                    <div>
+                        <label class="block text-[10px] font-bold text-[#DB7944] mb-2 uppercase tracking-widest">Cabelo / Chapéu</label>
+                        <div id="avatarTops" class="flex gap-1.5 overflow-x-auto pb-1 md:flex-wrap md:overflow-visible"></div>
                     </div>
-
-                    <div class="space-y-4" id="avatarSections">
-                        <!-- Cabelo -->
-                        <div>
-                            <label class="block text-[10px] font-bold text-[#DB7944] mb-2 uppercase tracking-widest">Cabelo / Chapéu</label>
-                            <div id="avatarTops" class="flex gap-1.5 overflow-x-auto pb-1"></div>
-                        </div>
-                        <!-- Acessórios -->
-                        <div>
-                            <label class="block text-[10px] font-bold text-[#DB7944] mb-2 uppercase tracking-widest">Acessórios</label>
-                            <div id="avatarAccessories" class="flex gap-1.5 overflow-x-auto pb-1"></div>
-                        </div>
-                        <!-- Barba -->
-                        <div>
-                            <label class="block text-[10px] font-bold text-[#DB7944] mb-2 uppercase tracking-widest">Barba / Bigode</label>
-                            <div id="avatarFacialHair" class="flex gap-1.5 overflow-x-auto pb-1"></div>
-                        </div>
-                        <!-- Roupas -->
-                        <div>
-                            <label class="block text-[10px] font-bold text-[#DB7944] mb-2 uppercase tracking-widest">Roupas</label>
-                            <div id="avatarClothes" class="flex gap-1.5 overflow-x-auto pb-1"></div>
-                        </div>
-                        <!-- Olhos -->
-                        <div>
-                            <label class="block text-[10px] font-bold text-[#DB7944] mb-2 uppercase tracking-widest">Olhos</label>
-                            <div id="avatarEyes" class="flex gap-1.5 overflow-x-auto pb-1"></div>
-                        </div>
-                        <!-- Sobrancelhas -->
-                        <div>
-                            <label class="block text-[10px] font-bold text-[#DB7944] mb-2 uppercase tracking-widest">Sobrancelhas</label>
-                            <div id="avatarEyebrows" class="flex gap-1.5 overflow-x-auto pb-1"></div>
-                        </div>
-                        <!-- Boca -->
-                        <div>
-                            <label class="block text-[10px] font-bold text-[#DB7944] mb-2 uppercase tracking-widest">Boca</label>
-                            <div id="avatarMouths" class="flex gap-1.5 overflow-x-auto pb-1"></div>
-                        </div>
-                        <!-- Tom de pele -->
-                        <div>
-                            <label class="block text-[10px] font-bold text-[#DB7944] mb-2 uppercase tracking-widest">Tom de Pele</label>
-                            <div id="avatarSkin" class="flex gap-2 flex-wrap"></div>
-                        </div>
-                        <!-- Cor do cabelo -->
-                        <div>
-                            <label class="block text-[10px] font-bold text-[#DB7944] mb-2 uppercase tracking-widest">Cor do Cabelo</label>
-                            <div id="avatarHairColor" class="flex gap-2 flex-wrap"></div>
-                        </div>
-                        <!-- Cor da roupa -->
-                        <div>
-                            <label class="block text-[10px] font-bold text-[#DB7944] mb-2 uppercase tracking-widest">Cor da Roupa</label>
-                            <div id="avatarClothingColor" class="flex gap-2 flex-wrap"></div>
-                        </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-[#DB7944] mb-2 uppercase tracking-widest">Acessórios</label>
+                        <div id="avatarAccessories" class="flex gap-1.5 overflow-x-auto pb-1 md:flex-wrap md:overflow-visible"></div>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-[#DB7944] mb-2 uppercase tracking-widest">Barba / Bigode</label>
+                        <div id="avatarFacialHair" class="flex gap-1.5 overflow-x-auto pb-1 md:flex-wrap md:overflow-visible"></div>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-[#DB7944] mb-2 uppercase tracking-widest">Roupas</label>
+                        <div id="avatarClothes" class="flex gap-1.5 overflow-x-auto pb-1 md:flex-wrap md:overflow-visible"></div>
                     </div>
                 </div>
 
-                <!-- Cor da Aura -->
-                <div>
-                    <label class="block text-xs font-medium text-[#FFF7EB]/50 mb-2 uppercase tracking-widest">Cor da Aura na Pista</label>
-                    <div id="avatarColors" class="flex gap-2 flex-wrap"></div>
+                <!-- SEÇÃO: ROSTO -->
+                <div class="cfg-sec space-y-4" data-sec="rosto">
+                    <div>
+                        <label class="block text-[10px] font-bold text-[#DB7944] mb-2 uppercase tracking-widest">Olhos</label>
+                        <div id="avatarEyes" class="flex gap-1.5 overflow-x-auto pb-1 md:flex-wrap md:overflow-visible"></div>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-[#DB7944] mb-2 uppercase tracking-widest">Sobrancelhas</label>
+                        <div id="avatarEyebrows" class="flex gap-1.5 overflow-x-auto pb-1 md:flex-wrap md:overflow-visible"></div>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-[#DB7944] mb-2 uppercase tracking-widest">Boca</label>
+                        <div id="avatarMouths" class="flex gap-1.5 overflow-x-auto pb-1 md:flex-wrap md:overflow-visible"></div>
+                    </div>
                 </div>
 
-                <!-- VIP -->
-                <div class="border-t border-[#FFF7EB]/8 pt-4">
-                    <label class="flex items-center gap-3 cursor-pointer p-4 bg-black/40 rounded-xl border border-[#FFF7EB]/10 hover:border-[#DB7944]/40 transition group">
-                        <input type="checkbox" id="profileVIP" class="w-5 h-5 accent-[#DB7944]"/>
-                        <div>
-                            <div class="font-bold text-[#DB7944] flex items-center gap-2 text-sm">
-                                Já tenho meu ingresso! <span id="icon-crown-small"></span>
-                            </div>
-                            <div class="text-xs text-[#FFF7EB]/40 mt-0.5">Ativa a coroa e brilho especial no avatar.</div>
-                        </div>
-                    </label>
+                <!-- SEÇÃO: CORES -->
+                <div class="cfg-sec space-y-4" data-sec="cores">
+                    <div>
+                        <label class="block text-[10px] font-bold text-[#DB7944] mb-2 uppercase tracking-widest">Tom de Pele</label>
+                        <div id="avatarSkin" class="flex gap-2 flex-wrap"></div>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-[#DB7944] mb-2 uppercase tracking-widest">Cor do Cabelo</label>
+                        <div id="avatarHairColor" class="flex gap-2 flex-wrap"></div>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-[#DB7944] mb-2 uppercase tracking-widest">Cor da Roupa</label>
+                        <div id="avatarClothingColor" class="flex gap-2 flex-wrap"></div>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-[#DB7944] mb-2 uppercase tracking-widest">Cor da Aura na Pista</label>
+                        <div id="avatarColors" class="flex gap-2 flex-wrap"></div>
+                    </div>
                 </div>
+            </div>
 
-                <button id="saveProfileBtn" class="vintage-btn w-full font-medium py-3.5 rounded-lg tracking-wide text-base">
-                    Entrar na Festa
+            <!-- Botões de entrada -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-5">
+                <button id="enterVipBtn" class="vintage-btn font-medium py-3.5 rounded-lg tracking-wide text-sm md:text-base flex items-center justify-center gap-2">
+                    <span id="icon-crown-small"></span> Já tenho meu ingresso!
+                </button>
+                <button id="enterNoTicketBtn" class="font-medium py-3.5 rounded-lg tracking-wide text-sm md:text-base border border-[#FFF7EB]/20 text-[#FFF7EB]/80 hover:border-[#DB7944] hover:text-[#DB7944] transition bg-black/40">
+                    Não tenho ingresso
                 </button>
             </div>
+            <p class="text-[10px] text-[#FFF7EB]/35 text-center mt-2 font-light">Quem tem ingresso entra com coroa e brilho VIP. Sem ingresso? A gente te leva pra garantir o seu. 😉</p>
         </div>
     </div>
 
@@ -345,9 +462,10 @@
             headphones:`<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></svg>`
         };
 
-        ['icon-users','icon-message','icon-send','icon-music-small','icon-plus','icon-settings','icon-crown-small'].forEach(id => {
-            const key = { 'icon-users':'users','icon-message':'message','icon-send':'send','icon-music-small':'music','icon-plus':'plus','icon-settings':'settings','icon-crown-small':'crown' }[id];
-            document.getElementById(id).innerHTML = Icons[key];
+        ['icon-users','icon-message','icon-send','icon-send-dm','icon-music-small','icon-plus','icon-settings','icon-crown-small'].forEach(id => {
+            const key = { 'icon-users':'users','icon-message':'message','icon-send':'send','icon-send-dm':'send','icon-music-small':'music','icon-plus':'plus','icon-settings':'settings','icon-crown-small':'crown' }[id];
+            const el = document.getElementById(id);
+            if (el) el.innerHTML = Icons[key];
         });
 
         // ── FIREBASE ──
@@ -441,10 +559,16 @@
             {v:'ffffff',l:'Branco'}
         ];
         const AURA_COLORS = [
-            '#DB7944','#0B2A47','#932621','#a6460f',
+            '#DB7944','#0B2A47','#932621',
             '#10b981','#8b5cf6','#ec4899','#00ffff',
             '#ffff00','#ff00cc','#00ff88','#ff6600'
         ];
+
+        // ── CONSTANTES DA PISTA ──
+        const FALLBACK_PLAYLIST = 'PLyMBoXJME_lqvOTGagEL0vh43fSsbpRW1';
+        const MAX_PLAY_MS  = 10 * 60 * 1000; // todo vídeo é pulado ao completar 10 min
+        const COUNTDOWN_MS = 5000;           // contagem regressiva antes de trocar de música
+        const TICKETS_URL  = 'https://privateday.auvp.com.br/#ingressos';
 
         // ── ESTADO ──
         let currentUser = null;
@@ -452,6 +576,49 @@
         let chatMessages = [];
         let queue = [];
         let currentVideo = null;
+        let skipVotes = null;       // doc player/skipVotes: {videoId, votes:{uid:true}}
+        let countdownState = null;  // doc player/countdown: {endsAt, reason}
+        let partyVotes = [];        // coleção partyVotes ("Essa vai pra festa!")
+        let dmMessages = [];        // mensagens privadas envolvendo o usuário atual
+        let dmOpenWith = null;      // uid da conversa privada aberta
+        let dmReadAt = {};          // uid -> timestamp da última leitura
+        const dmSessionStart = Date.now();
+        let fallbackIndex = 1 + Math.floor(Math.random() * 40);
+        let fallbackUnmuted = false;
+        let lastPlayerKey = null;
+        let modalOpen = true; // o modal de personalização começa aberto
+        let playHistory = [];       // coleção history: músicas que já tocaram (ranking)
+        let glPlaying = false;      // pista WebGL pulsa quando há música audível
+        const seenReactions = new Set();
+        const titleCache = {};      // videoId -> título (via oEmbed) | '' se falhou
+        let mutedUids = [];
+        try { mutedUids = JSON.parse(localStorage.getItem('esquentaMuted') || '[]'); } catch(e) {}
+
+        const esc = s => String(s ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+
+        // ── MODERAÇÃO LEVE ──
+        const BANNED_WORDS = ['porra','caralho','merda','buceta','putaria','fdp','vsf','pqp','cacete','viado','arrombado','desgraçad','cuzão','vagabund'];
+        const BANNED_RE = new RegExp(`\\b(${BANNED_WORDS.join('|')})\\w*`, 'gi');
+        const censor = t => t.replace(BANNED_RE, m => m[0] + '*'.repeat(m.length - 1));
+        const saveMuted = () => { try { localStorage.setItem('esquentaMuted', JSON.stringify(mutedUids)); } catch(e) {} };
+        window.toggleMute = uid => {
+            mutedUids = mutedUids.includes(uid) ? mutedUids.filter(u => u !== uid) : [...mutedUids, uid];
+            saveMuted();
+            renderChat();
+            renderUsers();
+        };
+
+        // ── TÍTULOS DAS MÚSICAS (oEmbed, sem chave de API) ──
+        async function fetchTitle(videoId) {
+            if (titleCache[videoId] !== undefined) return titleCache[videoId];
+            titleCache[videoId] = ''; // marca em andamento / falha
+            try {
+                const r = await fetch(`https://noembed.com/embed?url=https://www.youtube.com/watch?v=${videoId}`);
+                const j = await r.json();
+                titleCache[videoId] = j.title || '';
+            } catch(e) {}
+            return titleCache[videoId];
+        }
 
         let localProfile = {
             name: 'Investidor',
@@ -461,7 +628,8 @@
                 mouth: 'default', skinColor: 'edb98a', hairColor: '724133', clothesColor: '3c4f5c'
             },
             color: '#DB7944',
-            isVIP: false
+            isVIP: false,
+            dance: ''
         };
 
         function getAvatarUrl(config) {
@@ -598,9 +766,9 @@
     ${djAvatar ? `<img src="${djAvatar}" class="w-7 h-7 rounded-full bg-[#111] ${isMe ? 'dj-bounce' : ''}" style="box-shadow:0 0 8px ${djColor}80"/>` : ''}
     <div>
       <p class="text-[8px] text-[#FFF7EB]/40">🎧 Na mesa agora:</p>
-      <p class="text-[10px] font-bold truncate max-w-[85px]" style="color:${djColor}">${djName}${isMe ? ' (Você!)' : ''}</p>
+      <p class="text-[10px] font-bold truncate max-w-[85px]" style="color:${djColor}">${esc(djName)}${isMe ? ' (Você!)' : ''}</p>
     </div>
-  </div>` : `<p class="text-center text-[9px] text-[#FFF7EB]/25 mt-1">Pista livre...</p>`}
+  </div>` : `<p class="text-center text-[9px] text-[#FFF7EB]/25 mt-1">Tocando a playlist da casa 🎶</p>`}
 </div>`;
         }
 
@@ -610,6 +778,7 @@
             document.getElementById('loadingScreen').style.display = 'none';
             buildDanceTiles();
             renderDJBooth();
+            lastPlayerKey = `${currentVideo?.videoId || 'fallback'}_${currentVideo?.startedAt || 0}`;
             renderPlayer();
             renderQueue();
             renderChat();
@@ -635,7 +804,7 @@
                 // Firebase não configurado – mostra aviso no loading e continua em modo visual
                 const ls = document.getElementById('loadingScreen');
                 ls.innerHTML = `
-                    <img src="https://raw.githubusercontent.com/eriadesign/privateday/main/globo.webp" class="w-20 h-20 mb-5 opacity-50">
+                    <img src="GLOBO.png" class="w-20 h-20 mb-5 opacity-50 object-contain">
                     <h1 class="font-discodiva text-3xl text-[#DB7944] mb-3">Firebase não configurado</h1>
                     <p class="text-[#FFF7EB]/60 text-sm max-w-xs text-center leading-relaxed">
                         Para usar o app fora do ambiente Claude, edite o bloco
@@ -681,40 +850,84 @@
 
         initAuth();
 
+        // ── HELPERS DE CAMINHO NO FIRESTORE ──
+        const pdoc = (...p) => doc(db, 'artifacts', appId, 'public', 'data', ...p);
+        const pcol = name => collection(db, 'artifacts', appId, 'public', 'data', name);
+
         // ── FIREBASE LISTENERS ──
         function setupFirebaseListeners() {
             if (!currentUser || !db) return;
-            const base = ['artifacts', appId, 'public', 'data'];
-            const usersRef  = collection(db, ...base, 'users');
-            const chatRef   = collection(db, ...base, 'chat');
-            const queueRef  = collection(db, ...base, 'queue');
-            const playerRef = collection(db, ...base, 'player');
 
-            onSnapshot(usersRef, snap => {
+            onSnapshot(pcol('users'), snap => {
                 const now = Date.now();
                 activeUsers = snap.docs.map(d => ({id:d.id,...d.data()}))
                     .filter(u => u.lastUpdate && (now - u.lastUpdate) < 120000);
                 renderUsers();
                 renderDJBooth();
+                updatePlayerOverlay();
             }, console.error);
 
-            onSnapshot(chatRef, snap => {
+            onSnapshot(pcol('chat'), snap => {
                 const msgs = snap.docs.map(d => ({id:d.id,...d.data()}));
                 msgs.sort((a,b) => a.timestamp - b.timestamp);
                 chatMessages = msgs.slice(-50);
                 renderChat();
             }, console.error);
 
-            onSnapshot(queueRef, snap => {
+            onSnapshot(pcol('queue'), snap => {
                 const q = snap.docs.map(d => ({id:d.id,...d.data()}));
                 q.sort((a,b) => a.timestamp - b.timestamp);
                 queue = q;
                 renderQueue();
             }, console.error);
 
-            onSnapshot(playerRef, snap => {
-                const state = snap.docs.map(d => ({id:d.id,...d.data()})).find(s => s.id === 'state');
-                if (state) { currentVideo = state; renderPlayer(); renderDJBooth(); renderUsers(); }
+            onSnapshot(pcol('player'), snap => {
+                const docs = snap.docs.map(d => ({id:d.id,...d.data()}));
+                const state = docs.find(s => s.id === 'state');
+                skipVotes      = docs.find(s => s.id === 'skipVotes') || null;
+                countdownState = docs.find(s => s.id === 'countdown') || null;
+                if (state) currentVideo = state;
+                // só recria o iframe quando o vídeo de fato muda; votos/contagem atualizam o overlay
+                const key = `${currentVideo?.videoId || 'fallback'}_${currentVideo?.startedAt || 0}`;
+                if (key !== lastPlayerKey) { lastPlayerKey = key; renderPlayer(); }
+                else updatePlayerOverlay();
+                renderDJBooth();
+                renderUsers();
+            }, console.error);
+
+            onSnapshot(pcol('partyVotes'), snap => {
+                partyVotes = snap.docs.map(d => ({id:d.id,...d.data()}));
+                updatePlayerOverlay();
+                if (!document.getElementById('rankingModal').classList.contains('hidden')) renderRanking();
+            }, console.error);
+
+            onSnapshot(pcol('dm'), snap => {
+                dmMessages = snap.docs.map(d => ({id:d.id,...d.data()}))
+                    .filter(m => m.from === currentUser.uid || m.to === currentUser.uid)
+                    .sort((a,b) => a.timestamp - b.timestamp);
+                renderDM();
+                renderUsers();
+            }, console.error);
+
+            onSnapshot(pcol('reactions'), snap => {
+                const now = Date.now();
+                snap.docChanges().forEach(ch => {
+                    if (ch.type !== 'added') return;
+                    const r = {id: ch.doc.id, ...ch.doc.data()};
+                    if (seenReactions.has(r.id) || now - r.timestamp > 6000 || mutedUids.includes(r.uid)) return;
+                    seenReactions.add(r.id);
+                    spawnReaction(r);
+                });
+                // líder faz a faxina das reações antigas
+                if (isLeader()) snap.docs.forEach(d => {
+                    if (now - (d.data().timestamp || 0) > 120000)
+                        deleteDoc(pdoc('reactions', d.id)).catch(() => {});
+                });
+            }, console.error);
+
+            onSnapshot(pcol('history'), snap => {
+                playHistory = snap.docs.map(d => ({id:d.id,...d.data()}));
+                if (!document.getElementById('rankingModal').classList.contains('hidden')) renderRanking();
             }, console.error);
         }
 
@@ -737,11 +950,33 @@
             setInterval(() => updatePresence(), 30000);
         }
 
+        // ── ÁREA VIP (canto superior direito da pista) ──
+        const VIP_ZONE = {x1: 72, y1: 5, x2: 98, y2: 32};
+        const inVipZone = (x, y) => x >= VIP_ZONE.x1 && x <= VIP_ZONE.x2 && y >= VIP_ZONE.y1 && y <= VIP_ZONE.y2;
+
+        function showToast(msg, link = null) {
+            document.getElementById('toast')?.remove();
+            const t = document.createElement('div');
+            t.id = 'toast';
+            t.className = 'toast-in fixed bottom-6 left-1/2 -translate-x-1/2 z-[60] bg-[#0d0d0d] border border-[#DB7944]/50 text-[#FFF7EB] text-xs px-4 py-2.5 rounded-full shadow-2xl flex items-center gap-3 max-w-[92vw]';
+            t.innerHTML = `<span>${msg}</span>${link ? `<a href="${link}" target="_blank" class="bg-[#DB7944] text-white px-3 py-1 rounded-full font-semibold whitespace-nowrap hover:bg-[#c45d1b] transition">Garantir ingresso</a>` : ''}`;
+            document.body.appendChild(t);
+            setTimeout(() => t.remove(), 4500);
+        }
+
         document.getElementById('danceFloor').addEventListener('click', e => {
             if (!currentUser) return;
             const r = e.currentTarget.getBoundingClientRect();
-            updatePresence(((e.clientX - r.left) / r.width) * 100, ((e.clientY - r.top) / r.height) * 100);
+            const x = ((e.clientX - r.left) / r.width) * 100;
+            const y = ((e.clientY - r.top) / r.height) * 100;
+            if (inVipZone(x, y) && !localProfile.isVIP) {
+                showToast('👑 Área VIP — só pra quem já garantiu o ingresso!', TICKETS_URL);
+                return;
+            }
+            updatePresence(x, y);
         });
+        // cliques na barra de reações/passinhos não movem o avatar
+        document.getElementById('actionBar').addEventListener('click', e => e.stopPropagation());
 
         // ── RENDER USUÁRIOS ──
         function renderUsers() {
@@ -759,8 +994,12 @@
                 const djGlow  = `0 0 20px rgba(255,0,200,.8), 0 0 40px rgba(255,0,200,.4), 0 0 0 3px #ff00cc`;
                 const normGlow = `0 0 14px ${color}60, 0 0 0 2px ${color}`;
                 const shadow  = isDJ ? djGlow : (u.isVIP ? vipGlow : normGlow);
-                const bounce  = isDJ ? 'dj-bounce' : (u.isVIP ? 'animate-bounce' : '');
-                const speed   = isDJ ? '.75s' : '2s';
+                const danceCls = ['spin','jump','shake','moonwalk'].includes(u.dance) ? `dance-${u.dance}` : '';
+                const bounce  = isDJ ? 'dj-bounce' : (danceCls || (u.isVIP ? 'animate-bounce' : ''));
+                // passinhos usam a duração da própria animação; DJ/VIP mantêm o override
+                const durStyle = (isDJ || !danceCls) ? `;animation-duration:${isDJ ? '.75s' : '2s'}` : '';
+
+                const unread = (!isMe && currentUser) ? dmUnread(u.id) : 0;
 
                 const el = document.createElement('div');
                 el.className = 'absolute transform -translate-x-1/2 -translate-y-1/2 transition-all duration-700 ease-out flex flex-col items-center pointer-events-none';
@@ -769,14 +1008,22 @@
 <div class="relative">
   ${isDJ ? `<div class="absolute -top-4 -right-3 text-[#ff00cc]" style="width:15px;height:15px">${Icons.headphones}</div>` : ''}
   ${u.isVIP ? `<div class="absolute -top-5 left-1/2 -translate-x-1/2 text-[#DB7944]" style="width:20px;height:20px">${Icons.crown}</div>` : ''}
-  <div class="w-14 h-14 rounded-full overflow-hidden bg-[#111] ${bounce}" style="box-shadow:${shadow};animation-duration:${speed}">
-    <img src="${getAvatarUrl(u.avatarConfig)}" alt="${u.name}" class="w-full h-full object-cover"/>
+  ${unread ? `<div class="absolute -top-1.5 -left-1.5 bg-[#ff2d55] text-white text-[9px] font-bold w-5 h-5 rounded-full flex items-center justify-center z-10 shadow-lg">${unread > 9 ? '9+' : unread}</div>` : ''}
+  <div class="avatar-hit w-14 h-14 rounded-full overflow-hidden bg-[#111] ${bounce}" style="box-shadow:${shadow}${durStyle}">
+    <img src="${getAvatarUrl(u.avatarConfig)}" alt="${esc(u.name)}" class="w-full h-full object-cover"/>
   </div>
   <div class="mt-1.5 px-2 py-0.5 rounded text-[10px] whitespace-nowrap border backdrop-blur-sm flex items-center gap-1 font-light" style="background:rgba(0,0,0,.85);border-color:${isDJ?'rgba(255,0,204,.25)':color+'25'}">
     <span style="color:${isDJ?'#ff00cc':color}">●</span>
-    ${u.name}${isMe?' (Você)':''}${isDJ?' 🎧':''}
+    ${esc(u.name)}${isMe?' (Você)':''}${isDJ?' 🎧':''}
   </div>
 </div>`;
+                if (!isMe && currentUser) {
+                    const hit = el.querySelector('.avatar-hit');
+                    hit.style.pointerEvents = 'auto';
+                    hit.style.cursor = 'pointer';
+                    hit.title = `Conversar com ${u.name}`;
+                    hit.addEventListener('click', ev => { ev.stopPropagation(); window.openDM(u.id); });
+                }
                 layer.appendChild(el);
             });
         }
@@ -791,16 +1038,28 @@
             }
             chatMessages.forEach(msg => {
                 const div = document.createElement('div');
-                div.className = 'fade-in-up';
-                const time = new Date(msg.timestamp).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+                div.className = 'fade-in-up group';
+                if (msg.uid && mutedUids.includes(msg.uid)) {
+                    div.innerHTML = `<div class="text-[10px] text-[#FFF7EB]/25 italic cursor-pointer hover:text-[#FFF7EB]/50 transition" onclick="window.toggleMute('${msg.uid}')">🔇 Mensagem de ${esc(msg.name)} oculta — toque para reexibir</div>`;
+                    c.appendChild(div);
+                    return;
+                }
+                const d = new Date(msg.timestamp);
+                const time = d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+                // mensagens de outros dias exibem também a data
+                const isToday = d.toDateString() === new Date().toDateString();
+                const stamp = isToday ? time : `${d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})} · ${time}`;
                 const crown = msg.isVIP ? `<span class="text-[#DB7944]" style="width:11px;height:11px;display:inline-block">${Icons.crown}</span>` : '';
+                const muteBtn = (msg.uid && currentUser && msg.uid !== currentUser.uid)
+                    ? `<button onclick="window.toggleMute('${msg.uid}')" title="Silenciar ${esc(msg.name)}" class="text-[9px] opacity-0 group-hover:opacity-50 hover:!opacity-100 transition">🔇</button>` : '';
                 div.innerHTML = `
 <div class="flex items-baseline gap-1.5 mb-0.5">
-  <span class="font-semibold text-xs flex items-center gap-1 tracking-wide" style="color:${msg.color}">${crown}${msg.name}</span>
-  <span class="text-[9px] text-[#FFF7EB]/30">${time}</span>
+  <span class="font-semibold text-xs flex items-center gap-1 tracking-wide" style="color:${msg.color}">${crown}${esc(msg.name)}</span>
+  <span class="text-[9px] text-[#FFF7EB]/30">${stamp}</span>
+  ${muteBtn}
 </div>
 <div class="text-xs text-[#FFF7EB]/85 break-words font-light${msg.isVIP?' border-l-2 pl-2':''}" style="${msg.isVIP?`border-color:${msg.color}`:''}">
-  ${msg.text}
+  ${esc(msg.text)}
 </div>`;
                 c.appendChild(div);
             });
@@ -818,42 +1077,198 @@
             }
             queue.forEach((item, i) => {
                 const mine = currentUser && item.addedByUid === currentUser.uid;
+                const title = item.title || titleCache[item.videoId] || '';
+                if (!item.title && titleCache[item.videoId] === undefined)
+                    fetchTitle(item.videoId).then(t => { if (t) renderQueue(); });
                 const div = document.createElement('div');
                 div.className = `flex items-center gap-2.5 bg-black/25 p-2 rounded border transition ${mine?'border-[#DB7944]/35':'border-[#FFF7EB]/8 hover:border-[#DB7944]/35'}`;
                 div.innerHTML = `
 <span class="text-[#FFF7EB]/30 font-mono text-xs w-4">${i+1}.</span>
 <img src="https://img.youtube.com/vi/${item.videoId}/default.jpg" class="w-11 h-8 object-cover rounded shadow"/>
 <div class="flex-1 overflow-hidden">
-  <p class="text-[10px] text-[#FFF7EB]/55 truncate">por: <span class="${mine?'text-[#DB7944]':'text-[#FFF7EB]'} font-medium">${item.addedByName}</span></p>
-  ${mine?'<p class="text-[9px] text-[#DB7944]/55 mt-0.5">Sua música 🎵</p>':''}
+  ${title ? `<p class="text-[10px] text-[#FFF7EB]/85 truncate font-medium">${esc(title)}</p>` : ''}
+  <p class="text-[10px] text-[#FFF7EB]/55 truncate">por: <span class="${mine?'text-[#DB7944]':'text-[#FFF7EB]'} font-medium">${esc(item.addedByName)}</span>${mine?' <span class="text-[#DB7944]/55">· sua música 🎵</span>':''}</p>
 </div>`;
                 c.appendChild(div);
             });
         }
 
-        // ── RENDER PLAYER ──
+        // ── PLAYER ──
+        // O iframe só é recriado quando o vídeo muda (renderPlayer); votos, contagem
+        // e avisos vivem num overlay separado (updatePlayerOverlay) pra não reiniciar o vídeo.
+        function ytCmd(func, args = []) {
+            const f = document.getElementById('ytFrame');
+            try { f?.contentWindow?.postMessage(JSON.stringify({event:'command', func, args}), '*'); } catch(e) {}
+        }
+
         function renderPlayer() {
             const c = document.getElementById('playerContainer');
             if (currentVideo?.videoId) {
-                const isMe = currentUser && currentVideo.addedByUid === currentUser.uid;
                 c.innerHTML = `
-<iframe class="w-full h-full" src="https://www.youtube.com/embed/${currentVideo.videoId}?autoplay=1&controls=1&enablejsapi=1"
+<iframe id="ytFrame" class="w-full h-full" src="https://www.youtube.com/embed/${currentVideo.videoId}?autoplay=1&controls=1&enablejsapi=1"
   frameBorder="0" allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture" allowFullScreen></iframe>
-${isMe?`<div class="absolute top-2 left-2 bg-[#ff00cc] text-white text-[10px] px-3 py-1 rounded-full font-bold shadow-lg my-turn-badge">🎧 É a sua vez na mesa!</div>`:''}
-<div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition">
-  <button onclick="window.playNextVideo()" class="bg-black/80 backdrop-blur-md text-[#FFF7EB] border border-[#FFF7EB]/20 text-xs px-3 py-1.5 rounded-full hover:bg-[#DB7944] hover:border-[#DB7944] transition flex items-center gap-1 shadow-lg">
-    ${Icons.play} Pular
-  </button>
-</div>`;
+<div id="playerOverlay" class="absolute inset-0 pointer-events-none"></div>`;
             } else {
+                // Ninguém na mesa: playlist reserva da casa, começando em um vídeo aleatório
+                fallbackIndex = 1 + Math.floor(Math.random() * 40);
+                fallbackUnmuted = false;
                 c.innerHTML = `
-<div class="text-center flex flex-col items-center">
-  <div class="mb-3 text-[#FFF7EB]/10">${Icons.musicBig}</div>
-  <p class="text-[#FFF7EB]/45 font-medium tracking-wide text-sm">Nenhuma música tocando.</p>
-  <p class="text-xs text-[#FFF7EB]/25 font-light mt-1">Adicione um vídeo na fila!</p>
-</div>`;
+<iframe id="ytFrame" class="w-full h-full" src="https://www.youtube.com/embed/videoseries?list=${FALLBACK_PLAYLIST}&index=${fallbackIndex}&autoplay=1&mute=1&controls=1&enablejsapi=1"
+  frameBorder="0" allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture" allowFullScreen></iframe>
+<div id="playerOverlay" class="absolute inset-0 pointer-events-none"></div>`;
             }
+            hookYtEvents();
+            updatePlayerOverlay();
         }
+
+        const countdownActive = () => !!(countdownState?.endsAt && countdownState.endsAt > Date.now());
+
+        const countdownOverlayHtml = () => `
+<div class="absolute inset-0 bg-black/80 backdrop-blur-sm z-20 flex flex-col items-center justify-center gap-2 pointer-events-auto">
+  <p class="text-[11px] md:text-xs uppercase tracking-[.25em] text-[#DB7944] font-bold text-center px-4">${esc(countdownState?.reason || 'Trocando de música...')}</p>
+  <span id="countdownNum" class="font-discodiva text-7xl md:text-8xl text-[#FFF7EB] count-glow">${Math.max(0, Math.ceil((countdownState.endsAt - Date.now()) / 1000))}</span>
+</div>`;
+
+        function updatePlayerOverlay() {
+            const o = document.getElementById('playerOverlay');
+            if (!o) return;
+            const cd = countdownActive() ? countdownOverlayHtml() : '';
+
+            if (currentVideo?.videoId) {
+                const isMe  = currentUser && currentVideo.addedByUid === currentUser.uid;
+                const votes = validSkipVotes();
+                const need  = skipThreshold();
+                const iVotedSkip = !!(currentUser && skipVotes?.videoId === currentVideo.videoId && skipVotes?.votes?.[currentUser.uid]);
+                const pCount = partyVoteCount();
+                const iParty = !!(currentUser && partyVotes.some(v => v.videoId === currentVideo.videoId && v.uid === currentUser.uid));
+                o.innerHTML = `
+${isMe?`<div class="absolute top-2 left-2 bg-[#ff00cc] text-white text-[10px] px-3 py-1 rounded-full font-bold shadow-lg my-turn-badge">🎧 É a sua vez na mesa!</div>`:''}
+<div class="absolute top-2 right-2 flex flex-wrap justify-end gap-1.5 z-10">
+  <button onclick="window.votePartySong()" ${iParty?'disabled':''} title="Vote pra essa tocar na festa de verdade!"
+    class="pointer-events-auto backdrop-blur-md text-[10px] md:text-xs px-2.5 md:px-3 py-1.5 rounded-full border transition flex items-center gap-1 shadow-lg ${iParty?'bg-[#ff6600] border-[#ff6600] text-white cursor-default':'bg-black/80 text-[#FFF7EB] border-[#FFF7EB]/20 hover:bg-[#ff6600] hover:border-[#ff6600]'}">
+    🔥 Essa vai pra festa!${pCount?` (${pCount})`:''}
+  </button>
+  <button onclick="window.voteSkip()" ${iVotedSkip?'disabled':''} title="Vote para pular esta música"
+    class="pointer-events-auto backdrop-blur-md text-[10px] md:text-xs px-2.5 md:px-3 py-1.5 rounded-full border transition flex items-center gap-1 shadow-lg ${iVotedSkip?'bg-[#DB7944] border-[#DB7944] text-white cursor-default':'bg-black/80 text-[#FFF7EB] border-[#FFF7EB]/20 hover:bg-[#DB7944] hover:border-[#DB7944]'}">
+    ${Icons.play} Pular (${votes}/${need})
+  </button>
+</div>
+${currentVideo.title ? `<div class="absolute bottom-2 left-2 max-w-[70%] bg-black/75 backdrop-blur-md text-[#FFF7EB]/85 text-[10px] px-3 py-1 rounded-full border border-[#FFF7EB]/15 truncate">🎵 ${esc(currentVideo.title)}</div>` : ''}
+${cd}`;
+            } else {
+                o.innerHTML = `
+<div class="absolute top-2 left-2 bg-black/75 backdrop-blur-md text-[#FFF7EB]/80 text-[10px] px-3 py-1 rounded-full border border-[#FFF7EB]/15 shadow-lg">🎶 Playlist da casa — adicione um vídeo pra assumir a mesa!</div>
+${fallbackUnmuted ? '' : `<button onclick="window.unmuteFallback(this)" class="pointer-events-auto absolute bottom-3 left-3 bg-[#DB7944] text-white text-xs px-4 py-1.5 rounded-full font-semibold shadow-lg hover:bg-[#c45d1b] transition z-10">🔊 Ativar som</button>`}
+${cd}`;
+            }
+            glPlaying = !!(currentVideo?.videoId) || fallbackUnmuted;
+            applyModalAudioDuck();
+        }
+
+        window.unmuteFallback = btn => {
+            fallbackUnmuted = true;
+            ytCmd('unMute');
+            applyModalAudioDuck();
+            btn.remove();
+        };
+
+        // ── VOTOS: PULAR & "ESSA VAI PRA FESTA!" ──
+        const skipThreshold = () => Math.max(1, Math.ceil(activeUsers.length / 2));
+        const validSkipVotes = () =>
+            (skipVotes && currentVideo?.videoId && skipVotes.videoId === currentVideo.videoId)
+                ? Object.keys(skipVotes.votes || {}).length : 0;
+        const partyVoteCount = () =>
+            currentVideo?.videoId ? partyVotes.filter(v => v.videoId === currentVideo.videoId).length : 0;
+
+        window.voteSkip = async () => {
+            if (!currentUser || !db || !currentVideo?.videoId || countdownActive()) return;
+            const votes = (skipVotes?.videoId === currentVideo.videoId) ? {...(skipVotes.votes || {})} : {};
+            if (votes[currentUser.uid]) return;
+            votes[currentUser.uid] = true;
+            await setDoc(pdoc('player', 'skipVotes'), {videoId: currentVideo.videoId, votes});
+            if (Object.keys(votes).length >= skipThreshold())
+                startCountdown('A pista votou: próxima música!', () => window.playNextVideo());
+        };
+
+        window.votePartySong = async () => {
+            if (!currentUser || !db || !currentVideo?.videoId) return;
+            await setDoc(pdoc('partyVotes', `${currentVideo.videoId}_${currentUser.uid}`), {
+                videoId: currentVideo.videoId,
+                uid: currentUser.uid,
+                name: localProfile.name,
+                addedByName: currentVideo.addedByName || null,
+                timestamp: Date.now()
+            });
+        };
+
+        // ── CONTAGEM REGRESSIVA SINCRONIZADA ──
+        async function startCountdown(reason, action) {
+            if (!db) { action(); return; }
+            if (countdownActive()) return;
+            const endsAt = Date.now() + COUNTDOWN_MS;
+            countdownState = {endsAt, reason};
+            await setDoc(pdoc('player', 'countdown'), {endsAt, reason});
+            setTimeout(async () => {
+                try { await action(); }
+                finally { try { await setDoc(pdoc('player', 'countdown'), {endsAt: null, reason: null}); } catch(e) {} }
+            }, COUNTDOWN_MS);
+        }
+
+        // ticker: atualiza o número da contagem e liga/desliga o overlay
+        let cdShown = false;
+        setInterval(() => {
+            const active = countdownActive();
+            if (active !== cdShown) { cdShown = active; updatePlayerOverlay(); }
+            if (active) {
+                const el = document.getElementById('countdownNum');
+                const n = Math.max(0, Math.ceil((countdownState.endsAt - Date.now()) / 1000));
+                if (el && el.textContent != n) el.textContent = n;
+            }
+        }, 200);
+
+        // ── LÍDER: menor uid online executa ações automáticas (evita corrida) ──
+        const isLeader = () => {
+            if (!currentUser) return false;
+            const ids = activeUsers.map(u => u.id).sort();
+            return !ids.length || ids[0] === currentUser.uid;
+        };
+
+        // ── LIMITE DE 10 MIN POR VÍDEO ──
+        setInterval(() => {
+            if (!currentUser || !db || !currentVideo?.videoId || !currentVideo.startedAt) return;
+            if (Date.now() - currentVideo.startedAt < MAX_PLAY_MS) return;
+            if (countdownActive() || !isLeader()) return;
+            window.playNextVideo();
+        }, 5000);
+
+        // ── FIM DE VÍDEO (via YouTube IFrame API por postMessage) ──
+        function hookYtEvents() {
+            const f = document.getElementById('ytFrame');
+            if (!f) return;
+            f.addEventListener('load', () => {
+                try { f.contentWindow.postMessage(JSON.stringify({event:'listening', id:'ytFrame', channel:'widget'}), '*'); } catch(e) {}
+                setTimeout(applyModalAudioDuck, 800);
+            });
+        }
+        window.addEventListener('message', e => {
+            if (e.origin !== 'https://www.youtube.com') return;
+            let d; try { d = JSON.parse(e.data); } catch { return; }
+            // playerState 0 = vídeo terminou → líder avança a fila
+            if (d.event === 'onStateChange' && d.info === 0 && currentVideo?.videoId && !countdownActive() && isLeader())
+                window.playNextVideo();
+        });
+
+        // ── "FILTRO" DE ÁUDIO COM O MODAL ABERTO ──
+        // O YouTube não expõe o áudio do embed pro Web Audio (cross-origin), então o
+        // efeito abafado é simulado: volume bem baixo + leve desfoque no vídeo.
+        function applyModalAudioDuck() {
+            const f = document.getElementById('ytFrame');
+            if (!f) return;
+            ytCmd('setVolume', [modalOpen ? 10 : 100]);
+            f.style.transition = 'filter .5s ease';
+            f.style.filter = modalOpen ? 'blur(3px) saturate(.5) brightness(.7)' : '';
+        }
+        setInterval(() => { if (modalOpen) applyModalAudioDuck(); }, 1500);
 
         // ── CHAT ──
         document.getElementById('chatInput').addEventListener('input', e => {
@@ -865,8 +1280,7 @@ ${isMe?`<div class="absolute top-2 left-2 bg-[#ff00cc] text-white text-[10px] px
             const text = inp.value.trim();
             if (!currentUser || !text) return;
             if (!db) { alert('Firebase não configurado. Chat indisponível.'); return; }
-            const ref = collection(db, 'artifacts', appId, 'public', 'data', 'chat');
-            await addDoc(ref, {uid:currentUser.uid, name:localProfile.name, isVIP:localProfile.isVIP, color:localProfile.color, text, timestamp:Date.now()});
+            await addDoc(pcol('chat'), {uid:currentUser.uid, name:localProfile.name, isVIP:localProfile.isVIP, color:localProfile.color, text:censor(text), timestamp:Date.now()});
             inp.value = '';
             document.getElementById('chatSubmit').disabled = true;
         });
@@ -884,29 +1298,307 @@ ${isMe?`<div class="absolute top-2 left-2 bg-[#ff00cc] text-white text-[10px] px
             const videoId = extractYouTubeId(inp.value);
             if (!videoId) { alert('Link do YouTube inválido.'); return; }
             if (!db) { alert('Firebase não configurado. Fila indisponível.'); return; }
-            const ref = collection(db, 'artifacts', appId, 'public', 'data', 'queue');
-            await addDoc(ref, {videoId, addedByName:localProfile.name, addedByUid:currentUser.uid, timestamp:Date.now()});
+            const title = await fetchTitle(videoId);
+            const docRef = await addDoc(pcol('queue'), {videoId, title: title || null, addedByName:localProfile.name, addedByUid:currentUser.uid, timestamp:Date.now()});
             inp.value = '';
-            if (!currentVideo?.videoId) window.playNextVideo(videoId);
+            // Se a pista está na playlist da casa, faz a contagem e entra com a música do usuário
+            if (!currentVideo?.videoId && !countdownActive()) {
+                const byName = localProfile.name, byUid = currentUser.uid;
+                startCountdown(`🎵 Música de ${byName} entrando na pista!`, async () => {
+                    await setNowPlaying(videoId, byName, byUid, title);
+                    try { await deleteDoc(pdoc('queue', docRef.id)); } catch(e) {}
+                });
+            }
         });
+
+        // grava o vídeo atual + reset dos votos + histórico (ranking da noite)
+        async function setNowPlaying(vid, byName, byUid, title) {
+            await setDoc(pdoc('player', 'state'), {videoId:vid, startedAt:Date.now(), addedByName:byName, addedByUid:byUid, title: title || null});
+            await setDoc(pdoc('player', 'skipVotes'), {videoId:vid, votes:{}});
+            if (vid) addDoc(pcol('history'), {videoId:vid, byUid, byName, title: title || null, timestamp:Date.now()}).catch(() => {});
+        }
 
         window.playNextVideo = async (overrideId = null) => {
             if (!currentUser || !db) return;
-            let vid = overrideId, docId = null;
+            let vid = overrideId, docId = null, title = null;
             let byName = localProfile.name, byUid = currentUser.uid;
             if (!vid && queue.length > 0) {
                 vid = queue[0].videoId; docId = queue[0].id;
+                title  = queue[0].title || titleCache[vid] || null;
                 byName = queue[0].addedByName || byName;
                 byUid  = queue[0].addedByUid  || byUid;
             }
-            const stateRef = doc(db, 'artifacts', appId, 'public', 'data', 'player', 'state');
             if (vid) {
-                await setDoc(stateRef, {videoId:vid, startedAt:Date.now(), addedByName:byName, addedByUid:byUid});
-                if (docId) await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'queue', docId));
+                await setNowPlaying(vid, byName, byUid, title);
+                if (docId) await deleteDoc(pdoc('queue', docId));
             } else {
-                await setDoc(stateRef, {videoId:null, startedAt:null, addedByName:null, addedByUid:null});
+                await setDoc(pdoc('player', 'state'), {videoId:null, startedAt:null, addedByName:null, addedByUid:null, title:null});
+                await setDoc(pdoc('player', 'skipVotes'), {videoId:null, votes:{}});
             }
         };
+
+        // ── CHAT PRIVADO (DM) ──
+        const convId = (a, b) => [a, b].sort().join('_');
+        const dmUnread = uid => mutedUids.includes(uid) ? 0 : dmMessages.filter(m =>
+            m.from === uid && m.to === currentUser?.uid &&
+            m.timestamp > (dmReadAt[uid] || dmSessionStart) && dmOpenWith !== uid
+        ).length;
+
+        window.openDM = uid => {
+            const u = activeUsers.find(x => x.id === uid);
+            if (!u || !currentUser || uid === currentUser.uid) return;
+            dmOpenWith = uid;
+            dmReadAt[uid] = Date.now();
+            document.getElementById('dmAvatar').src = getAvatarUrl(u.avatarConfig);
+            const nameEl = document.getElementById('dmName');
+            nameEl.innerText = u.name;
+            nameEl.style.color = u.color || '#DB7944';
+            const p = document.getElementById('dmPanel');
+            p.classList.remove('hidden');
+            p.classList.add('flex');
+            renderDM();
+            renderUsers();
+            document.getElementById('dmInput').focus();
+        };
+
+        document.getElementById('dmClose').addEventListener('click', () => {
+            dmOpenWith = null;
+            const p = document.getElementById('dmPanel');
+            p.classList.add('hidden');
+            p.classList.remove('flex');
+            renderUsers();
+        });
+
+        document.getElementById('dmForm').addEventListener('submit', async e => {
+            e.preventDefault();
+            const inp = document.getElementById('dmInput');
+            const text = inp.value.trim();
+            if (!text || !dmOpenWith || !currentUser) return;
+            if (!db) { alert('Firebase não configurado. Chat privado indisponível.'); return; }
+            await addDoc(pcol('dm'), {
+                convId: convId(currentUser.uid, dmOpenWith),
+                from: currentUser.uid, fromName: localProfile.name, fromColor: localProfile.color,
+                to: dmOpenWith, text: censor(text), timestamp: Date.now()
+            });
+            inp.value = '';
+        });
+
+        function renderDM() {
+            if (!dmOpenWith || !currentUser) return;
+            dmReadAt[dmOpenWith] = Date.now();
+            const c = document.getElementById('dmMessages');
+            const msgs = dmMessages.filter(m => m.convId === convId(currentUser.uid, dmOpenWith));
+            if (!msgs.length) {
+                c.innerHTML = `<div class="text-center text-[#FFF7EB]/30 text-xs mt-6 font-light">Puxe o papo! Só vocês dois veem essas mensagens.</div>`;
+                return;
+            }
+            c.innerHTML = '';
+            msgs.forEach(m => {
+                const mine = m.from === currentUser.uid;
+                const div = document.createElement('div');
+                div.className = `flex ${mine ? 'justify-end' : 'justify-start'}`;
+                div.innerHTML = `<div class="max-w-[80%] px-3 py-1.5 rounded-2xl text-xs font-light break-words ${mine ? 'bg-[#DB7944] text-white rounded-br-sm' : 'bg-[#FFF7EB]/10 text-[#FFF7EB] rounded-bl-sm'}">${esc(m.text)}</div>`;
+                c.appendChild(div);
+            });
+            c.scrollTop = c.scrollHeight;
+        }
+
+        // ── REAÇÕES RÁPIDAS ──
+        const REACTION_EMOJIS = ['🔥','❤️','👏','🕺','💃','😂'];
+        function spawnReaction(r) {
+            const floor = document.getElementById('danceFloor');
+            if (!floor) return;
+            const el = document.createElement('div');
+            el.className = 'rx-float absolute pointer-events-none z-30 text-2xl';
+            el.style.left = `${Math.min(97, Math.max(2, r.x ?? 50))}%`;
+            el.style.top  = `${Math.min(95, Math.max(5, r.y ?? 50))}%`;
+            el.textContent = REACTION_EMOJIS.includes(r.emoji) ? r.emoji : '🔥';
+            floor.appendChild(el);
+            setTimeout(() => el.remove(), 2700);
+        }
+        window.sendReaction = async emoji => {
+            if (!REACTION_EMOJIS.includes(emoji)) return;
+            if (!currentUser || !db) {
+                spawnReaction({emoji, x: 50, y: 60}); // modo offline: só efeito local
+                return;
+            }
+            const me = activeUsers.find(u => u.id === currentUser.uid);
+            await addDoc(pcol('reactions'), {
+                uid: currentUser.uid, emoji,
+                x: me?.x ?? 50, y: (me?.y ?? 55) - 5,
+                timestamp: Date.now()
+            });
+        };
+
+        // ── PASSINHOS DE DANÇA ──
+        const DANCES = [
+            {v:'', l:'😐 Parado'}, {v:'spin', l:'🌀 Giro'}, {v:'jump', l:'🦘 Pulinho'},
+            {v:'shake', l:'🪩 Quebradinha'}, {v:'moonwalk', l:'🌙 Moonwalk'}
+        ];
+        document.getElementById('danceMenu').innerHTML = DANCES.map(d =>
+            `<button onclick="window.setDance('${d.v}')" class="text-left text-xs px-2.5 py-1.5 rounded-lg hover:bg-[#DB7944]/20 transition text-[#FFF7EB]/85">${d.l}</button>`
+        ).join('');
+        window.setDance = v => {
+            if (!DANCES.some(d => d.v === v)) return;
+            localProfile.dance = v;
+            updatePresence();
+            const m = document.getElementById('danceMenu');
+            m.classList.add('hidden'); m.classList.remove('flex');
+        };
+        document.getElementById('danceMenuBtn').addEventListener('click', () => {
+            const m = document.getElementById('danceMenu');
+            m.classList.toggle('hidden'); m.classList.toggle('flex');
+        });
+
+        // ── RANKING DA NOITE ──
+        function renderRanking() {
+            const medals = ['🥇','🥈','🥉','4º','5º'];
+            const rankingOpen = () => !document.getElementById('rankingModal').classList.contains('hidden');
+
+            const djAgg = {};
+            playHistory.forEach(h => {
+                if (!h.byUid) return;
+                (djAgg[h.byUid] ??= {name: h.byName || 'Investidor', n: 0}).n++;
+            });
+            const topDjs = Object.values(djAgg).sort((a,b) => b.n - a.n).slice(0, 5);
+            document.getElementById('rankingDjs').innerHTML = topDjs.length ? topDjs.map((d,i) => `
+<div class="flex items-center gap-2 bg-black/30 border border-[#FFF7EB]/8 rounded-lg px-3 py-2">
+  <span class="w-7 text-center text-sm">${medals[i]}</span>
+  <span class="flex-1 text-xs font-medium truncate">${esc(d.name)}</span>
+  <span class="text-[10px] text-[#FFF7EB]/50 whitespace-nowrap">${d.n} música${d.n > 1 ? 's' : ''}</span>
+</div>`).join('') : `<p class="text-xs text-[#FFF7EB]/30 font-light">Ninguém tocou ainda. Solta o som!</p>`;
+
+            const songAgg = {};
+            partyVotes.forEach(v => { songAgg[v.videoId] = (songAgg[v.videoId] || 0) + 1; });
+            const topSongs = Object.entries(songAgg).sort((a,b) => b[1] - a[1]).slice(0, 5);
+            document.getElementById('rankingSongs').innerHTML = topSongs.length ? topSongs.map(([vid, n], i) => {
+                const t = titleCache[vid];
+                if (t === undefined) fetchTitle(vid).then(() => { if (rankingOpen()) renderRanking(); });
+                return `
+<a href="https://youtu.be/${vid}" target="_blank" class="flex items-center gap-2 bg-black/30 border border-[#FFF7EB]/8 rounded-lg px-3 py-2 hover:border-[#ff6600]/50 transition">
+  <span class="w-7 text-center text-sm">${medals[i]}</span>
+  <img src="https://img.youtube.com/vi/${vid}/default.jpg" class="w-10 h-7 object-cover rounded"/>
+  <span class="flex-1 text-xs truncate">${esc(t || 'Vídeo ' + vid)}</span>
+  <span class="text-[10px] text-[#ff6600] font-bold whitespace-nowrap">🔥 ${n}</span>
+</a>`;
+            }).join('') : `<p class="text-xs text-[#FFF7EB]/30 font-light">Nenhum voto "Essa vai pra festa!" ainda.</p>`;
+        }
+        document.getElementById('openRankingBtn').addEventListener('click', () => {
+            renderRanking();
+            const m = document.getElementById('rankingModal');
+            m.classList.remove('hidden'); m.classList.add('flex');
+        });
+        document.getElementById('rankingClose').addEventListener('click', () => {
+            const m = document.getElementById('rankingModal');
+            m.classList.add('hidden'); m.classList.remove('flex');
+        });
+
+        // ── PISTA WEBGL (Three.js) ──
+        // Globo de espelhos 3D, feixes de luz volumétricos e partículas pulsando no ritmo.
+        // Se o CDN/WebGL falhar, o globo 2D em CSS continua no lugar.
+        (async () => {
+            try {
+                const THREE = await import('https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js');
+                const holder = document.getElementById('webglLayer');
+                const renderer = new THREE.WebGLRenderer({alpha: true, antialias: true});
+                renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+                holder.appendChild(renderer.domElement);
+
+                const scene = new THREE.Scene();
+                const cam = new THREE.PerspectiveCamera(50, 1, .1, 100);
+                cam.position.set(0, 0, 10);
+
+                // globo de espelhos facetado
+                const ball = new THREE.Group();
+                ball.add(new THREE.Mesh(
+                    new THREE.IcosahedronGeometry(1.15, 2),
+                    new THREE.MeshStandardMaterial({color: 0xcccccc, metalness: 1, roughness: .18, flatShading: true})
+                ));
+                ball.position.set(0, 2.7, 0);
+                scene.add(ball);
+
+                // haste do globo
+                const wire = new THREE.Mesh(
+                    new THREE.CylinderGeometry(.02, .02, 2.2),
+                    new THREE.MeshBasicMaterial({color: 0x666666})
+                );
+                wire.position.set(0, 4.6, 0);
+                scene.add(wire);
+
+                // luzes coloridas girando ao redor do globo
+                const NEONS = [0xff00cc, 0x00ffff, 0xffdc00, 0xff6600];
+                const lightGroup = new THREE.Group();
+                NEONS.forEach((c, i) => {
+                    const l = new THREE.PointLight(c, 40, 40);
+                    l.position.setFromSphericalCoords(4.5, Math.PI / 2.3, i * Math.PI / 2);
+                    lightGroup.add(l);
+                });
+                lightGroup.position.copy(ball.position);
+                scene.add(lightGroup);
+                scene.add(new THREE.AmbientLight(0xffffff, .3));
+
+                // feixes de luz saindo do globo
+                const beams = new THREE.Group();
+                NEONS.forEach((c, i) => {
+                    const cone = new THREE.Mesh(
+                        new THREE.ConeGeometry(1.6, 7.5, 20, 1, true),
+                        new THREE.MeshBasicMaterial({color: c, transparent: true, opacity: .1, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, depthWrite: false})
+                    );
+                    cone.position.y = -3.6;
+                    const pivot = new THREE.Group();
+                    pivot.rotation.z = (i - 1.5) * .42;
+                    pivot.add(cone);
+                    beams.add(pivot);
+                });
+                beams.position.copy(ball.position);
+                scene.add(beams);
+
+                // poeira brilhante da pista
+                const N = 220;
+                const pos = new Float32Array(N * 3);
+                for (let i = 0; i < N; i++) {
+                    pos[i*3] = (Math.random() - .5) * 15;
+                    pos[i*3+1] = (Math.random() - .5) * 9;
+                    pos[i*3+2] = (Math.random() - .5) * 6;
+                }
+                const pg = new THREE.BufferGeometry();
+                pg.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+                const pm = new THREE.PointsMaterial({color: 0xffffff, size: .05, transparent: true, opacity: .45});
+                const pts = new THREE.Points(pg, pm);
+                scene.add(pts);
+
+                const resize = () => {
+                    const w = holder.clientWidth, h = holder.clientHeight;
+                    if (!w || !h) return;
+                    renderer.setSize(w, h, false);
+                    cam.aspect = w / h;
+                    cam.updateProjectionMatrix();
+                };
+                new ResizeObserver(resize).observe(holder);
+                resize();
+
+                document.getElementById('cssDiscoBall')?.remove(); // o globo agora é 3D
+
+                const BPM = 118; // batida estimada pro pulso visual
+                renderer.setAnimationLoop(t => {
+                    const s = t / 1000;
+                    const beat = (s * BPM / 60) % 1;
+                    const pulse = glPlaying ? 1 + .2 * Math.pow(1 - beat, 3) : 1 + .04 * Math.sin(s * 2);
+                    ball.rotation.y = s * .6;
+                    ball.scale.setScalar(pulse);
+                    lightGroup.rotation.y = -s * .8;
+                    beams.rotation.y = s * .5;
+                    beams.children.forEach((p, i) => {
+                        p.children[0].material.opacity = (glPlaying ? .13 : .06) + .05 * Math.sin(s * 2 + i);
+                    });
+                    pts.rotation.y = s * .05;
+                    pm.opacity = .3 + (glPlaying ? .3 * Math.pow(1 - beat, 2) : .1);
+                    renderer.render(scene, cam);
+                });
+            } catch(e) {
+                console.warn('WebGL indisponível — mantendo a pista 2D.', e);
+            }
+        })();
 
         // ── MODAL DO AVATAR ──
         function renderSettingsModal() {
@@ -915,7 +1607,6 @@ ${isMe?`<div class="absolute top-2 left-2 bg-[#ff00cc] text-white text-[10px] px
             document.getElementById('avatarPreviewContainer').style.cssText =
                 `box-shadow: 0 0 0 3px ${c}, 0 0 24px ${c}60`;
             document.getElementById('profileName').value = localProfile.name;
-            document.getElementById('profileVIP').checked = localProfile.isVIP;
 
             function btns(containerId, options, key) {
                 document.getElementById(containerId).innerHTML = options.map(opt =>
@@ -954,10 +1645,19 @@ ${isMe?`<div class="absolute top-2 left-2 bg-[#ff00cc] text-white text-[10px] px
         document.getElementById('profileName').addEventListener('input', e => {
             localProfile.name = e.target.value || 'Investidor';
         });
-        document.getElementById('profileVIP').addEventListener('change', e => {
-            localProfile.isVIP = e.target.checked;
-        });
-        document.getElementById('saveProfileBtn').addEventListener('click', () => {
+
+        // ── ABAS DO MODAL (mobile) ──
+        window.setCfgTab = tab => {
+            document.querySelectorAll('.cfg-sec').forEach(el => {
+                el.style.display = el.dataset.sec === tab ? 'block' : 'none';
+            });
+            document.querySelectorAll('.cfg-tab').forEach(b =>
+                b.classList.toggle('cfg-tab-on', b.dataset.tab === tab));
+        };
+
+        // ── ENTRAR NA FESTA ──
+        function enterParty(vip) {
+            localProfile.isVIP = vip;
             updatePresence();
             const ha = document.getElementById('headerAvatar');
             ha.src = getAvatarUrl(localProfile.avatarConfig);
@@ -966,16 +1666,27 @@ ${isMe?`<div class="absolute top-2 left-2 bg-[#ff00cc] text-white text-[10px] px
             hn.innerText = localProfile.name;
             hn.classList.remove('hidden');
             const hc = document.getElementById('headerCrown');
-            if (localProfile.isVIP) { hc.innerHTML = Icons.crown; hc.classList.remove('hidden'); }
+            if (vip) { hc.innerHTML = Icons.crown; hc.classList.remove('hidden'); }
             else hc.classList.add('hidden');
             document.getElementById('settingsModal').classList.add('hidden');
+            modalOpen = false;
+            applyModalAudioDuck();
+        }
+        document.getElementById('enterVipBtn').addEventListener('click', () => enterParty(true));
+        document.getElementById('enterNoTicketBtn').addEventListener('click', () => {
+            window.open(TICKETS_URL, '_blank');
+            enterParty(false);
         });
+
         document.getElementById('openSettingsBtn').addEventListener('click', () => {
             renderSettingsModal();
             document.getElementById('settingsModal').classList.remove('hidden');
+            modalOpen = true;
+            applyModalAudioDuck();
         });
 
         renderSettingsModal();
+        window.setCfgTab('estilo');
     </script>
 </body>
 </html>
