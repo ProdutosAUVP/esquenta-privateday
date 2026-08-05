@@ -1425,6 +1425,19 @@ ${cd}`;
             return !ids.length || ids[0] === currentUser.uid;
         };
 
+        // ── FILA NUNCA FICA ÓRFÃ ──
+        // Se quem adicionou fechou a aba (ou caiu no meio da contagem), a música
+        // continua na fila; o líder detecta e coloca pra tocar — o lugar na fila
+        // e o crédito de DJ da pessoa são preservados mesmo com ela offline.
+        setInterval(() => {
+            if (!currentUser || !db) return;
+            if (currentVideo?.videoId) return;   // já tem música na mesa
+            if (!queue.length) return;
+            if (countdownActive() || !isLeader()) return;
+            const nome = queue[0].addedByName || 'Investidor';
+            startCountdown(`🎵 Música de ${nome} entrando na pista!`, () => window.playNextVideo());
+        }, 4000);
+
         // ── LIMITE DE 10 MIN POR VÍDEO ──
         setInterval(() => {
             if (!currentUser || !db || !currentVideo?.videoId || !currentVideo.startedAt) return;
