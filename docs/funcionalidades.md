@@ -17,8 +17,11 @@ Ao abrir o app, o modal **"Crie seu Avatar"** aparece com a música da casa já 
 
 Enquanto o modal está aberto, o áudio do player fica abafado (volume ~10% + desfoque no vídeo). Ao entrar, o som volta ao normal.
 
+**Perfil salvo no navegador**: nome, avatar completo, cor da aura, passinho e status de ingresso ficam no `localStorage` (`esquentaProfile`) — na próxima visita tudo volta como estava.
+
 ## Pista de dança
 
+- Ao entrar, cada pessoa surge num **ponto aleatório** da pista (fora da Área VIP e da cabine do DJ) — nada de aglomeração no centro.
 - Clique em qualquer ponto da pista para mover seu avatar (posição sincronizada para todos).
 - **Pista WebGL (Three.js)**: globo de espelhos 3D facetado girando, luzes coloridas orbitando, feixes volumétricos e partículas de poeira brilhante — tudo **pulsando numa batida estimada (118 BPM)** quando há música audível. Carregado por import dinâmico; sem WebGL, o globo 2D em CSS permanece.
 - Ladrilhos 80s acendem em cores neon aleatórias; luzes de ambiente pulsam nos cantos.
@@ -42,7 +45,7 @@ Cole um link do YouTube no campo da fila. A música entra no fim da fila com seu
 Quem está com a música tocando vê o botão **"Pular minha vez"** — passa a vez direto (com a contagem de 5 s), sem precisar de votação.
 
 Para os demais, o botão **"Pular (x/y)"** no canto do player:
-- `x` = votos atuais, `y` = votos necessários (**maioria dos online**: `ceil(online/2)`, mínimo 1).
+- `x` = votos atuais, `y` = votos necessários: **50%+1 dos presentes ou 10 votos**, o que for menor (mínimo 1).
 - Cada pessoa vota uma vez por música (o botão trava depois do voto).
 - Ao atingir o limiar: contagem regressiva de 5 s ("A pista votou: próxima música!") e a música é pulada.
 - Os votos zeram a cada troca de música.

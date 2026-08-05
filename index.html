@@ -367,25 +367,26 @@
                 <span id="icon-settings"></span> Crie seu Avatar
             </h2>
 
-            <!-- Preview + Nome -->
-            <div class="flex items-center gap-4 mb-4">
-                <div id="avatarPreviewContainer" class="w-20 h-20 md:w-28 md:h-28 shrink-0 rounded-full bg-[#111] overflow-hidden shadow-xl transition-all relative">
-                    <img id="avatarPreviewImage" src="" alt="Preview" class="w-full h-full object-cover"/>
+            <!-- Preview + Nome + abas: fixos no topo enquanto as opções rolam -->
+            <div class="sticky -top-4 md:-top-6 z-20 bg-[#0d0d0d] -mx-4 md:-mx-6 px-4 md:px-6 pt-2 border-b border-[#FFF7EB]/10 mb-4">
+                <div class="flex items-center gap-4 pb-3">
+                    <div id="avatarPreviewContainer" class="w-20 h-20 md:w-28 md:h-28 shrink-0 rounded-full bg-[#111] overflow-hidden shadow-xl transition-all relative">
+                        <img id="avatarPreviewImage" src="" alt="Preview" class="w-full h-full object-cover"/>
+                    </div>
+                    <div class="flex-1">
+                        <label class="block text-xs font-medium text-[#FFF7EB]/50 mb-1 uppercase tracking-widest">Seu Nome / Apelido</label>
+                        <input type="text" id="profileName"
+                            class="w-full bg-black/60 border border-[#FFF7EB]/15 rounded-lg px-4 py-2.5 focus:outline-none focus:border-[#DB7944] focus:ring-1 focus:ring-[#DB7944] transition text-[#FFF7EB] font-light text-sm"
+                            placeholder="Como quer ser chamado?"/>
+                    </div>
                 </div>
-                <div class="flex-1">
-                    <label class="block text-xs font-medium text-[#FFF7EB]/50 mb-1 uppercase tracking-widest">Seu Nome / Apelido</label>
-                    <input type="text" id="profileName"
-                        class="w-full bg-black/60 border border-[#FFF7EB]/15 rounded-lg px-4 py-2.5 focus:outline-none focus:border-[#DB7944] focus:ring-1 focus:ring-[#DB7944] transition text-[#FFF7EB] font-light text-sm"
-                        placeholder="Como quer ser chamado?"/>
-                </div>
+                <!-- Navegação por seção (mobile) -->
+                <nav class="cfg-nav flex overflow-x-auto">
+                    <button type="button" data-tab="estilo" onclick="window.setCfgTab('estilo')" class="cfg-tab cfg-tab-on">Estilo</button>
+                    <button type="button" data-tab="rosto" onclick="window.setCfgTab('rosto')" class="cfg-tab">Rosto</button>
+                    <button type="button" data-tab="cores" onclick="window.setCfgTab('cores')" class="cfg-tab">Cores</button>
+                </nav>
             </div>
-
-            <!-- Navegação por seção (mobile) -->
-            <nav class="cfg-nav flex border-b border-[#FFF7EB]/10 mb-4 -mx-4 px-4 overflow-x-auto">
-                <button type="button" data-tab="estilo" onclick="window.setCfgTab('estilo')" class="cfg-tab cfg-tab-on">Estilo</button>
-                <button type="button" data-tab="rosto" onclick="window.setCfgTab('rosto')" class="cfg-tab">Rosto</button>
-                <button type="button" data-tab="cores" onclick="window.setCfgTab('cores')" class="cfg-tab">Cores</button>
-            </nav>
 
             <div class="bg-black/40 rounded-xl border border-[#FFF7EB]/10 p-4 space-y-5" id="avatarSections">
 
@@ -436,8 +437,20 @@
                         <div id="avatarHairColor" class="flex gap-2 flex-wrap"></div>
                     </div>
                     <div>
+                        <label class="block text-[10px] font-bold text-[#DB7944] mb-2 uppercase tracking-widest">Cor da Barba</label>
+                        <div id="avatarFacialHairColor" class="flex gap-2 flex-wrap"></div>
+                    </div>
+                    <div>
                         <label class="block text-[10px] font-bold text-[#DB7944] mb-2 uppercase tracking-widest">Cor da Roupa</label>
                         <div id="avatarClothingColor" class="flex gap-2 flex-wrap"></div>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-[#DB7944] mb-2 uppercase tracking-widest">Cor do Chapéu / Gorro</label>
+                        <div id="avatarHatColor" class="flex gap-2 flex-wrap"></div>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-[#DB7944] mb-2 uppercase tracking-widest">Cor dos Acessórios</label>
+                        <div id="avatarAccColor" class="flex gap-2 flex-wrap"></div>
                     </div>
                     <div>
                         <label class="block text-[10px] font-bold text-[#DB7944] mb-2 uppercase tracking-widest">Cor da Aura na Pista</label>
@@ -650,12 +663,28 @@
             avatarConfig: {
                 top: 'shortFlat', accessories: '', facialHair: '',
                 clothing: 'hoodie', eyes: 'default', eyebrows: 'default',
-                mouth: 'default', skinColor: 'edb98a', hairColor: '724133', clothesColor: '3c4f5c'
+                mouth: 'default', skinColor: 'edb98a', hairColor: '724133', clothesColor: '3c4f5c',
+                hatColor: '25557c', accessoriesColor: '262e33', facialHairColor: '724133'
             },
             color: '#DB7944',
             isVIP: false,
             dance: ''
         };
+
+        // ── PERFIL SALVO NO NAVEGADOR ──
+        // Nome, avatar e preferências voltam como estavam na última visita
+        try {
+            const saved = JSON.parse(localStorage.getItem('esquentaProfile') || 'null');
+            if (saved && typeof saved === 'object') {
+                localProfile = {
+                    ...localProfile,
+                    ...saved,
+                    avatarConfig: {...localProfile.avatarConfig, ...(saved.avatarConfig || {})}
+                };
+                if (typeof localProfile.name !== 'string' || !localProfile.name.trim()) localProfile.name = 'Investidor';
+            }
+        } catch(e) {}
+        const saveProfile = () => { try { localStorage.setItem('esquentaProfile', JSON.stringify(localProfile)); } catch(e) {} };
 
         // Valores antigos (salvos em perfis no Firestore antes da correção) → equivalente válido no v8
         const LEGACY_AVATAR = {
@@ -681,7 +710,8 @@
                 mouth,
                 skinColor:       okHex(c.skinColor, 'edb98a'),
                 hairColor:       hair,
-                facialHairColor: hair, // barba acompanha a cor do cabelo
+                facialHairColor: okHex(c.facialHairColor, hair), // barba tem cor própria (padrão: cor do cabelo)
+                hatColor:        okHex(c.hatColor, '25557c'),    // chapéu/gorro/hijab/turbante
                 clothesColor:    okHex(c.clothesColor, '3c4f5c'),
                 backgroundColor: 'transparent'
             };
@@ -690,7 +720,7 @@
             const acc = okOpt(ACCESSORIES, c.accessories, '');
             const fh  = okOpt(FACIAL_HAIR, c.facialHair, '');
             // sem probability=100 a API só exibe acessório/barba em ~10% das renderizações
-            if (acc) { params.accessories = acc; params.accessoriesProbability = 100; }
+            if (acc) { params.accessories = acc; params.accessoriesProbability = 100; params.accessoriesColor = okHex(c.accessoriesColor, '262e33'); }
             if (fh)  { params.facialHair  = fh;  params.facialHairProbability  = 100; }
             return `https://api.dicebear.com/8.x/avataaars/svg?${new URLSearchParams(params)}`;
         }
@@ -1002,15 +1032,31 @@
         }
 
         // ── PRESENÇA ──
+        // cada visita começa num ponto aleatório da pista (fora da Área VIP e da cabine do DJ)
+        let spawnPoint = null;
+        let spawned = false;
+        function getSpawnPoint() {
+            if (spawnPoint) return spawnPoint;
+            let x, y, t = 0;
+            do {
+                x = 8 + Math.random() * 84;
+                y = 18 + Math.random() * 70;
+                t++;
+            } while (t < 30 && (inVipZone(x, y) || (x > 78 && y > 62)));
+            spawnPoint = {x, y};
+            return spawnPoint;
+        }
+
         async function updatePresence(x = null, y = null) {
             if (!currentUser || !db) return;
             const ref = doc(db, 'artifacts', appId, 'public', 'data', 'users', currentUser.uid);
             const data = { ...localProfile, lastUpdate: Date.now() };
-            if (x !== null && y !== null) { data.x = x; data.y = y; }
+            if (x !== null && y !== null) { data.x = x; data.y = y; spawned = true; }
             else {
                 const me = activeUsers.find(u => u.id === currentUser.uid);
-                data.x = me?.x ?? 50;
-                data.y = me?.y ?? 50;
+                if (!spawned || !me) { const s = getSpawnPoint(); data.x = s.x; data.y = s.y; }
+                else { data.x = me.x ?? getSpawnPoint().x; data.y = me.y ?? getSpawnPoint().y; }
+                spawned = true;
             }
             try { await setDoc(ref, data, {merge:true}); } catch(e) { console.error(e); }
         }
@@ -1066,8 +1112,9 @@
                 const isMe   = u.id === currentUser?.uid;
                 const posX   = isDJ ? DJ_X : (u.x ?? 50);
                 const posY   = isDJ ? DJ_Y : (u.y ?? 50);
-                const color  = u.color || '#DB7944';
-                const vipGlow = `0 0 22px rgba(219,121,68,.7), 0 0 44px rgba(219,121,68,.3), 0 0 0 3px #DB7944`;
+                const color  = /^#[0-9a-fA-F]{6}$/.test(u.color || '') ? u.color : '#DB7944';
+                // a aura VIP usa a COR ESCOLHIDA pelo usuário (mais intensa); a coroa marca o VIP
+                const vipGlow = `0 0 22px ${color}b0, 0 0 44px ${color}50, 0 0 0 3px ${color}`;
                 const djGlow  = `0 0 20px rgba(255,0,200,.8), 0 0 40px rgba(255,0,200,.4), 0 0 0 3px #ff00cc`;
                 const normGlow = `0 0 14px ${color}60, 0 0 0 2px ${color}`;
                 const shadow  = isDJ ? djGlow : (u.isVIP ? vipGlow : normGlow);
@@ -1278,7 +1325,8 @@ ${cd}`;
         };
 
         // ── VOTOS: PULAR & "ESSA VAI PRA FESTA!" ──
-        const skipThreshold = () => Math.max(1, Math.ceil(activeUsers.length / 2));
+        // pular exige 50%+1 dos presentes OU 10 votos, o que for menor
+        const skipThreshold = () => Math.max(1, Math.min(10, Math.floor(activeUsers.length / 2) + 1));
         const validSkipVotes = () =>
             (skipVotes && currentVideo?.videoId && skipVotes.videoId === currentVideo.videoId)
                 ? Object.keys(skipVotes.votes || {}).length : 0;
@@ -1740,6 +1788,7 @@ ${cd}`;
         window.setDance = v => {
             if (!DANCES.some(d => d.v === v)) return;
             localProfile.dance = v;
+            saveProfile();
             updatePresence();
             const m = document.getElementById('danceMenu');
             m.classList.add('hidden'); m.classList.remove('flex');
@@ -1929,7 +1978,10 @@ ${cd}`;
             };
             circles('avatarSkin',          SKIN_COLORS,  'skinColor',   s=>`#${s.v}`, v=>localProfile.avatarConfig.skinColor===v);
             circles('avatarHairColor',     HAIR_COLORS,  'hairColor',   s=>`#${s.v}`, v=>localProfile.avatarConfig.hairColor===v);
+            circles('avatarFacialHairColor', HAIR_COLORS, 'facialHairColor', s=>`#${s.v}`, v=>localProfile.avatarConfig.facialHairColor===v);
             circles('avatarClothingColor', CLOTHES_COLORS,'clothesColor',s=>`#${s.v}`, v=>localProfile.avatarConfig.clothesColor===v);
+            circles('avatarHatColor',      CLOTHES_COLORS,'hatColor',    s=>`#${s.v}`, v=>localProfile.avatarConfig.hatColor===v);
+            circles('avatarAccColor',      CLOTHES_COLORS,'accessoriesColor', s=>`#${s.v}`, v=>localProfile.avatarConfig.accessoriesColor===v);
 
             document.getElementById('avatarColors').innerHTML = AURA_COLORS.map(col =>
                 `<button type="button" onclick="window.updateProfileColor('${col}')"
@@ -1938,11 +1990,12 @@ ${cd}`;
             ).join('');
         }
 
-        window.updateAvatar = (key, val) => { localProfile.avatarConfig[key] = val; renderSettingsModal(); };
-        window.updateProfileColor = col => { localProfile.color = col; renderSettingsModal(); };
+        window.updateAvatar = (key, val) => { localProfile.avatarConfig[key] = val; saveProfile(); renderSettingsModal(); };
+        window.updateProfileColor = col => { localProfile.color = col; saveProfile(); renderSettingsModal(); };
 
         document.getElementById('profileName').addEventListener('input', e => {
             localProfile.name = e.target.value || 'Investidor';
+            saveProfile();
         });
 
         // ── ABAS DO MODAL (mobile) ──
@@ -1957,6 +2010,7 @@ ${cd}`;
         // ── ENTRAR NA FESTA ──
         function enterParty(vip) {
             localProfile.isVIP = vip;
+            saveProfile();
             updatePresence();
             const ha = document.getElementById('headerAvatar');
             ha.src = getAvatarUrl(localProfile.avatarConfig);
