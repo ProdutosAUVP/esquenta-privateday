@@ -2,7 +2,7 @@ name: Deploy GitHub Pages
 
 on:
   push:
-    branches: [main, claude/private-day-improvements-0vyiga]
+    branches: [main]
   workflow_dispatch:
 
 permissions:
