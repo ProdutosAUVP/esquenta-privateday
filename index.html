@@ -1286,9 +1286,16 @@
                 const iVotedSkip = !!(currentUser && skipVotes?.videoId === currentVideo.videoId && skipVotes?.votes?.[currentUser.uid]);
                 const pCount = partyVoteCount();
                 const iParty = !!(currentUser && partyVotes.some(v => v.videoId === currentVideo.videoId && v.uid === currentUser.uid));
+                const unlocked = Date.now() < playerUnlockUntil;
                 o.innerHTML = `
-${!isMe ? `<div class="absolute inset-0 pointer-events-auto" title="Só o DJ controla o player"></div>
-<div class="absolute bottom-2 right-2 bg-black/70 backdrop-blur-md text-[#FFF7EB]/60 text-[9px] px-2.5 py-1 rounded-full border border-[#FFF7EB]/10">🔒 Só o DJ controla o player</div>` : ''}
+${!isMe ? (unlocked ? `
+<div class="absolute bottom-2 right-2 bg-[#DB7944] text-white text-[9px] font-semibold px-2.5 py-1 rounded-full shadow-lg">📺 Player liberado por ${Math.max(1, Math.ceil((playerUnlockUntil - Date.now()) / 1000))}s — pule a propaganda!</div>` : `
+<div class="absolute inset-0 pointer-events-auto" title="Só o DJ controla o player"></div>
+<div class="absolute bottom-2 right-2 flex items-center gap-1.5">
+  <button onclick="window.unlockPlayer()" title="Apareceu propaganda? Libere o player por 15s para pular o anúncio"
+    class="pointer-events-auto bg-black/80 backdrop-blur-md text-[#FFF7EB]/80 text-[9px] px-2.5 py-1 rounded-full border border-[#FFF7EB]/15 hover:bg-[#DB7944] hover:text-white hover:border-[#DB7944] transition shadow-lg">📺 Pular propaganda</button>
+  <div class="bg-black/70 backdrop-blur-md text-[#FFF7EB]/60 text-[9px] px-2.5 py-1 rounded-full border border-[#FFF7EB]/10">🔒 Só o DJ controla o player</div>
+</div>`) : ''}
 ${isMe?`<div class="absolute top-2 left-2 bg-[#ff00cc] text-white text-[10px] px-3 py-1 rounded-full font-bold shadow-lg my-turn-badge">🎧 É a sua vez na mesa!</div>`:''}
 <div class="absolute top-2 right-2 flex flex-wrap justify-end gap-1.5 z-10">
   <button onclick="window.votePartySong()" ${iParty?'disabled':''} title="Vote pra essa tocar na festa de verdade!"
@@ -1316,6 +1323,17 @@ ${cd}`;
             glPlaying = !!(currentVideo?.videoId) || fallbackUnmuted;
             applyModalAudioDuck();
         }
+
+        // propagandas do YouTube: libera os cliques por 15 s para o usuário pular o anúncio
+        let playerUnlockUntil = 0;
+        window.unlockPlayer = () => {
+            playerUnlockUntil = Date.now() + 15000;
+            updatePlayerOverlay();
+            const iv = setInterval(() => {
+                updatePlayerOverlay();
+                if (Date.now() >= playerUnlockUntil) clearInterval(iv);
+            }, 1000);
+        };
 
         window.unmuteFallback = btn => {
             fallbackUnmuted = true;
