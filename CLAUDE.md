@@ -39,6 +39,7 @@ App de página única (**`index.html`**) — pista de dança virtual do esquenta
 - **WebGL é progressivo**: o Three.js entra por `import()` dinâmico dentro de try/catch; se falhar (CDN bloqueado, sem GPU), o globo 2D `#cssDiscoBall` permanece. Nunca torne o Three.js um import estático — derrubaria o app inteiro.
 - **Dados de usuário em animações/classes**: valores como `dance` e `emoji` são validados contra whitelists antes de virarem classe CSS/DOM.
 - **Silenciamento é local** (localStorage `esquentaMuted`) e a censura de palavrões acontece **no envio** (`censor()`); não há papel de admin.
+- **Perfil persistido no navegador** (localStorage `esquentaProfile`): carregado com merge defensivo na inicialização; `saveProfile()` deve ser chamado em toda mutação de `localProfile`.
 
 ## Firestore (caminho base `artifacts/{appId}/public/data/…`)
 

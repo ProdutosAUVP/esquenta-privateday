@@ -112,7 +112,7 @@ Ações automáticas que só podem acontecer **uma vez** (pular aos 10 min, avan
 Disparada em dois casos: música adicionada enquanto a playlist da casa toca, e votação de pular atingindo o limiar.
 
 ### Votação de pular
-- Limiar: `max(1, ceil(onlines / 2))` — maioria simples dos presentes.
+- Limiar: `max(1, min(10, floor(onlines/2)+1))` — 50%+1 dos presentes, com teto de 10 votos.
 - Voto: merge no mapa `votes` de `player/skipVotes`; 1 voto por uid, sem retirar voto.
 - Quem registra o voto que cruza o limiar inicia a contagem.
 
