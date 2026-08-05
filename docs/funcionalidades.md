@@ -39,6 +39,8 @@ Enquanto o modal está aberto, o áudio do player fica abafado (volume ~10% + de
 ### Adicionar música
 Cole um link do YouTube no campo da fila. A música entra no fim da fila com seu nome e o **título resolvido automaticamente** (oEmbed via noembed.com, sem chave de API); o título também aparece numa pílula sobre o player enquanto toca.
 
+**O lugar na fila não se perde**: a fila vive no Firestore, então fechar a aba ou sair da página não remove a música. Se quem adicionou estiver offline na hora de tocar, o cliente líder coloca a música pra tocar mesmo assim, com o crédito de DJ preservado.
+
 - Se a **playlist da casa** estiver tocando (ninguém na mesa), uma **contagem regressiva de 5 segundos** aparece sobre o player ("🎵 Música de Fulano entrando na pista!") e a sua música assume.
 
 ### Votar para pular
