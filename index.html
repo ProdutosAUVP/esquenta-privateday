@@ -260,6 +260,8 @@
                         <button class="rx-btn text-base leading-none p-0.5" onclick="window.sendReaction('💃')">💃</button>
                         <button class="rx-btn text-base leading-none p-0.5" onclick="window.sendReaction('😂')">😂</button>
                     </div>
+                    <!-- Reações exclusivas: aparecem só para quem está dentro da Área VIP -->
+                    <div id="vipReactions" class="hidden gap-0.5 rounded-full px-2 py-1 backdrop-blur-sm border border-[#ffd700]/40" style="background:rgba(70,52,0,.55);box-shadow:0 0 10px rgba(255,215,0,.25)"></div>
                     <div class="relative">
                         <button id="danceMenuBtn" title="Escolher passinho"
                             class="bg-black/60 border border-[#FFF7EB]/10 rounded-full px-3 py-1 text-base leading-none backdrop-blur-sm hover:border-[#DB7944] transition">🕺</button>
@@ -1018,6 +1020,13 @@
         // ── ÁREA VIP (canto superior direito da pista) ──
         const VIP_ZONE = {x1: 72, y1: 5, x2: 98, y2: 32};
         const inVipZone = (x, y) => x >= VIP_ZONE.x1 && x <= VIP_ZONE.x2 && y >= VIP_ZONE.y1 && y <= VIP_ZONE.y2;
+        // "na área VIP" = tem ingresso E está com o avatar dentro do lounge agora
+        const userInVipArea = u => !!(u && u.isVIP && inVipZone(u.x ?? 50, u.y ?? 50));
+        const meInVipArea = () => {
+            if (!currentUser || !localProfile.isVIP) return false;
+            const me = activeUsers.find(u => u.id === currentUser.uid);
+            return userInVipArea(me);
+        };
 
         function showToast(msg, link = null) {
             document.getElementById('toast')?.remove();
@@ -1066,6 +1075,8 @@
 
                 const unread = (!isMe && currentUser) ? dmUnread(u.id) : 0;
                 const bubble = (chatBubbles[u.id] && chatBubbles[u.id].until > Date.now()) ? chatBubbles[u.id] : null;
+                const inVipLounge = !isDJ && userInVipArea(u);
+                const loungeGlow = inVipLounge ? ', 0 0 26px rgba(255,215,0,.55)' : '';
 
                 const el = document.createElement('div');
                 el.className = 'absolute transform -translate-x-1/2 -translate-y-1/2 transition-all duration-700 ease-out flex flex-col items-center pointer-events-none';
@@ -1080,7 +1091,8 @@
   ${isDJ ? `<div class="absolute -top-4 -right-3 text-[#ff00cc]" style="width:15px;height:15px">${Icons.headphones}</div>` : ''}
   ${u.isVIP ? `<div class="absolute -top-5 left-1/2 -translate-x-1/2 text-[#DB7944]" style="width:20px;height:20px">${Icons.crown}</div>` : ''}
   ${unread ? `<div class="absolute -top-1.5 -left-1.5 bg-[#ff2d55] text-white text-[9px] font-bold w-5 h-5 rounded-full flex items-center justify-center z-10 shadow-lg">${unread > 9 ? '9+' : unread}</div>` : ''}
-  <div class="avatar-hit w-14 h-14 rounded-full overflow-hidden bg-[#111] ${bounce}" style="box-shadow:${shadow}${durStyle}">
+  ${inVipLounge ? `<div class="absolute -bottom-1 -right-2 text-sm z-10" style="filter:drop-shadow(0 0 6px rgba(255,215,0,.9))">🥂</div>` : ''}
+  <div class="avatar-hit w-14 h-14 rounded-full overflow-hidden bg-[#111] ${bounce}" style="box-shadow:${shadow}${loungeGlow}${durStyle}">
     <img src="${getAvatarUrl(u.avatarConfig)}" alt="${esc(u.name)}" class="w-full h-full object-cover"/>
   </div>
   <div class="mt-1.5 px-2 py-0.5 rounded text-[10px] whitespace-nowrap border backdrop-blur-sm flex items-center gap-1 font-light" style="background:rgba(0,0,0,.85);border-color:${isDJ?'rgba(255,0,204,.25)':color+'25'}">
@@ -1097,6 +1109,7 @@
                 }
                 layer.appendChild(el);
             });
+            updateVipUI();
         }
 
         // ── RENDER CHAT ──
@@ -1457,6 +1470,11 @@ ${cd}`;
             const u = activeUsers.find(x => x.id === uid);
             if (!u || !currentUser || uid === currentUser.uid) return;
             if (!db) { showToast('Firebase não configurado. Chat privado indisponível.'); return; }
+            // quem está na Área VIP só recebe papo de quem também está lá
+            if (userInVipArea(u) && !meInVipArea()) {
+                showToast(`👑 ${esc(u.name)} está na Área VIP — só quem está lá dentro pode puxar papo.`, localProfile.isVIP ? null : TICKETS_URL);
+                return;
+            }
             const t = threadFor(uid);
             if (t?.status === 'accepted') { openDMPanel(uid); return; }
             if (t?.status === 'pending') {
@@ -1492,9 +1510,16 @@ ${cd}`;
         function renderDMRequests() {
             const c = document.getElementById('dmRequests');
             if (!currentUser) { c.innerHTML = ''; return; }
-            const pending = dmThreads.filter(t =>
-                t.status === 'pending' && t.requestedBy !== currentUser.uid &&
-                !mutedUids.includes(t.requestedBy));
+            const pending = dmThreads.filter(t => {
+                if (t.status !== 'pending' || t.requestedBy === currentUser.uid) return false;
+                if (mutedUids.includes(t.requestedBy)) return false;
+                // dentro da Área VIP, só chegam solicitações de quem também está no lounge
+                if (meInVipArea()) {
+                    const req = activeUsers.find(x => x.id === t.requestedBy);
+                    if (!userInVipArea(req)) return false;
+                }
+                return true;
+            });
             c.innerHTML = pending.map(t => {
                 const uid = t.requestedBy;
                 const u = activeUsers.find(x => x.id === uid);
@@ -1529,6 +1554,11 @@ ${cd}`;
             if (!text || !dmOpenWith || !currentUser) return;
             if (!db) { alert('Firebase não configurado. Chat privado indisponível.'); return; }
             if (threadFor(dmOpenWith)?.status !== 'accepted') { showToast('⏳ O papo ainda não foi aceito.'); return; }
+            const other = activeUsers.find(x => x.id === dmOpenWith);
+            if (userInVipArea(other) && !meInVipArea()) {
+                showToast(`👑 ${esc(other?.name || 'Essa pessoa')} está na Área VIP — entre no lounge para continuar o papo.`);
+                return;
+            }
             await addDoc(pcol('dm'), {
                 convId: convId(currentUser.uid, dmOpenWith),
                 from: currentUser.uid, fromName: localProfile.name, fromColor: localProfile.color,
@@ -1559,19 +1589,24 @@ ${cd}`;
 
         // ── REAÇÕES RÁPIDAS ──
         const REACTION_EMOJIS = ['🔥','❤️','👏','🕺','💃','😂'];
+        const VIP_EMOJIS = ['🥂','💎','👑','✨']; // exclusivas de quem está na Área VIP
         function spawnReaction(r) {
             const floor = document.getElementById('danceFloor');
             if (!floor) return;
+            const vip = VIP_EMOJIS.includes(r.emoji);
             const el = document.createElement('div');
             el.className = 'rx-float absolute pointer-events-none z-30 text-2xl';
             el.style.left = `${Math.min(97, Math.max(2, r.x ?? 50))}%`;
             el.style.top  = `${Math.min(95, Math.max(5, r.y ?? 50))}%`;
-            el.textContent = REACTION_EMOJIS.includes(r.emoji) ? r.emoji : '🔥';
+            if (vip) el.style.filter = 'drop-shadow(0 0 8px rgba(255,215,0,.9))';
+            el.textContent = (REACTION_EMOJIS.includes(r.emoji) || vip) ? r.emoji : '🔥';
             floor.appendChild(el);
             setTimeout(() => el.remove(), 2700);
         }
         window.sendReaction = async emoji => {
-            if (!REACTION_EMOJIS.includes(emoji)) return;
+            const vip = VIP_EMOJIS.includes(emoji);
+            if (!REACTION_EMOJIS.includes(emoji) && !vip) return;
+            if (vip && !meInVipArea()) { showToast('👑 Reação exclusiva de quem está na Área VIP!'); return; }
             if (!currentUser || !db) {
                 spawnReaction({emoji, x: 50, y: 60}); // modo offline: só efeito local
                 return;
@@ -1583,6 +1618,18 @@ ${cd}`;
                 timestamp: Date.now()
             });
         };
+
+        // barra de reações VIP: visível só com o avatar dentro do lounge
+        function updateVipUI() {
+            const el = document.getElementById('vipReactions');
+            if (!el) return;
+            const show = meInVipArea();
+            el.classList.toggle('hidden', !show);
+            el.classList.toggle('flex', show);
+            if (show && !el.childElementCount)
+                el.innerHTML = VIP_EMOJIS.map(e =>
+                    `<button class="rx-btn text-base leading-none p-0.5" title="Reação VIP" onclick="window.sendReaction('${e}')">${e}</button>`).join('');
+        }
 
         // ── PASSINHOS DE DANÇA ──
         const DANCES = [
