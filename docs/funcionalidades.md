@@ -59,10 +59,13 @@ Botão ao lado do "Pular". Um clique = um voto por pessoa por música (fica lara
 - **Silenciar**: passe o mouse numa mensagem e toque no 🔇 para silenciar o autor (guardado localmente). As mensagens dele viram uma linha discreta "mensagem oculta — toque para reexibir", e DMs/reações dele deixam de aparecer para você.
 
 ### Chat privado (DM)
-- **Clique no avatar de alguém na pista** para abrir uma conversa privada (o cursor vira "mãozinha" sobre os avatares).
+- **Clique no avatar de alguém na pista** para enviar uma **solicitação de papo** (o cursor vira "mãozinha" sobre os avatares).
+- A pessoa recebe um **card de solicitação** (canto superior direito) com "Aceitar" / "Recusar". O papo só abre depois do aceite — quem pediu recebe um aviso e o painel abre automaticamente.
+- Clicar em alguém que já te pediu papo equivale a aceitar; recusado, um novo clique reenvia a solicitação.
 - Painel flutuante com bolhas estilo mensageiro (suas mensagens em laranja, as do outro em cinza).
 - Mensagens novas com o painel fechado geram um **badge vermelho** com contagem sobre o avatar da pessoa na pista.
 - Só os dois participantes veem a conversa (filtro por `convId` no cliente).
+- **Disclaimer** exibido no painel e no card de solicitação: *"A AUVP não se responsabiliza pelas conversas ocorridas em privado nesta plataforma."*
 
 ## 🏆 Ranking da noite
 
