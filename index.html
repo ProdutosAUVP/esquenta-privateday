@@ -155,7 +155,9 @@
         }
         .cfg-tab-on { color: #DB7944; border-color: #DB7944; }
         @media (min-width: 768px) {
-            .cfg-nav { display: none; }
+            /* !important: o Tailwind CDN injeta os estilos depois deste bloco,
+               e a classe `flex` da nav empataria em especificidade */
+            .cfg-nav { display: none !important; }
             .cfg-sec { display: block !important; }
         }
     </style>
