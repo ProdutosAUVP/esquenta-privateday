@@ -2,9 +2,9 @@
 
 ## Publicação
 
-O app é um único arquivo estático (`index.htm`). Qualquer host serve:
+O app é um único arquivo estático (`index.html`). Qualquer host serve:
 
-- **GitHub Pages** (recomendado): Settings → Pages → Deploy from branch → branch principal, pasta `/`. O arquivo `index.htm` é servido como raiz.
+- **GitHub Pages** (recomendado): Settings → Pages → Deploy from branch → branch principal, pasta `/`. O arquivo `index.html` é servido como raiz.
 - Netlify/Vercel/Cloudflare Pages: arraste o arquivo ou aponte para o repositório.
 
 Requisitos do ambiente do visitante: internet liberada para `cdn.tailwindcss.com`, `fonts.googleapis.com`, `www.gstatic.com` (Firebase), `api.dicebear.com`, `raw.githubusercontent.com` (fonte DiscoDiva), `img.youtube.com`, `www.youtube.com`, `cdn.jsdelivr.net` (Three.js — opcional, com fallback 2D) e `noembed.com` (títulos — opcional).
@@ -13,7 +13,7 @@ Requisitos do ambiente do visitante: internet liberada para `cdn.tailwindcss.com
 
 ## Firebase
 
-O projeto usa **Auth anônimo** + **Firestore**. As credenciais ficam no bloco `FIREBASE_CONFIG_FALLBACK` do `index.htm` (hoje apontando para o projeto `auvp-privateday`). A chave de API do Firebase não é secreta — a segurança vem das regras do Firestore.
+O projeto usa **Auth anônimo** + **Firestore**. As credenciais ficam no bloco `FIREBASE_CONFIG_FALLBACK` do `index.html` (hoje apontando para o projeto `auvp-privateday`). A chave de API do Firebase não é secreta — a segurança vem das regras do Firestore.
 
 ### Usar outro projeto Firebase
 
@@ -45,7 +45,7 @@ Operações úteis direto no console do Firestore (`artifacts/{appId}/public/dat
 
 Também dá para automatizar via REST (auth anônima + Firestore REST API) — foi assim que o chat foi limpo em 05/08/2026.
 
-## Parâmetros ajustáveis (constantes no `index.htm`)
+## Parâmetros ajustáveis (constantes no `index.html`)
 
 | Constante | Padrão | Efeito |
 |---|---|---|

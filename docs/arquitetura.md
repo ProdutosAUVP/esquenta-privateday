@@ -7,7 +7,7 @@ O app é um **cliente Firebase puro**: não existe backend próprio. Cada navega
 ```
 ┌───────────┐   onSnapshot    ┌────────────────────┐
 │ Navegador │◄───────────────►│ Firestore          │
-│ (index.htm)│  setDoc/addDoc │ artifacts/{appId}/ │
+│ (index.html)│  setDoc/addDoc │ artifacts/{appId}/ │
 └───────────┘                 │   public/data/…    │
       ▲                       └────────────────────┘
       │ postMessage (IFrame API)
