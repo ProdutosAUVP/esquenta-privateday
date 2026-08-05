@@ -4,11 +4,11 @@ Guia para trabalhar neste repositório com Claude Code (ou qualquer agente/dev).
 
 ## Visão geral
 
-App de página única (**`index.htm`**) — pista de dança virtual do esquenta AUVP Private Day. Sem build, sem `package.json`, sem framework: HTML + Tailwind via CDN + um único `<script type="module">` com todo o JavaScript. Documentação em `README.md` e `docs/`.
+App de página única (**`index.html`**) — pista de dança virtual do esquenta AUVP Private Day. Sem build, sem `package.json`, sem framework: HTML + Tailwind via CDN + um único `<script type="module">` com todo o JavaScript. Documentação em `README.md` e `docs/`.
 
 ## Regras do projeto
 
-- **Tudo em um arquivo.** Não crie arquivos JS/CSS separados; mantenha o padrão de arquivo único do `index.htm`.
+- **Tudo em um arquivo.** Não crie arquivos JS/CSS separados; mantenha o padrão de arquivo único do `index.html`.
 - **Idioma:** todo texto visível ao usuário, comentários e commits em **português (pt-BR)**.
 - **Estilo visual:** dark (`#050505`), paleta AUVP — laranja `#DB7944`, azul `#0B2A47`, vermelho `#932621`, creme `#FFF7EB` — com neons 80s (rosa `#ff00cc`, ciano `#00ffff`) apenas em detalhes da pista.
 - **Identidade:** sempre que usar o globo da marca, use `GLOBO.png`; para o nome "PRIVATE DAY" (ex.: header), use o lettering `LETTERING.png` — ambos na raiz do repo, por caminho relativo.
@@ -63,7 +63,7 @@ Detalhes em [docs/arquitetura.md](docs/arquitetura.md).
 
 - Sem suíte de testes. Validação mínima após alterações no JS:
   ```bash
-  python3 -c "import re;open('/tmp/app.mjs','w').write(re.search(r'<script type=\"module\">(.*?)</script>', open('index.htm').read(), re.S).group(1))" && node --check /tmp/app.mjs
+  python3 -c "import re;open('/tmp/app.mjs','w').write(re.search(r'<script type=\"module\">(.*?)</script>', open('index.html').read(), re.S).group(1))" && node --check /tmp/app.mjs
   ```
 - Teste visual com Playwright/Chromium quando possível. **Atenção:** no sandbox os CDNs (Tailwind/gstatic) podem estar bloqueados pelo proxy — a página abre sem estilo e sem Firebase; isso não é um bug do app.
 - Sempre teste os dois viewports: desktop (~1440px) e mobile (~390px). O layout usa `dvh` e breakpoints `md`/`lg`.
