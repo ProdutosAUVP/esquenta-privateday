@@ -47,6 +47,7 @@ App de página única (**`index.html`**) — pista de dança virtual do esquenta
 | `users/{uid}` | presença + perfil (x, y, avatarConfig, color, isVIP, lastUpdate) |
 | `chat/{auto}` | chat público |
 | `dm/{auto}` | chat privado (`convId` = uids ordenados unidos por `_`) |
+| `dmThreads/{convId}` | solicitação de papo (`{a, b, requestedBy, status}`) — DM só abre com `status='accepted'` |
 | `queue/{auto}` | fila do DJ |
 | `player/state` | vídeo atual (`videoId`, `startedAt`, `addedByUid`, `addedByName`, `title`) |
 | `player/skipVotes` | votos de pular (`{videoId, votes:{uid:true}}`) — resetado a cada troca |

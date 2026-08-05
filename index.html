@@ -208,8 +208,8 @@
             <!-- PISTA DE DANÇA -->
             <div id="danceFloor" class="flex-1 relative overflow-hidden cursor-crosshair" style="background:#050505;">
 
-                <!-- Camada WebGL (globo 3D, feixes de luz e partículas) -->
-                <div id="webglLayer" class="absolute inset-0 pointer-events-none"></div>
+                <!-- Camada WebGL (globo 3D, feixes de luz e partículas) — por cima da pista, abaixo dos avatares -->
+                <div id="webglLayer" class="absolute inset-0 pointer-events-none z-[8]"></div>
 
                 <!-- Ladrilhos 80s -->
                 <div class="dance-tiles" id="danceTiles"></div>
@@ -225,7 +225,7 @@
                 </div>
 
                 <!-- Globo refletor (fallback 2D; some quando o WebGL assume) -->
-                <div id="cssDiscoBall" class="absolute left-1/2 -translate-x-1/2 top-0 z-[5] pointer-events-none disco-ball-wrap flex flex-col items-center">
+                <div id="cssDiscoBall" class="absolute left-1/2 -translate-x-1/2 top-0 z-[8] pointer-events-none disco-ball-wrap flex flex-col items-center">
                     <div class="w-px h-6 md:h-10 bg-[#FFF7EB]/25"></div>
                     <img src="GLOBO.png" alt="Globo refletor" class="disco-ball-img w-20 h-20 md:w-32 md:h-32 object-contain">
                 </div>
@@ -323,6 +323,9 @@
         </div>
     </div>
 
+    <!-- SOLICITAÇÕES DE CHAT PRIVADO -->
+    <div id="dmRequests" class="fixed top-16 right-3 z-40 flex flex-col gap-2 w-[min(92vw,290px)]"></div>
+
     <!-- CHAT PRIVADO (DM) -->
     <div id="dmPanel" class="hidden fixed bottom-3 left-3 md:left-auto md:right-[25.5rem] w-[min(92vw,320px)] z-40 rounded-2xl overflow-hidden shadow-2xl border border-[#DB7944]/30 bg-[#0d0d0d] flex-col" style="height:min(55dvh,420px)">
         <div class="flex items-center gap-2 p-2.5 bg-black/60 border-b border-[#FFF7EB]/10">
@@ -333,6 +336,7 @@
             </div>
             <button id="dmClose" class="text-[#FFF7EB]/50 hover:text-white text-lg px-2 transition">✕</button>
         </div>
+        <p class="text-[8px] text-[#FFF7EB]/35 text-center px-3 py-1 bg-black/40 border-b border-[#FFF7EB]/5 leading-snug">A AUVP não se responsabiliza pelas conversas ocorridas em privado nesta plataforma.</p>
         <div id="dmMessages" class="flex-1 overflow-y-auto p-3 space-y-2"></div>
         <form id="dmForm" class="flex gap-2 p-2.5 bg-black/60 border-t border-[#FFF7EB]/10">
             <input type="text" id="dmInput" maxlength="200" placeholder="Mensagem privada..."
@@ -492,11 +496,15 @@
         const db    = configValida ? getFirestore(app) : null;
 
         // ── DADOS DO AVATAR (COMPLETO) ──
+        // Valores validados contra o schema oficial do DiceBear 8.x avataaars
         const TOPS = [
-            {v:'shortHair',l:'Curto'}, {v:'longHair',l:'Longo'}, {v:'noHair',l:'Careca'},
-            {v:'eyepatch',l:'Tapa-olho'}, {v:'hat',l:'Chapéu'}, {v:'hijab',l:'Hijab'},
-            {v:'turban',l:'Turbante'}, {v:'winterHat1',l:'Gorro 1'}, {v:'winterHat2',l:'Gorro 2'},
-            {v:'winterHat3',l:'Gorro 3'}, {v:'winterHat4',l:'Gorro 4'}
+            {v:'shortFlat',l:'Curto'}, {v:'shortWaved',l:'Ondulado'}, {v:'theCaesar',l:'Caesar'},
+            {v:'shortCurly',l:'Cacheado Curto'}, {v:'curly',l:'Cacheado'}, {v:'fro',l:'Black Power'},
+            {v:'dreads',l:'Dreads'}, {v:'bun',l:'Coque'}, {v:'bob',l:'Chanel'},
+            {v:'longButNotTooLong',l:'Longo'}, {v:'straight01',l:'Liso Longo'}, {v:'bigHair',l:'Volumoso'},
+            {v:'noHair',l:'Careca'}, {v:'hat',l:'Chapéu'}, {v:'hijab',l:'Hijab'},
+            {v:'turban',l:'Turbante'}, {v:'winterHat1',l:'Gorro 1'}, {v:'winterHat02',l:'Gorro 2'},
+            {v:'winterHat03',l:'Gorro 3'}, {v:'winterHat04',l:'Gorro 4'}
         ];
         const ACCESSORIES = [
             {v:'',l:'Nenhum'}, {v:'kurt',l:'Kurt'}, {v:'prescription01',l:'Óculos 1'},
@@ -516,11 +524,11 @@
             {v:'shirtVNeck',l:'V-Neck'}
         ];
         const EYES = [
-            {v:'default',l:'Normal'}, {v:'close',l:'Fechados'}, {v:'cry',l:'Chorando'},
-            {v:'dizzy',l:'Tonto'}, {v:'eyeRoll',l:'Revirados'}, {v:'happy',l:'Feliz'},
+            {v:'default',l:'Normal'}, {v:'closed',l:'Fechados'}, {v:'cry',l:'Chorando'},
+            {v:'eyeRoll',l:'Revirados'}, {v:'happy',l:'Feliz'},
             {v:'hearts',l:'Coração'}, {v:'side',l:'Lado'}, {v:'squint',l:'Semicerrados'},
             {v:'surprised',l:'Surpreso'}, {v:'wink',l:'Piscada'}, {v:'winkWacky',l:'Maluca'},
-            {v:'xDizzy',l:'X Tonto'}
+            {v:'xDizzy',l:'Tonto'}
         ];
         const EYEBROWS = [
             {v:'default',l:'Normal'}, {v:'angry',l:'Raivosas'}, {v:'angryNatural',l:'Raiva Natural'},
@@ -532,7 +540,7 @@
         const MOUTHS = [
             {v:'default',l:'Normal'}, {v:'concerned',l:'Preocupado'}, {v:'disbelief',l:'Incrédulo'},
             {v:'eating',l:'Comendo'}, {v:'grimace',l:'Careta'}, {v:'sad',l:'Triste'},
-            {v:'scream',l:'Gritando'}, {v:'serious',l:'Sério'}, {v:'smile',l:'Sorrindo'},
+            {v:'screamOpen',l:'Gritando'}, {v:'serious',l:'Sério'}, {v:'smile',l:'Sorrindo'},
             {v:'tongue',l:'Língua'}, {v:'twinkle',l:'Twinkle'}, {v:'vomit',l:'Enjoado'}
         ];
         const SKIN_COLORS = [
@@ -580,6 +588,8 @@
         let countdownState = null;  // doc player/countdown: {endsAt, reason}
         let partyVotes = [];        // coleção partyVotes ("Essa vai pra festa!")
         let dmMessages = [];        // mensagens privadas envolvendo o usuário atual
+        let dmThreads = [];         // solicitações/conversas (dmThreads/{convId}: {a,b,requestedBy,status})
+        const prevThreadStatus = {}; // detecta transições pending → accepted
         let dmOpenWith = null;      // uid da conversa privada aberta
         let dmReadAt = {};          // uid -> timestamp da última leitura
         const dmSessionStart = Date.now();
@@ -623,7 +633,7 @@
         let localProfile = {
             name: 'Investidor',
             avatarConfig: {
-                top: 'shortHair', accessories: '', facialHair: '',
+                top: 'shortFlat', accessories: '', facialHair: '',
                 clothing: 'hoodie', eyes: 'default', eyebrows: 'default',
                 mouth: 'default', skinColor: 'edb98a', hairColor: '724133', clothesColor: '3c4f5c'
             },
@@ -632,23 +642,41 @@
             dance: ''
         };
 
+        // Valores antigos (salvos em perfis no Firestore antes da correção) → equivalente válido no v8
+        const LEGACY_AVATAR = {
+            top:   {shortHair:'shortFlat', longHair:'longButNotTooLong', eyepatch:'shortFlat',
+                    winterHat2:'winterHat02', winterHat3:'winterHat03', winterHat4:'winterHat04'},
+            eyes:  {close:'closed', dizzy:'xDizzy'},
+            mouth: {scream:'screamOpen'}
+        };
+        // valida contra o catálogo; qualquer valor desconhecido cai no padrão (nunca gera URL quebrada)
+        const okOpt = (list, v, dflt) => list.some(o => o.v === v) ? v : dflt;
+        const okHex = (v, dflt) => /^[0-9a-fA-F]{6}$/.test(v || '') ? v : dflt;
+
         function getAvatarUrl(config) {
             const c = config || localProfile.avatarConfig;
-            // Parâmetros base — confirmados válidos na API DiceBear v8 avataaars
+            const top   = okOpt(TOPS,   LEGACY_AVATAR.top[c.top]     ?? c.top,   'shortFlat');
+            const eyes  = okOpt(EYES,   LEGACY_AVATAR.eyes[c.eyes]   ?? c.eyes,  'default');
+            const mouth = okOpt(MOUTHS, LEGACY_AVATAR.mouth[c.mouth] ?? c.mouth, 'default');
+            const hair  = okHex(c.hairColor, '724133');
             const params = {
-                top:             c.top        || 'shortHair',
-                clothing:        c.clothing   || 'hoodie',
-                eyes:            c.eyes       || 'default',
-                eyebrows:        c.eyebrows   || 'default',
-                mouth:           c.mouth      || 'default',
-                skinColor:       c.skinColor  || 'edb98a',
-                hairColor:       c.hairColor  || '724133',  // hex sem #
-                clothesColor:    c.clothesColor || '3c4f5c', // parâmetro correto: clothesColor
+                clothing:        okOpt(CLOTHES,  c.clothing, 'hoodie'),
+                eyes,
+                eyebrows:        okOpt(EYEBROWS, c.eyebrows, 'default'),
+                mouth,
+                skinColor:       okHex(c.skinColor, 'edb98a'),
+                hairColor:       hair,
+                facialHairColor: hair, // barba acompanha a cor do cabelo
+                clothesColor:    okHex(c.clothesColor, '3c4f5c'),
                 backgroundColor: 'transparent'
             };
-            // Opcionais: só inclui se tiver valor válido (string não vazia)
-            if (c.accessories) params.accessories = c.accessories;
-            if (c.facialHair)  params.facialHair  = c.facialHair;
+            if (top === 'noHair') params.topProbability = 0; // careca = sem camada de topo
+            else params.top = top;
+            const acc = okOpt(ACCESSORIES, c.accessories, '');
+            const fh  = okOpt(FACIAL_HAIR, c.facialHair, '');
+            // sem probability=100 a API só exibe acessório/barba em ~10% das renderizações
+            if (acc) { params.accessories = acc; params.accessoriesProbability = 100; }
+            if (fh)  { params.facialHair  = fh;  params.facialHairProbability  = 100; }
             return `https://api.dicebear.com/8.x/avataaars/svg?${new URLSearchParams(params)}`;
         }
 
@@ -907,6 +935,22 @@
                     .sort((a,b) => a.timestamp - b.timestamp);
                 renderDM();
                 renderUsers();
+            }, console.error);
+
+            onSnapshot(pcol('dmThreads'), snap => {
+                dmThreads = snap.docs.map(d => ({id:d.id,...d.data()}))
+                    .filter(t => t.a === currentUser.uid || t.b === currentUser.uid);
+                dmThreads.forEach(t => {
+                    const other = t.a === currentUser.uid ? t.b : t.a;
+                    // quem pediu é avisado (e o papo abre) quando o outro lado aceita
+                    if (t.status === 'accepted' && prevThreadStatus[t.id] === 'pending' && t.requestedBy === currentUser.uid) {
+                        const u = activeUsers.find(x => x.id === other);
+                        showToast(`✅ ${esc(u?.name || 'Investidor')} aceitou seu papo!`);
+                        openDMPanel(other);
+                    }
+                    prevThreadStatus[t.id] = t.status;
+                });
+                renderDMRequests();
             }, console.error);
 
             onSnapshot(pcol('reactions'), snap => {
@@ -1344,9 +1388,12 @@ ${cd}`;
             m.timestamp > (dmReadAt[uid] || dmSessionStart) && dmOpenWith !== uid
         ).length;
 
-        window.openDM = uid => {
+        const threadFor = uid => currentUser ? dmThreads.find(t => t.id === convId(currentUser.uid, uid)) : null;
+
+        // abre o painel (só chamado quando a solicitação já foi aceita)
+        function openDMPanel(uid) {
             const u = activeUsers.find(x => x.id === uid);
-            if (!u || !currentUser || uid === currentUser.uid) return;
+            if (!u || !currentUser) return;
             dmOpenWith = uid;
             dmReadAt[uid] = Date.now();
             document.getElementById('dmAvatar').src = getAvatarUrl(u.avatarConfig);
@@ -1359,7 +1406,69 @@ ${cd}`;
             renderDM();
             renderUsers();
             document.getElementById('dmInput').focus();
+        }
+
+        // clique no avatar: exige solicitação aceita antes de abrir o papo
+        window.openDM = async uid => {
+            const u = activeUsers.find(x => x.id === uid);
+            if (!u || !currentUser || uid === currentUser.uid) return;
+            if (!db) { showToast('Firebase não configurado. Chat privado indisponível.'); return; }
+            const t = threadFor(uid);
+            if (t?.status === 'accepted') { openDMPanel(uid); return; }
+            if (t?.status === 'pending') {
+                if (t.requestedBy === currentUser.uid) {
+                    showToast(`⏳ Aguardando ${esc(u.name)} aceitar seu papo...`);
+                } else {
+                    await window.acceptDM(uid); // ele já tinha pedido — clicar nele aceita
+                }
+                return;
+            }
+            await setDoc(pdoc('dmThreads', convId(currentUser.uid, uid)), {
+                a: currentUser.uid, b: uid,
+                requestedBy: currentUser.uid, requestedByName: localProfile.name,
+                status: 'pending', timestamp: Date.now()
+            });
+            showToast(`💌 Solicitação de papo enviada para ${esc(u.name)}!`);
         };
+
+        window.acceptDM = async uid => {
+            if (!currentUser || !db) return;
+            await setDoc(pdoc('dmThreads', convId(currentUser.uid, uid)), {status: 'accepted'}, {merge: true});
+            openDMPanel(uid);
+            renderDMRequests();
+        };
+
+        window.declineDM = async uid => {
+            if (!currentUser || !db) return;
+            await setDoc(pdoc('dmThreads', convId(currentUser.uid, uid)), {status: 'declined'}, {merge: true});
+            renderDMRequests();
+        };
+
+        // cards de solicitação recebida (canto superior direito)
+        function renderDMRequests() {
+            const c = document.getElementById('dmRequests');
+            if (!currentUser) { c.innerHTML = ''; return; }
+            const pending = dmThreads.filter(t =>
+                t.status === 'pending' && t.requestedBy !== currentUser.uid &&
+                !mutedUids.includes(t.requestedBy));
+            c.innerHTML = pending.map(t => {
+                const uid = t.requestedBy;
+                const u = activeUsers.find(x => x.id === uid);
+                const name = esc(u?.name || t.requestedByName || 'Investidor');
+                return `
+<div class="fade-in-up bg-[#0d0d0d] border border-[#DB7944]/40 rounded-2xl p-3 shadow-2xl">
+  <div class="flex items-center gap-2 mb-2">
+    ${u ? `<img src="${getAvatarUrl(u.avatarConfig)}" class="w-8 h-8 rounded-full bg-[#111]"/>` : ''}
+    <p class="flex-1 text-xs text-[#FFF7EB]/85 leading-snug"><span class="font-bold" style="color:${u?.color || '#DB7944'}">${name}</span> quer puxar um papo privado com você 🍸</p>
+  </div>
+  <div class="flex gap-2">
+    <button onclick="window.acceptDM('${uid}')" class="flex-1 bg-[#DB7944] hover:bg-[#c45d1b] text-white text-xs font-semibold py-1.5 rounded-lg transition">Aceitar</button>
+    <button onclick="window.declineDM('${uid}')" class="flex-1 bg-black/40 border border-[#FFF7EB]/15 hover:border-[#932621] hover:text-[#ff8a80] text-[#FFF7EB]/60 text-xs font-semibold py-1.5 rounded-lg transition">Recusar</button>
+  </div>
+  <p class="text-[8px] text-[#FFF7EB]/30 text-center mt-2 leading-snug">A AUVP não se responsabiliza pelas conversas ocorridas em privado nesta plataforma.</p>
+</div>`;
+            }).join('');
+        }
 
         document.getElementById('dmClose').addEventListener('click', () => {
             dmOpenWith = null;
@@ -1375,6 +1484,7 @@ ${cd}`;
             const text = inp.value.trim();
             if (!text || !dmOpenWith || !currentUser) return;
             if (!db) { alert('Firebase não configurado. Chat privado indisponível.'); return; }
+            if (threadFor(dmOpenWith)?.status !== 'accepted') { showToast('⏳ O papo ainda não foi aceito.'); return; }
             await addDoc(pcol('dm'), {
                 convId: convId(currentUser.uid, dmOpenWith),
                 from: currentUser.uid, fromName: localProfile.name, fromColor: localProfile.color,

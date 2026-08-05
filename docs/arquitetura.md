@@ -45,6 +45,12 @@ O cliente exibe as últimas 50, ordenadas por `timestamp`. Mensagens de dias ant
 ```
 `convId` = os dois uids ordenados e unidos por `_` (ex.: `abc_xyz`). Cada cliente filtra localmente as mensagens em que participa (`from === meuUid || to === meuUid`). Não-lidas: badge no avatar, contadas a partir do início da sessão (`dmSessionStart`) ou da última leitura (`dmReadAt`).
 
+### `dmThreads/{convId}` — solicitações de chat privado
+```js
+{ a, b, requestedBy, requestedByName, status, timestamp } // status: 'pending' | 'accepted' | 'declined'
+```
+O papo só é liberado (envio de mensagens e abertura do painel) com `status === 'accepted'`. O destinatário vê um card Aceitar/Recusar; quem pediu recebe aviso na transição `pending → accepted`. Recusar permite novo pedido depois (o doc é sobrescrito).
+
 ### `queue/{autoId}` — fila do DJ
 ```js
 { videoId, addedByName, addedByUid, timestamp }
