@@ -1375,9 +1375,15 @@ ${cd}`;
             if (!currentVideo?.videoId || countdownActive()) return;
             const key = `${currentVideo.videoId}_${currentVideo.startedAt || 0}`;
             if (endedHandledKey === key) return;
-            if (!isLeader()) return;
             endedHandledKey = key;
-            window.playNextVideo();
+            const stillSame = () => currentVideo?.videoId &&
+                `${currentVideo.videoId}_${currentVideo.startedAt || 0}` === key && !countdownActive();
+            // 1º: o DJ avança na hora (é quem certamente recebeu o evento de fim)
+            if (isCurrentDJ()) { window.playNextVideo(); return; }
+            // 2º: se o DJ não avançou em 4 s, o líder assume
+            setTimeout(() => { if (stillSame() && isLeader()) window.playNextVideo(); }, 4000);
+            // 3º: última linha de defesa — qualquer cliente resolve após 9 s
+            setTimeout(() => { if (stillSame()) window.playNextVideo(); }, 9000);
         }
         window.addEventListener('message', e => {
             if (e.origin !== 'https://www.youtube.com') return;
@@ -1407,6 +1413,7 @@ ${cd}`;
 
         async function publishPlayback() {
             if (!isCurrentDJ() || !db || !ytInfo) return;
+            if (ytInfo.state === 0) return; // vídeo terminou: quem age é o fluxo de fim, não a sincronia
             try {
                 await setDoc(pdoc('player', 'playback'), {
                     videoId: currentVideo.videoId,
@@ -1421,6 +1428,7 @@ ${cd}`;
         // não-DJs alinham o próprio player ao do DJ (pausa, retomada e drift > 3 s)
         setInterval(() => {
             if (!currentVideo?.videoId || isCurrentDJ() || countdownActive()) return;
+            if (ytInfo?.state === 0) return; // meu player terminou: aguarda o avanço da fila
             if (!playbackState || playbackState.videoId !== currentVideo.videoId) return;
             if (Date.now() - (playbackState.at || 0) > 15000) return; // DJ ausente: não força nada
             if (playbackState.state === 'paused') {
