@@ -70,7 +70,19 @@ Só vale se `videoId` bater com o vídeo atual. Resetado (`votes:{}`) a cada tro
 ```js
 { videoId, uid, name, addedByName, timestamp }
 ```
-ID composto garante 1 voto por usuário por vídeo. **Esta coleção é o produto da curadoria — não apagar.** Para exportar: leia a coleção e agrupe por `videoId` (título recuperável via `https://www.youtube.com/oembed?url=...`).
+ID composto garante 1 voto por usuário por vídeo. **Esta coleção é o produto da curadoria — não apagar.** Para exportar: leia a coleção e agrupe por `videoId` (título recuperável via oEmbed).
+
+### `history/{autoId}` — músicas que já tocaram
+```js
+{ videoId, byUid, byName, title, timestamp }
+```
+Gravado por `setNowPlaying()` toda vez que um vídeo assume a mesa. Base do placar "DJs da noite" no ranking.
+
+### `reactions/{autoId}` — reações flutuantes
+```js
+{ uid, emoji, x, y, timestamp }
+```
+Cada cliente anima apenas reações recentes (< 6 s) ainda não vistas (`docChanges` + `Set` local). O cliente líder apaga docs com mais de 2 min para a coleção não crescer.
 
 ## Mecanismos de sincronização
 
@@ -104,8 +116,16 @@ Sem `videoId` no `player/state`, cada cliente monta o embed `videoseries?list=�
 ### "Filtro" de áudio com o modal aberto
 O YouTube não expõe o áudio do embed ao Web Audio (cross-origin), então o efeito de frequências cortadas é **simulado**: `setVolume(10)` via postMessage + `blur/saturate` no iframe. Reaplicado a cada 1,5 s enquanto o modal está aberto (o player pode não estar pronto na primeira tentativa).
 
+### Pista WebGL
+O Three.js entra por **import dinâmico** dentro de `try/catch` — se o CDN estiver bloqueado ou não houver WebGL, o globo 2D em CSS (`#cssDiscoBall`) permanece e nada mais é afetado. A cena (globo facetado espelhado, 4 point lights neon orbitando, 4 feixes cônicos aditivos e ~220 partículas) roda em `setAnimationLoop` e pulsa numa batida estimada de 118 BPM quando `glPlaying` é verdadeiro (vídeo tocando ou fallback com som ativado). O canvas fica em `#webglLayer`, atrás dos ladrilhos e dos avatares, com `ResizeObserver` para redimensionar.
+
+### Títulos via oEmbed
+`fetchTitle(videoId)` consulta `noembed.com` (proxy oEmbed com CORS liberado) e guarda em `titleCache` (memória). O título é persistido no doc da fila no momento do add e propagado para `player/state` e `history`; consumidores fazem fetch preguiçoso quando falta.
+
 ## Segurança
 
 - **Escape de HTML**: `esc()` é aplicado a nomes e mensagens antes de qualquer `innerHTML`.
+- **Whitelists**: `dance` e `emoji` vindos de outros usuários são validados contra listas fixas antes de virarem classe CSS ou conteúdo DOM.
+- **Moderação**: censura de palavrões no envio (`censor()`); silenciamento por usuário é local (localStorage), sem papel de admin.
 - **Auth anônima + regras públicas**: qualquer visitante pode escrever nas coleções públicas — modelo aceito para um evento efêmero. Não guarde nada sensível nessas coleções.
 - A chave de API do Firebase no HTML **não é segredo** (é um identificador de projeto); a proteção real são as regras do Firestore.

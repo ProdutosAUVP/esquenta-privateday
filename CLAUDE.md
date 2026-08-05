@@ -35,6 +35,9 @@ App de página única (**`index.htm`**) — pista de dança virtual do esquenta 
 - **Escape de HTML**: todo conteúdo vindo de usuário (nomes, mensagens) passa por `esc()` antes de entrar em `innerHTML`.
 - **Modo offline**: o app precisa abrir mesmo sem Firebase (`configValida === false` ou falha de auth) — mantenha os guards `if (!currentUser || !db) return;`.
 - **Timestamps**: `Date.now()` do cliente (sem serverTimestamp) — comparações toleram pequenos desvios de relógio.
+- **WebGL é progressivo**: o Three.js entra por `import()` dinâmico dentro de try/catch; se falhar (CDN bloqueado, sem GPU), o globo 2D `#cssDiscoBall` permanece. Nunca torne o Three.js um import estático — derrubaria o app inteiro.
+- **Dados de usuário em animações/classes**: valores como `dance` e `emoji` são validados contra whitelists antes de virarem classe CSS/DOM.
+- **Silenciamento é local** (localStorage `esquentaMuted`) e a censura de palavrões acontece **no envio** (`censor()`); não há papel de admin.
 
 ## Firestore (caminho base `artifacts/{appId}/public/data/…`)
 
@@ -44,10 +47,14 @@ App de página única (**`index.htm`**) — pista de dança virtual do esquenta 
 | `chat/{auto}` | chat público |
 | `dm/{auto}` | chat privado (`convId` = uids ordenados unidos por `_`) |
 | `queue/{auto}` | fila do DJ |
-| `player/state` | vídeo atual (`videoId`, `startedAt`, `addedByUid`, `addedByName`) |
+| `player/state` | vídeo atual (`videoId`, `startedAt`, `addedByUid`, `addedByName`, `title`) |
 | `player/skipVotes` | votos de pular (`{videoId, votes:{uid:true}}`) — resetado a cada troca |
 | `player/countdown` | contagem regressiva (`{endsAt, reason}`) |
 | `partyVotes/{videoId_uid}` | votos "Essa vai pra festa!" (curadoria — nunca apagar) |
+| `history/{auto}` | músicas já tocadas (`videoId`, `byUid`, `byName`, `title`) — base do ranking |
+| `reactions/{auto}` | reações flutuantes (`uid`, `emoji`, `x`, `y`, `timestamp`) — o líder apaga as com >2 min |
+
+Campos extras no perfil (`users/{uid}`): `dance` (passinho: `''|spin|jump|shake|moonwalk`).
 
 Detalhes em [docs/arquitetura.md](docs/arquitetura.md).
 

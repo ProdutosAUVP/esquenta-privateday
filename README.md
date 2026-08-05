@@ -9,8 +9,12 @@ Pista de dança virtual em tempo real para o esquenta do **AUVP Private Day 2026
 ### Pista & Avatar
 - **Avatar personalizável** (DiceBear Avataaars): cabelo, acessórios, barba, roupas, olhos, sobrancelhas, boca, tom de pele e cores — organizado em seções (**Estilo / Rosto / Cores**), com abas no mobile e painel largo no desktop.
 - **Aura colorida** na pista, coroa e brilho VIP para quem já tem ingresso.
-- **Pista de dança 80s** com ladrilhos animados, globo refletor pendurado e mesa de DJ com vinis girando e equalizador.
+- **Pista WebGL (Three.js)**: globo de espelhos 3D facetado, feixes de luz volumétricos coloridos e partículas — tudo pulsando no ritmo quando há música. Se o WebGL não estiver disponível, um globo 2D em CSS assume o lugar.
+- Pista 80s com ladrilhos animados e mesa de DJ com vinis girando e equalizador.
 - Clique na pista para mover seu avatar; presença sincronizada em tempo real.
+- **Reações rápidas**: 🔥 ❤️ 👏 🕺 💃 😂 sobem flutuando do seu avatar para todo mundo ver.
+- **Passinhos de dança**: escolha um preset (giro, pulinho, quebradinha, moonwalk) e seu avatar dança para todos.
+- **👑 Área VIP** na pista: visível para todos, mas só quem tem ingresso entra — não-VIPs ganham um convite para garantir o seu.
 
 ### Música (Fila do DJ)
 - Qualquer pessoa cola um link do YouTube e entra na fila.
@@ -19,10 +23,13 @@ Pista de dança virtual em tempo real para o esquenta do **AUVP Private Day 2026
 - **Playlist da casa (fallback)**: se ninguém está tocando nada, o player reproduz um vídeo aleatório da [playlist oficial](https://youtu.be/yY1881tE4bo?list=PLyMBoXJME_lqvOTGagEL0vh43fSsbpRW1). Quando alguém adiciona uma música, uma contagem regressiva aparece e a música do usuário assume a mesa.
 - **🔥 "Essa vai pra festa!"**: botão de voto por música, gravado no Firestore (`partyVotes`) para curadoria do gosto musical da galera para a festa real.
 - Avanço automático ao fim de cada vídeo (YouTube IFrame API).
+- **Títulos das músicas** resolvidos automaticamente via oEmbed (sem chave de API) — aparecem na fila, sobre o player e no ranking.
+- **🏆 Ranking da noite** (botão no header): DJs que mais emplacaram músicas e as mais votadas para a festa.
 
 ### Chat
 - **Chat ao vivo** para todos, com destaque VIP. Mensagens de dias anteriores exibem a data.
 - **Chat privado (DM)**: clique no avatar de alguém na pista para abrir uma conversa 1:1, com badge de mensagens não lidas.
+- **Moderação leve**: palavrões são censurados automaticamente no envio e qualquer pessoa pode silenciar (🔇) outro usuário localmente — mensagens, DMs e reações do silenciado somem para quem silenciou.
 
 ### Entrada
 - Dois botões no final da personalização:
@@ -48,7 +55,9 @@ Pista de dança virtual em tempo real para o esquenta do **AUVP Private Day 2026
 ## 🛠 Stack
 
 - **UI**: HTML + [Tailwind CSS (CDN)](https://tailwindcss.com) + CSS custom (animações da pista)
+- **3D**: [Three.js](https://threejs.org) via jsDelivr (import dinâmico com fallback 2D)
 - **Tempo real**: [Firebase](https://firebase.google.com) — Auth anônimo + Firestore (`onSnapshot`)
 - **Avatares**: [DiceBear v8 – Avataaars](https://www.dicebear.com)
 - **Player**: YouTube IFrame Embed + postMessage API
+- **Títulos**: oEmbed via [noembed.com](https://noembed.com) (CORS liberado, sem chave)
 - **Fontes**: Poppins, Anek Latin e DiscoDiva (display)

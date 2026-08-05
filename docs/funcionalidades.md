@@ -20,15 +20,18 @@ Enquanto o modal está aberto, o áudio do player fica abafado (volume ~10% + de
 ## Pista de dança
 
 - Clique em qualquer ponto da pista para mover seu avatar (posição sincronizada para todos).
-- **Globo refletor** pendurado no topo, com brilho colorido pulsante e balanço suave.
+- **Pista WebGL (Three.js)**: globo de espelhos 3D facetado girando, luzes coloridas orbitando, feixes volumétricos e partículas de poeira brilhante — tudo **pulsando numa batida estimada (118 BPM)** quando há música audível. Carregado por import dinâmico; sem WebGL, o globo 2D em CSS permanece.
 - Ladrilhos 80s acendem em cores neon aleatórias; luzes de ambiente pulsam nos cantos.
+- **Reações rápidas**: barra no canto inferior esquerdo (🔥 ❤️ 👏 🕺 💃 😂). A reação sobe flutuando do seu avatar na tela de todo mundo (coleção `reactions`; o cliente líder apaga reações com mais de 2 min).
+- **Passinhos de dança**: botão 🕺 abre o menu de presets — Giro, Pulinho, Quebradinha, Moonwalk (ou Parado). O passinho fica salvo na sua presença e todos veem seu avatar dançando.
+- **👑 Área VIP** (canto superior direito): demarcada com corda dourada tracejada. VIPs circulam livremente; não-VIPs que clicam ali recebem um toast com botão direto para a página de ingressos.
 - **Mesa de DJ** no canto inferior direito: vinis giram e o equalizador anima quando há música; mostra quem está "na mesa" (dono da música atual). O avatar do DJ é teleportado para a mesa enquanto sua música toca.
 - VIPs têm coroa e aura laranja intensa; o DJ atual ganha aura rosa neon e fones.
 
 ## Fila do DJ e player
 
 ### Adicionar música
-Cole um link do YouTube no campo da fila. A música entra no fim da fila com seu nome.
+Cole um link do YouTube no campo da fila. A música entra no fim da fila com seu nome e o **título resolvido automaticamente** (oEmbed via noembed.com, sem chave de API); o título também aparece numa pílula sobre o player enquanto toca.
 
 - Se a **playlist da casa** estiver tocando (ninguém na mesa), uma **contagem regressiva de 5 segundos** aparece sobre o player ("🎵 Música de Fulano entrando na pista!") e a sua música assume.
 
@@ -52,12 +55,21 @@ Botão ao lado do "Pular". Um clique = um voto por pessoa por música (fica lara
 ### Chat ao vivo (público)
 - Últimas 50 mensagens, com cor da aura e coroa VIP de cada autor.
 - Mensagens do dia mostram só a hora (`14:32`); mensagens de dias anteriores mostram **data e hora** (`03/08 · 14:32`).
+- **Censura automática**: palavrões da lista `BANNED_WORDS` são mascarados com asteriscos no envio (chat e DM).
+- **Silenciar**: passe o mouse numa mensagem e toque no 🔇 para silenciar o autor (guardado localmente). As mensagens dele viram uma linha discreta "mensagem oculta — toque para reexibir", e DMs/reações dele deixam de aparecer para você.
 
 ### Chat privado (DM)
 - **Clique no avatar de alguém na pista** para abrir uma conversa privada (o cursor vira "mãozinha" sobre os avatares).
 - Painel flutuante com bolhas estilo mensageiro (suas mensagens em laranja, as do outro em cinza).
 - Mensagens novas com o painel fechado geram um **badge vermelho** com contagem sobre o avatar da pessoa na pista.
 - Só os dois participantes veem a conversa (filtro por `convId` no cliente).
+
+## 🏆 Ranking da noite
+
+Botão **🏆 Ranking** no header abre o painel com dois placares ao vivo:
+
+- **🎧 DJs da noite**: quem mais emplacou músicas na mesa (top 5, contado pela coleção `history` — toda música que começa a tocar gera um registro).
+- **🔥 Rumo à festa**: as músicas mais votadas em "Essa vai pra festa!" (top 5, com thumbnail, título e link para o YouTube).
 
 ## Responsividade
 

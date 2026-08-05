@@ -123,6 +123,30 @@
         }
         .count-glow { animation: count-glow 1s ease-in-out infinite; }
 
+        /* ── PASSINHOS DE DANÇA ── */
+        @keyframes dance-spin { from{transform:rotate(0)} to{transform:rotate(360deg)} }
+        .dance-spin { animation: dance-spin 1s linear infinite; }
+        @keyframes dance-jump { 0%,100%{transform:translateY(0) scaleY(1)} 30%{transform:translateY(-14px) scaleY(1.06)} 60%{transform:translateY(0) scaleY(.92)} }
+        .dance-jump { animation: dance-jump .7s ease-in-out infinite; }
+        @keyframes dance-shake { 0%,100%{transform:rotate(-12deg)} 50%{transform:rotate(12deg)} }
+        .dance-shake { animation: dance-shake .35s ease-in-out infinite; }
+        @keyframes dance-moonwalk { 0%,100%{transform:translateX(-10px) rotate(-4deg)} 50%{transform:translateX(10px) rotate(4deg)} }
+        .dance-moonwalk { animation: dance-moonwalk 1.6s ease-in-out infinite; }
+
+        /* ── REAÇÕES FLUTUANTES ── */
+        @keyframes rx-float {
+            0%   { transform: translate(-50%,0) scale(.6); opacity: 0; }
+            12%  { transform: translate(-50%,-14px) scale(1.2); opacity: 1; }
+            100% { transform: translate(-50%,-130px) scale(1); opacity: 0; }
+        }
+        .rx-float { animation: rx-float 2.6s ease-out forwards; }
+        .rx-btn { transition: transform .15s ease; }
+        .rx-btn:hover { transform: scale(1.3); }
+
+        /* ── TOAST ── */
+        @keyframes toast-in { from{opacity:0;transform:translate(-50%,12px)} to{opacity:1;transform:translate(-50%,0)} }
+        .toast-in { animation: toast-in .25s ease-out forwards; }
+
         /* ── TABS DO MODAL DE PERSONALIZAÇÃO (mobile) ── */
         .cfg-tab {
             padding: 9px 16px; font-size: 12px; font-weight: 600; white-space: nowrap;
@@ -155,7 +179,11 @@
                 <p class="text-[10px] md:text-xs text-[#DB7944] uppercase tracking-[.2em] font-semibold leading-none mt-0.5">Esquenta 2026</p>
             </div>
         </div>
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-2 md:gap-3">
+            <button id="openRankingBtn" title="Ranking da noite"
+                class="flex items-center gap-1.5 text-xs text-[#FFF7EB]/70 bg-black/50 hover:bg-[#FFF7EB]/8 px-3 py-1.5 rounded-full border border-[#FFF7EB]/8 transition">
+                🏆<span class="hidden sm:inline">Ranking</span>
+            </button>
             <div class="flex items-center gap-2 text-xs text-[#FFF7EB]/70 bg-black/50 px-3 py-1.5 rounded-full border border-[#FFF7EB]/8">
                 <span id="icon-users" class="text-[#DB7944]"></span>
                 <span id="onlineCount">0 online</span>
@@ -180,6 +208,9 @@
             <!-- PISTA DE DANÇA -->
             <div id="danceFloor" class="flex-1 relative overflow-hidden cursor-crosshair" style="background:#050505;">
 
+                <!-- Camada WebGL (globo 3D, feixes de luz e partículas) -->
+                <div id="webglLayer" class="absolute inset-0 pointer-events-none"></div>
+
                 <!-- Ladrilhos 80s -->
                 <div class="dance-tiles" id="danceTiles"></div>
 
@@ -193,14 +224,37 @@
                     <h1 class="font-discodiva text-[9rem] md:text-[14rem] text-[#FFF7EB]">AUVP</h1>
                 </div>
 
-                <!-- Globo refletor -->
-                <div class="absolute left-1/2 -translate-x-1/2 top-0 z-[5] pointer-events-none disco-ball-wrap flex flex-col items-center">
+                <!-- Globo refletor (fallback 2D; some quando o WebGL assume) -->
+                <div id="cssDiscoBall" class="absolute left-1/2 -translate-x-1/2 top-0 z-[5] pointer-events-none disco-ball-wrap flex flex-col items-center">
                     <div class="w-px h-6 md:h-10 bg-[#FFF7EB]/25"></div>
                     <img src="https://raw.githubusercontent.com/eriadesign/privateday/main/globo.webp" alt="Globo refletor" class="disco-ball-img w-20 h-20 md:w-32 md:h-32 object-contain">
                 </div>
 
+                <!-- Área VIP -->
+                <div class="absolute pointer-events-none z-[6] rounded-xl border border-dashed border-[#DB7944]/45"
+                    style="left:72%;top:5%;width:26%;height:27%;background:linear-gradient(135deg,rgba(219,121,68,.07),rgba(255,220,0,.04));box-shadow:inset 0 0 30px rgba(219,121,68,.12)">
+                    <span class="absolute top-1.5 left-1/2 -translate-x-1/2 text-[9px] font-bold uppercase tracking-[.2em] text-[#DB7944]/80 whitespace-nowrap">👑 Área VIP</span>
+                </div>
+
                 <div class="absolute top-3 left-3 text-[10px] text-[#FFF7EB]/40 pointer-events-none bg-black/60 px-3 py-1 rounded-full border border-[#FFF7EB]/8 backdrop-blur-sm z-10">
                     Clique na pista para se mover · Clique em alguém para puxar papo
+                </div>
+
+                <!-- Barra de ações: reações + passinhos -->
+                <div id="actionBar" class="absolute bottom-2.5 left-2.5 z-20 flex items-center gap-1.5 cursor-default">
+                    <div class="flex gap-0.5 bg-black/60 border border-[#FFF7EB]/10 rounded-full px-2 py-1 backdrop-blur-sm">
+                        <button class="rx-btn text-base leading-none p-0.5" onclick="window.sendReaction('🔥')">🔥</button>
+                        <button class="rx-btn text-base leading-none p-0.5" onclick="window.sendReaction('❤️')">❤️</button>
+                        <button class="rx-btn text-base leading-none p-0.5" onclick="window.sendReaction('👏')">👏</button>
+                        <button class="rx-btn text-base leading-none p-0.5" onclick="window.sendReaction('🕺')">🕺</button>
+                        <button class="rx-btn text-base leading-none p-0.5" onclick="window.sendReaction('💃')">💃</button>
+                        <button class="rx-btn text-base leading-none p-0.5" onclick="window.sendReaction('😂')">😂</button>
+                    </div>
+                    <div class="relative">
+                        <button id="danceMenuBtn" title="Escolher passinho"
+                            class="bg-black/60 border border-[#FFF7EB]/10 rounded-full px-3 py-1 text-base leading-none backdrop-blur-sm hover:border-[#DB7944] transition">🕺</button>
+                        <div id="danceMenu" class="hidden absolute bottom-9 left-0 bg-[#0d0d0d] border border-[#DB7944]/30 rounded-xl p-1.5 flex-col gap-1 shadow-2xl w-36"></div>
+                    </div>
                 </div>
 
                 <!-- Cabine de DJ (canto inferior direito) -->
@@ -254,6 +308,20 @@
             </div>
         </aside>
     </main>
+
+    <!-- RANKING DA NOITE -->
+    <div id="rankingModal" class="hidden fixed inset-0 bg-black/90 backdrop-blur-md z-50 items-center justify-center p-3 md:p-4">
+        <div class="modal-wrap rounded-2xl w-full max-w-md shadow-2xl max-h-[85dvh] overflow-y-auto p-5">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="font-discodiva text-3xl text-[#DB7944]">🏆 Ranking da Noite</h2>
+                <button id="rankingClose" class="text-[#FFF7EB]/50 hover:text-white text-xl px-2 transition">✕</button>
+            </div>
+            <h3 class="text-[10px] font-bold uppercase tracking-[.2em] text-[#DB7944] mb-2">🎧 DJs da noite</h3>
+            <div id="rankingDjs" class="space-y-1.5 mb-5"></div>
+            <h3 class="text-[10px] font-bold uppercase tracking-[.2em] text-[#ff6600] mb-2">🔥 Rumo à festa</h3>
+            <div id="rankingSongs" class="space-y-1.5"></div>
+        </div>
+    </div>
 
     <!-- CHAT PRIVADO (DM) -->
     <div id="dmPanel" class="hidden fixed bottom-3 left-3 md:left-auto md:right-[25.5rem] w-[min(92vw,320px)] z-40 rounded-2xl overflow-hidden shadow-2xl border border-[#DB7944]/30 bg-[#0d0d0d] flex-col" style="height:min(55dvh,420px)">
@@ -519,8 +587,38 @@
         let fallbackUnmuted = false;
         let lastPlayerKey = null;
         let modalOpen = true; // o modal de personalização começa aberto
+        let playHistory = [];       // coleção history: músicas que já tocaram (ranking)
+        let glPlaying = false;      // pista WebGL pulsa quando há música audível
+        const seenReactions = new Set();
+        const titleCache = {};      // videoId -> título (via oEmbed) | '' se falhou
+        let mutedUids = [];
+        try { mutedUids = JSON.parse(localStorage.getItem('esquentaMuted') || '[]'); } catch(e) {}
 
         const esc = s => String(s ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+
+        // ── MODERAÇÃO LEVE ──
+        const BANNED_WORDS = ['porra','caralho','merda','buceta','putaria','fdp','vsf','pqp','cacete','viado','arrombado','desgraçad','cuzão','vagabund'];
+        const BANNED_RE = new RegExp(`\\b(${BANNED_WORDS.join('|')})\\w*`, 'gi');
+        const censor = t => t.replace(BANNED_RE, m => m[0] + '*'.repeat(m.length - 1));
+        const saveMuted = () => { try { localStorage.setItem('esquentaMuted', JSON.stringify(mutedUids)); } catch(e) {} };
+        window.toggleMute = uid => {
+            mutedUids = mutedUids.includes(uid) ? mutedUids.filter(u => u !== uid) : [...mutedUids, uid];
+            saveMuted();
+            renderChat();
+            renderUsers();
+        };
+
+        // ── TÍTULOS DAS MÚSICAS (oEmbed, sem chave de API) ──
+        async function fetchTitle(videoId) {
+            if (titleCache[videoId] !== undefined) return titleCache[videoId];
+            titleCache[videoId] = ''; // marca em andamento / falha
+            try {
+                const r = await fetch(`https://noembed.com/embed?url=https://www.youtube.com/watch?v=${videoId}`);
+                const j = await r.json();
+                titleCache[videoId] = j.title || '';
+            } catch(e) {}
+            return titleCache[videoId];
+        }
 
         let localProfile = {
             name: 'Investidor',
@@ -530,7 +628,8 @@
                 mouth: 'default', skinColor: 'edb98a', hairColor: '724133', clothesColor: '3c4f5c'
             },
             color: '#DB7944',
-            isVIP: false
+            isVIP: false,
+            dance: ''
         };
 
         function getAvatarUrl(config) {
@@ -799,6 +898,7 @@
             onSnapshot(pcol('partyVotes'), snap => {
                 partyVotes = snap.docs.map(d => ({id:d.id,...d.data()}));
                 updatePlayerOverlay();
+                if (!document.getElementById('rankingModal').classList.contains('hidden')) renderRanking();
             }, console.error);
 
             onSnapshot(pcol('dm'), snap => {
@@ -807,6 +907,27 @@
                     .sort((a,b) => a.timestamp - b.timestamp);
                 renderDM();
                 renderUsers();
+            }, console.error);
+
+            onSnapshot(pcol('reactions'), snap => {
+                const now = Date.now();
+                snap.docChanges().forEach(ch => {
+                    if (ch.type !== 'added') return;
+                    const r = {id: ch.doc.id, ...ch.doc.data()};
+                    if (seenReactions.has(r.id) || now - r.timestamp > 6000 || mutedUids.includes(r.uid)) return;
+                    seenReactions.add(r.id);
+                    spawnReaction(r);
+                });
+                // líder faz a faxina das reações antigas
+                if (isLeader()) snap.docs.forEach(d => {
+                    if (now - (d.data().timestamp || 0) > 120000)
+                        deleteDoc(pdoc('reactions', d.id)).catch(() => {});
+                });
+            }, console.error);
+
+            onSnapshot(pcol('history'), snap => {
+                playHistory = snap.docs.map(d => ({id:d.id,...d.data()}));
+                if (!document.getElementById('rankingModal').classList.contains('hidden')) renderRanking();
             }, console.error);
         }
 
@@ -829,11 +950,33 @@
             setInterval(() => updatePresence(), 30000);
         }
 
+        // ── ÁREA VIP (canto superior direito da pista) ──
+        const VIP_ZONE = {x1: 72, y1: 5, x2: 98, y2: 32};
+        const inVipZone = (x, y) => x >= VIP_ZONE.x1 && x <= VIP_ZONE.x2 && y >= VIP_ZONE.y1 && y <= VIP_ZONE.y2;
+
+        function showToast(msg, link = null) {
+            document.getElementById('toast')?.remove();
+            const t = document.createElement('div');
+            t.id = 'toast';
+            t.className = 'toast-in fixed bottom-6 left-1/2 -translate-x-1/2 z-[60] bg-[#0d0d0d] border border-[#DB7944]/50 text-[#FFF7EB] text-xs px-4 py-2.5 rounded-full shadow-2xl flex items-center gap-3 max-w-[92vw]';
+            t.innerHTML = `<span>${msg}</span>${link ? `<a href="${link}" target="_blank" class="bg-[#DB7944] text-white px-3 py-1 rounded-full font-semibold whitespace-nowrap hover:bg-[#c45d1b] transition">Garantir ingresso</a>` : ''}`;
+            document.body.appendChild(t);
+            setTimeout(() => t.remove(), 4500);
+        }
+
         document.getElementById('danceFloor').addEventListener('click', e => {
             if (!currentUser) return;
             const r = e.currentTarget.getBoundingClientRect();
-            updatePresence(((e.clientX - r.left) / r.width) * 100, ((e.clientY - r.top) / r.height) * 100);
+            const x = ((e.clientX - r.left) / r.width) * 100;
+            const y = ((e.clientY - r.top) / r.height) * 100;
+            if (inVipZone(x, y) && !localProfile.isVIP) {
+                showToast('👑 Área VIP — só pra quem já garantiu o ingresso!', TICKETS_URL);
+                return;
+            }
+            updatePresence(x, y);
         });
+        // cliques na barra de reações/passinhos não movem o avatar
+        document.getElementById('actionBar').addEventListener('click', e => e.stopPropagation());
 
         // ── RENDER USUÁRIOS ──
         function renderUsers() {
@@ -851,8 +994,10 @@
                 const djGlow  = `0 0 20px rgba(255,0,200,.8), 0 0 40px rgba(255,0,200,.4), 0 0 0 3px #ff00cc`;
                 const normGlow = `0 0 14px ${color}60, 0 0 0 2px ${color}`;
                 const shadow  = isDJ ? djGlow : (u.isVIP ? vipGlow : normGlow);
-                const bounce  = isDJ ? 'dj-bounce' : (u.isVIP ? 'animate-bounce' : '');
-                const speed   = isDJ ? '.75s' : '2s';
+                const danceCls = ['spin','jump','shake','moonwalk'].includes(u.dance) ? `dance-${u.dance}` : '';
+                const bounce  = isDJ ? 'dj-bounce' : (danceCls || (u.isVIP ? 'animate-bounce' : ''));
+                // passinhos usam a duração da própria animação; DJ/VIP mantêm o override
+                const durStyle = (isDJ || !danceCls) ? `;animation-duration:${isDJ ? '.75s' : '2s'}` : '';
 
                 const unread = (!isMe && currentUser) ? dmUnread(u.id) : 0;
 
@@ -864,7 +1009,7 @@
   ${isDJ ? `<div class="absolute -top-4 -right-3 text-[#ff00cc]" style="width:15px;height:15px">${Icons.headphones}</div>` : ''}
   ${u.isVIP ? `<div class="absolute -top-5 left-1/2 -translate-x-1/2 text-[#DB7944]" style="width:20px;height:20px">${Icons.crown}</div>` : ''}
   ${unread ? `<div class="absolute -top-1.5 -left-1.5 bg-[#ff2d55] text-white text-[9px] font-bold w-5 h-5 rounded-full flex items-center justify-center z-10 shadow-lg">${unread > 9 ? '9+' : unread}</div>` : ''}
-  <div class="avatar-hit w-14 h-14 rounded-full overflow-hidden bg-[#111] ${bounce}" style="box-shadow:${shadow};animation-duration:${speed}">
+  <div class="avatar-hit w-14 h-14 rounded-full overflow-hidden bg-[#111] ${bounce}" style="box-shadow:${shadow}${durStyle}">
     <img src="${getAvatarUrl(u.avatarConfig)}" alt="${esc(u.name)}" class="w-full h-full object-cover"/>
   </div>
   <div class="mt-1.5 px-2 py-0.5 rounded text-[10px] whitespace-nowrap border backdrop-blur-sm flex items-center gap-1 font-light" style="background:rgba(0,0,0,.85);border-color:${isDJ?'rgba(255,0,204,.25)':color+'25'}">
@@ -893,17 +1038,25 @@
             }
             chatMessages.forEach(msg => {
                 const div = document.createElement('div');
-                div.className = 'fade-in-up';
+                div.className = 'fade-in-up group';
+                if (msg.uid && mutedUids.includes(msg.uid)) {
+                    div.innerHTML = `<div class="text-[10px] text-[#FFF7EB]/25 italic cursor-pointer hover:text-[#FFF7EB]/50 transition" onclick="window.toggleMute('${msg.uid}')">🔇 Mensagem de ${esc(msg.name)} oculta — toque para reexibir</div>`;
+                    c.appendChild(div);
+                    return;
+                }
                 const d = new Date(msg.timestamp);
                 const time = d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
                 // mensagens de outros dias exibem também a data
                 const isToday = d.toDateString() === new Date().toDateString();
                 const stamp = isToday ? time : `${d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})} · ${time}`;
                 const crown = msg.isVIP ? `<span class="text-[#DB7944]" style="width:11px;height:11px;display:inline-block">${Icons.crown}</span>` : '';
+                const muteBtn = (msg.uid && currentUser && msg.uid !== currentUser.uid)
+                    ? `<button onclick="window.toggleMute('${msg.uid}')" title="Silenciar ${esc(msg.name)}" class="text-[9px] opacity-0 group-hover:opacity-50 hover:!opacity-100 transition">🔇</button>` : '';
                 div.innerHTML = `
 <div class="flex items-baseline gap-1.5 mb-0.5">
   <span class="font-semibold text-xs flex items-center gap-1 tracking-wide" style="color:${msg.color}">${crown}${esc(msg.name)}</span>
   <span class="text-[9px] text-[#FFF7EB]/30">${stamp}</span>
+  ${muteBtn}
 </div>
 <div class="text-xs text-[#FFF7EB]/85 break-words font-light${msg.isVIP?' border-l-2 pl-2':''}" style="${msg.isVIP?`border-color:${msg.color}`:''}">
   ${esc(msg.text)}
@@ -924,14 +1077,17 @@
             }
             queue.forEach((item, i) => {
                 const mine = currentUser && item.addedByUid === currentUser.uid;
+                const title = item.title || titleCache[item.videoId] || '';
+                if (!item.title && titleCache[item.videoId] === undefined)
+                    fetchTitle(item.videoId).then(t => { if (t) renderQueue(); });
                 const div = document.createElement('div');
                 div.className = `flex items-center gap-2.5 bg-black/25 p-2 rounded border transition ${mine?'border-[#DB7944]/35':'border-[#FFF7EB]/8 hover:border-[#DB7944]/35'}`;
                 div.innerHTML = `
 <span class="text-[#FFF7EB]/30 font-mono text-xs w-4">${i+1}.</span>
 <img src="https://img.youtube.com/vi/${item.videoId}/default.jpg" class="w-11 h-8 object-cover rounded shadow"/>
 <div class="flex-1 overflow-hidden">
-  <p class="text-[10px] text-[#FFF7EB]/55 truncate">por: <span class="${mine?'text-[#DB7944]':'text-[#FFF7EB]'} font-medium">${esc(item.addedByName)}</span></p>
-  ${mine?'<p class="text-[9px] text-[#DB7944]/55 mt-0.5">Sua música 🎵</p>':''}
+  ${title ? `<p class="text-[10px] text-[#FFF7EB]/85 truncate font-medium">${esc(title)}</p>` : ''}
+  <p class="text-[10px] text-[#FFF7EB]/55 truncate">por: <span class="${mine?'text-[#DB7944]':'text-[#FFF7EB]'} font-medium">${esc(item.addedByName)}</span>${mine?' <span class="text-[#DB7944]/55">· sua música 🎵</span>':''}</p>
 </div>`;
                 c.appendChild(div);
             });
@@ -997,6 +1153,7 @@ ${isMe?`<div class="absolute top-2 left-2 bg-[#ff00cc] text-white text-[10px] px
     ${Icons.play} Pular (${votes}/${need})
   </button>
 </div>
+${currentVideo.title ? `<div class="absolute bottom-2 left-2 max-w-[70%] bg-black/75 backdrop-blur-md text-[#FFF7EB]/85 text-[10px] px-3 py-1 rounded-full border border-[#FFF7EB]/15 truncate">🎵 ${esc(currentVideo.title)}</div>` : ''}
 ${cd}`;
             } else {
                 o.innerHTML = `
@@ -1004,6 +1161,7 @@ ${cd}`;
 ${fallbackUnmuted ? '' : `<button onclick="window.unmuteFallback(this)" class="pointer-events-auto absolute bottom-3 left-3 bg-[#DB7944] text-white text-xs px-4 py-1.5 rounded-full font-semibold shadow-lg hover:bg-[#c45d1b] transition z-10">🔊 Ativar som</button>`}
 ${cd}`;
             }
+            glPlaying = !!(currentVideo?.videoId) || fallbackUnmuted;
             applyModalAudioDuck();
         }
 
@@ -1122,8 +1280,7 @@ ${cd}`;
             const text = inp.value.trim();
             if (!currentUser || !text) return;
             if (!db) { alert('Firebase não configurado. Chat indisponível.'); return; }
-            const ref = collection(db, 'artifacts', appId, 'public', 'data', 'chat');
-            await addDoc(ref, {uid:currentUser.uid, name:localProfile.name, isVIP:localProfile.isVIP, color:localProfile.color, text, timestamp:Date.now()});
+            await addDoc(pcol('chat'), {uid:currentUser.uid, name:localProfile.name, isVIP:localProfile.isVIP, color:localProfile.color, text:censor(text), timestamp:Date.now()});
             inp.value = '';
             document.getElementById('chatSubmit').disabled = true;
         });
@@ -1141,41 +1298,48 @@ ${cd}`;
             const videoId = extractYouTubeId(inp.value);
             if (!videoId) { alert('Link do YouTube inválido.'); return; }
             if (!db) { alert('Firebase não configurado. Fila indisponível.'); return; }
-            const docRef = await addDoc(pcol('queue'), {videoId, addedByName:localProfile.name, addedByUid:currentUser.uid, timestamp:Date.now()});
+            const title = await fetchTitle(videoId);
+            const docRef = await addDoc(pcol('queue'), {videoId, title: title || null, addedByName:localProfile.name, addedByUid:currentUser.uid, timestamp:Date.now()});
             inp.value = '';
             // Se a pista está na playlist da casa, faz a contagem e entra com a música do usuário
             if (!currentVideo?.videoId && !countdownActive()) {
                 const byName = localProfile.name, byUid = currentUser.uid;
                 startCountdown(`🎵 Música de ${byName} entrando na pista!`, async () => {
-                    await setDoc(pdoc('player', 'state'), {videoId, startedAt:Date.now(), addedByName:byName, addedByUid:byUid});
-                    await setDoc(pdoc('player', 'skipVotes'), {videoId, votes:{}});
+                    await setNowPlaying(videoId, byName, byUid, title);
                     try { await deleteDoc(pdoc('queue', docRef.id)); } catch(e) {}
                 });
             }
         });
 
+        // grava o vídeo atual + reset dos votos + histórico (ranking da noite)
+        async function setNowPlaying(vid, byName, byUid, title) {
+            await setDoc(pdoc('player', 'state'), {videoId:vid, startedAt:Date.now(), addedByName:byName, addedByUid:byUid, title: title || null});
+            await setDoc(pdoc('player', 'skipVotes'), {videoId:vid, votes:{}});
+            if (vid) addDoc(pcol('history'), {videoId:vid, byUid, byName, title: title || null, timestamp:Date.now()}).catch(() => {});
+        }
+
         window.playNextVideo = async (overrideId = null) => {
             if (!currentUser || !db) return;
-            let vid = overrideId, docId = null;
+            let vid = overrideId, docId = null, title = null;
             let byName = localProfile.name, byUid = currentUser.uid;
             if (!vid && queue.length > 0) {
                 vid = queue[0].videoId; docId = queue[0].id;
+                title  = queue[0].title || titleCache[vid] || null;
                 byName = queue[0].addedByName || byName;
                 byUid  = queue[0].addedByUid  || byUid;
             }
             if (vid) {
-                await setDoc(pdoc('player', 'state'), {videoId:vid, startedAt:Date.now(), addedByName:byName, addedByUid:byUid});
-                await setDoc(pdoc('player', 'skipVotes'), {videoId:vid, votes:{}});
+                await setNowPlaying(vid, byName, byUid, title);
                 if (docId) await deleteDoc(pdoc('queue', docId));
             } else {
-                await setDoc(pdoc('player', 'state'), {videoId:null, startedAt:null, addedByName:null, addedByUid:null});
+                await setDoc(pdoc('player', 'state'), {videoId:null, startedAt:null, addedByName:null, addedByUid:null, title:null});
                 await setDoc(pdoc('player', 'skipVotes'), {videoId:null, votes:{}});
             }
         };
 
         // ── CHAT PRIVADO (DM) ──
         const convId = (a, b) => [a, b].sort().join('_');
-        const dmUnread = uid => dmMessages.filter(m =>
+        const dmUnread = uid => mutedUids.includes(uid) ? 0 : dmMessages.filter(m =>
             m.from === uid && m.to === currentUser?.uid &&
             m.timestamp > (dmReadAt[uid] || dmSessionStart) && dmOpenWith !== uid
         ).length;
@@ -1214,7 +1378,7 @@ ${cd}`;
             await addDoc(pcol('dm'), {
                 convId: convId(currentUser.uid, dmOpenWith),
                 from: currentUser.uid, fromName: localProfile.name, fromColor: localProfile.color,
-                to: dmOpenWith, text, timestamp: Date.now()
+                to: dmOpenWith, text: censor(text), timestamp: Date.now()
             });
             inp.value = '';
         });
@@ -1238,6 +1402,203 @@ ${cd}`;
             });
             c.scrollTop = c.scrollHeight;
         }
+
+        // ── REAÇÕES RÁPIDAS ──
+        const REACTION_EMOJIS = ['🔥','❤️','👏','🕺','💃','😂'];
+        function spawnReaction(r) {
+            const floor = document.getElementById('danceFloor');
+            if (!floor) return;
+            const el = document.createElement('div');
+            el.className = 'rx-float absolute pointer-events-none z-30 text-2xl';
+            el.style.left = `${Math.min(97, Math.max(2, r.x ?? 50))}%`;
+            el.style.top  = `${Math.min(95, Math.max(5, r.y ?? 50))}%`;
+            el.textContent = REACTION_EMOJIS.includes(r.emoji) ? r.emoji : '🔥';
+            floor.appendChild(el);
+            setTimeout(() => el.remove(), 2700);
+        }
+        window.sendReaction = async emoji => {
+            if (!REACTION_EMOJIS.includes(emoji)) return;
+            if (!currentUser || !db) {
+                spawnReaction({emoji, x: 50, y: 60}); // modo offline: só efeito local
+                return;
+            }
+            const me = activeUsers.find(u => u.id === currentUser.uid);
+            await addDoc(pcol('reactions'), {
+                uid: currentUser.uid, emoji,
+                x: me?.x ?? 50, y: (me?.y ?? 55) - 5,
+                timestamp: Date.now()
+            });
+        };
+
+        // ── PASSINHOS DE DANÇA ──
+        const DANCES = [
+            {v:'', l:'😐 Parado'}, {v:'spin', l:'🌀 Giro'}, {v:'jump', l:'🦘 Pulinho'},
+            {v:'shake', l:'🪩 Quebradinha'}, {v:'moonwalk', l:'🌙 Moonwalk'}
+        ];
+        document.getElementById('danceMenu').innerHTML = DANCES.map(d =>
+            `<button onclick="window.setDance('${d.v}')" class="text-left text-xs px-2.5 py-1.5 rounded-lg hover:bg-[#DB7944]/20 transition text-[#FFF7EB]/85">${d.l}</button>`
+        ).join('');
+        window.setDance = v => {
+            if (!DANCES.some(d => d.v === v)) return;
+            localProfile.dance = v;
+            updatePresence();
+            const m = document.getElementById('danceMenu');
+            m.classList.add('hidden'); m.classList.remove('flex');
+        };
+        document.getElementById('danceMenuBtn').addEventListener('click', () => {
+            const m = document.getElementById('danceMenu');
+            m.classList.toggle('hidden'); m.classList.toggle('flex');
+        });
+
+        // ── RANKING DA NOITE ──
+        function renderRanking() {
+            const medals = ['🥇','🥈','🥉','4º','5º'];
+            const rankingOpen = () => !document.getElementById('rankingModal').classList.contains('hidden');
+
+            const djAgg = {};
+            playHistory.forEach(h => {
+                if (!h.byUid) return;
+                (djAgg[h.byUid] ??= {name: h.byName || 'Investidor', n: 0}).n++;
+            });
+            const topDjs = Object.values(djAgg).sort((a,b) => b.n - a.n).slice(0, 5);
+            document.getElementById('rankingDjs').innerHTML = topDjs.length ? topDjs.map((d,i) => `
+<div class="flex items-center gap-2 bg-black/30 border border-[#FFF7EB]/8 rounded-lg px-3 py-2">
+  <span class="w-7 text-center text-sm">${medals[i]}</span>
+  <span class="flex-1 text-xs font-medium truncate">${esc(d.name)}</span>
+  <span class="text-[10px] text-[#FFF7EB]/50 whitespace-nowrap">${d.n} música${d.n > 1 ? 's' : ''}</span>
+</div>`).join('') : `<p class="text-xs text-[#FFF7EB]/30 font-light">Ninguém tocou ainda. Solta o som!</p>`;
+
+            const songAgg = {};
+            partyVotes.forEach(v => { songAgg[v.videoId] = (songAgg[v.videoId] || 0) + 1; });
+            const topSongs = Object.entries(songAgg).sort((a,b) => b[1] - a[1]).slice(0, 5);
+            document.getElementById('rankingSongs').innerHTML = topSongs.length ? topSongs.map(([vid, n], i) => {
+                const t = titleCache[vid];
+                if (t === undefined) fetchTitle(vid).then(() => { if (rankingOpen()) renderRanking(); });
+                return `
+<a href="https://youtu.be/${vid}" target="_blank" class="flex items-center gap-2 bg-black/30 border border-[#FFF7EB]/8 rounded-lg px-3 py-2 hover:border-[#ff6600]/50 transition">
+  <span class="w-7 text-center text-sm">${medals[i]}</span>
+  <img src="https://img.youtube.com/vi/${vid}/default.jpg" class="w-10 h-7 object-cover rounded"/>
+  <span class="flex-1 text-xs truncate">${esc(t || 'Vídeo ' + vid)}</span>
+  <span class="text-[10px] text-[#ff6600] font-bold whitespace-nowrap">🔥 ${n}</span>
+</a>`;
+            }).join('') : `<p class="text-xs text-[#FFF7EB]/30 font-light">Nenhum voto "Essa vai pra festa!" ainda.</p>`;
+        }
+        document.getElementById('openRankingBtn').addEventListener('click', () => {
+            renderRanking();
+            const m = document.getElementById('rankingModal');
+            m.classList.remove('hidden'); m.classList.add('flex');
+        });
+        document.getElementById('rankingClose').addEventListener('click', () => {
+            const m = document.getElementById('rankingModal');
+            m.classList.add('hidden'); m.classList.remove('flex');
+        });
+
+        // ── PISTA WEBGL (Three.js) ──
+        // Globo de espelhos 3D, feixes de luz volumétricos e partículas pulsando no ritmo.
+        // Se o CDN/WebGL falhar, o globo 2D em CSS continua no lugar.
+        (async () => {
+            try {
+                const THREE = await import('https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js');
+                const holder = document.getElementById('webglLayer');
+                const renderer = new THREE.WebGLRenderer({alpha: true, antialias: true});
+                renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+                holder.appendChild(renderer.domElement);
+
+                const scene = new THREE.Scene();
+                const cam = new THREE.PerspectiveCamera(50, 1, .1, 100);
+                cam.position.set(0, 0, 10);
+
+                // globo de espelhos facetado
+                const ball = new THREE.Group();
+                ball.add(new THREE.Mesh(
+                    new THREE.IcosahedronGeometry(1.15, 2),
+                    new THREE.MeshStandardMaterial({color: 0xcccccc, metalness: 1, roughness: .18, flatShading: true})
+                ));
+                ball.position.set(0, 2.7, 0);
+                scene.add(ball);
+
+                // haste do globo
+                const wire = new THREE.Mesh(
+                    new THREE.CylinderGeometry(.02, .02, 2.2),
+                    new THREE.MeshBasicMaterial({color: 0x666666})
+                );
+                wire.position.set(0, 4.6, 0);
+                scene.add(wire);
+
+                // luzes coloridas girando ao redor do globo
+                const NEONS = [0xff00cc, 0x00ffff, 0xffdc00, 0xff6600];
+                const lightGroup = new THREE.Group();
+                NEONS.forEach((c, i) => {
+                    const l = new THREE.PointLight(c, 40, 40);
+                    l.position.setFromSphericalCoords(4.5, Math.PI / 2.3, i * Math.PI / 2);
+                    lightGroup.add(l);
+                });
+                lightGroup.position.copy(ball.position);
+                scene.add(lightGroup);
+                scene.add(new THREE.AmbientLight(0xffffff, .3));
+
+                // feixes de luz saindo do globo
+                const beams = new THREE.Group();
+                NEONS.forEach((c, i) => {
+                    const cone = new THREE.Mesh(
+                        new THREE.ConeGeometry(1.6, 7.5, 20, 1, true),
+                        new THREE.MeshBasicMaterial({color: c, transparent: true, opacity: .1, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, depthWrite: false})
+                    );
+                    cone.position.y = -3.6;
+                    const pivot = new THREE.Group();
+                    pivot.rotation.z = (i - 1.5) * .42;
+                    pivot.add(cone);
+                    beams.add(pivot);
+                });
+                beams.position.copy(ball.position);
+                scene.add(beams);
+
+                // poeira brilhante da pista
+                const N = 220;
+                const pos = new Float32Array(N * 3);
+                for (let i = 0; i < N; i++) {
+                    pos[i*3] = (Math.random() - .5) * 15;
+                    pos[i*3+1] = (Math.random() - .5) * 9;
+                    pos[i*3+2] = (Math.random() - .5) * 6;
+                }
+                const pg = new THREE.BufferGeometry();
+                pg.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+                const pm = new THREE.PointsMaterial({color: 0xffffff, size: .05, transparent: true, opacity: .45});
+                const pts = new THREE.Points(pg, pm);
+                scene.add(pts);
+
+                const resize = () => {
+                    const w = holder.clientWidth, h = holder.clientHeight;
+                    if (!w || !h) return;
+                    renderer.setSize(w, h, false);
+                    cam.aspect = w / h;
+                    cam.updateProjectionMatrix();
+                };
+                new ResizeObserver(resize).observe(holder);
+                resize();
+
+                document.getElementById('cssDiscoBall')?.remove(); // o globo agora é 3D
+
+                const BPM = 118; // batida estimada pro pulso visual
+                renderer.setAnimationLoop(t => {
+                    const s = t / 1000;
+                    const beat = (s * BPM / 60) % 1;
+                    const pulse = glPlaying ? 1 + .2 * Math.pow(1 - beat, 3) : 1 + .04 * Math.sin(s * 2);
+                    ball.rotation.y = s * .6;
+                    ball.scale.setScalar(pulse);
+                    lightGroup.rotation.y = -s * .8;
+                    beams.rotation.y = s * .5;
+                    beams.children.forEach((p, i) => {
+                        p.children[0].material.opacity = (glPlaying ? .13 : .06) + .05 * Math.sin(s * 2 + i);
+                    });
+                    pts.rotation.y = s * .05;
+                    pm.opacity = .3 + (glPlaying ? .3 * Math.pow(1 - beat, 2) : .1);
+                    renderer.render(scene, cam);
+                });
+            } catch(e) {
+                console.warn('WebGL indisponível — mantendo a pista 2D.', e);
+            }
+        })();
 
         // ── MODAL DO AVATAR ──
         function renderSettingsModal() {
