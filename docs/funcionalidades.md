@@ -6,6 +6,7 @@ Ao abrir o app, o modal **"Crie seu Avatar"** aparece com a música da casa já 
 
 - **Preview + nome** ficam sempre visíveis no topo.
 - **Desktop (≥768px)**: painel largo (`max-w-3xl`), todas as seções visíveis, opções quebrando linha (sem scroll horizontal).
+- Cada opção de estilo é um **card com a imagem do avatar** usando aquela opção (miniaturas geradas pelo DiceBear) — nada de escolher só pelo texto.
 - **Mobile**: as opções são divididas em três seções navegáveis por abas no topo do painel:
   - **Estilo** — cabelo/chapéu, acessórios, barba, roupas
   - **Rosto** — olhos, sobrancelhas, boca
@@ -56,10 +57,10 @@ Para os demais, o botão **"Pular (x/y)"** no canto do player:
 Botão ao lado do "Pular". Um clique = um voto por pessoa por música (fica laranja depois de votar; mostra o total entre parênteses). Os votos ficam gravados **permanentemente** na coleção `partyVotes` do Firestore para a curadoria do setlist da festa real — cada registro guarda o vídeo, quem votou e quem tinha colocado a música.
 
 ### Reprodução sincronizada — o DJ no comando
-- **Todo mundo assiste ao mesmo ponto do vídeo**: quem entra no meio da música já começa nos segundos certos, e um ajuste automático corrige qualquer descompasso maior que 3 s.
-- **Só o DJ controla o player**: para os demais, os controles do YouTube ficam bloqueados (sem cliques nem teclado, com o aviso "🔒 Só o DJ controla o player").
+- **Todo mundo assiste ao mesmo ponto do vídeo**: quem entra no meio da música já começa nos segundos certos, e um ajuste automático corrige qualquer descompasso maior que 6 s.
+- **Só o DJ controla o player** — e mesmo ele não avança nem retrocede: ninguém tem a barra de progresso do YouTube. O DJ pausa/retoma tocando no vídeo; para os demais, cliques e teclado ficam bloqueados (aviso "🔒 Só o DJ controla o player").
 - **Propagandas**: o botão **"📺 Pular propaganda"** libera os cliques no player por 15 s — tempo de apertar o "Pular anúncio" do YouTube — e depois re-trava sozinho. Se alguém pausar sem querer nesse intervalo, a sincronia corrige em segundos.
-- **O que o DJ faz, todos veem**: pausar, retomar ou avançar o vídeo no player do DJ replica para toda a pista em segundos.
+- **O que o DJ faz, todos veem**: pausar e retomar no player do DJ replica para toda a pista em segundos.
 
 ### Troca automática
 - **10 minutos**: qualquer vídeo é pulado automaticamente ao completar 10 min de reprodução.
