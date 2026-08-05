@@ -166,17 +166,17 @@
 
     <!-- CARREGAMENTO -->
     <div id="loadingScreen" class="fixed inset-0 bg-[#050505] z-[100] flex flex-col items-center justify-center">
-        <img src="https://raw.githubusercontent.com/eriadesign/privateday/main/globo.webp" alt="Globo" class="w-24 h-24 mb-6 animate-pulse">
+        <img src="GLOBO.png" alt="Globo" class="w-24 h-24 mb-6 animate-pulse object-contain">
         <h1 class="font-discodiva text-4xl tracking-widest text-[#DB7944]">Carregando a pista...</h1>
     </div>
 
     <!-- HEADER -->
     <header class="bg-[#0a0a0a] border-b border-[#FFF7EB]/8 p-3 flex justify-between items-center z-10 relative shadow-lg">
         <div class="flex items-center gap-2.5 md:gap-3">
-            <img src="https://raw.githubusercontent.com/eriadesign/privateday/main/globo.webp" alt="AUVP" class="h-12 md:h-16 w-auto object-contain drop-shadow-lg">
+            <img src="GLOBO.png" alt="AUVP Private Day" class="h-12 md:h-16 w-auto object-contain drop-shadow-lg">
             <div class="text-center">
-                <h1 class="font-discodiva text-2xl md:text-3xl text-[#FFF7EB] tracking-wide leading-none">PRIVATE DAY</h1>
-                <p class="text-[10px] md:text-xs text-[#DB7944] uppercase tracking-[.2em] font-semibold leading-none mt-0.5">Esquenta 2026</p>
+                <img src="LETTERING.png" alt="PRIVATE DAY" class="h-5 md:h-7 w-auto object-contain mx-auto">
+                <p class="text-[10px] md:text-xs text-[#DB7944] uppercase tracking-[.2em] font-semibold leading-none mt-1">Esquenta 2026</p>
             </div>
         </div>
         <div class="flex items-center gap-2 md:gap-3">
@@ -227,7 +227,7 @@
                 <!-- Globo refletor (fallback 2D; some quando o WebGL assume) -->
                 <div id="cssDiscoBall" class="absolute left-1/2 -translate-x-1/2 top-0 z-[5] pointer-events-none disco-ball-wrap flex flex-col items-center">
                     <div class="w-px h-6 md:h-10 bg-[#FFF7EB]/25"></div>
-                    <img src="https://raw.githubusercontent.com/eriadesign/privateday/main/globo.webp" alt="Globo refletor" class="disco-ball-img w-20 h-20 md:w-32 md:h-32 object-contain">
+                    <img src="GLOBO.png" alt="Globo refletor" class="disco-ball-img w-20 h-20 md:w-32 md:h-32 object-contain">
                 </div>
 
                 <!-- Área VIP -->
@@ -804,7 +804,7 @@
                 // Firebase não configurado – mostra aviso no loading e continua em modo visual
                 const ls = document.getElementById('loadingScreen');
                 ls.innerHTML = `
-                    <img src="https://raw.githubusercontent.com/eriadesign/privateday/main/globo.webp" class="w-20 h-20 mb-5 opacity-50">
+                    <img src="GLOBO.png" class="w-20 h-20 mb-5 opacity-50 object-contain">
                     <h1 class="font-discodiva text-3xl text-[#DB7944] mb-3">Firebase não configurado</h1>
                     <p class="text-[#FFF7EB]/60 text-sm max-w-xs text-center leading-relaxed">
                         Para usar o app fora do ambiente Claude, edite o bloco

@@ -11,6 +11,7 @@ App de página única (**`index.htm`**) — pista de dança virtual do esquenta 
 - **Tudo em um arquivo.** Não crie arquivos JS/CSS separados; mantenha o padrão de arquivo único do `index.htm`.
 - **Idioma:** todo texto visível ao usuário, comentários e commits em **português (pt-BR)**.
 - **Estilo visual:** dark (`#050505`), paleta AUVP — laranja `#DB7944`, azul `#0B2A47`, vermelho `#932621`, creme `#FFF7EB` — com neons 80s (rosa `#ff00cc`, ciano `#00ffff`) apenas em detalhes da pista.
+- **Identidade:** sempre que usar o globo da marca, use `GLOBO.png`; para o nome "PRIVATE DAY" (ex.: header), use o lettering `LETTERING.png` — ambos na raiz do repo, por caminho relativo.
 - **Tailwind para layout, CSS custom só para animações** (bloco `<style>` no `<head>`).
 - **Sem dependências novas** sem necessidade real. CDNs atuais: Tailwind, Google Fonts, Firebase 11.x (gstatic), DiceBear v8, YouTube.
 

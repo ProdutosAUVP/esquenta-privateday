@@ -7,7 +7,9 @@ O app é um único arquivo estático (`index.htm`). Qualquer host serve:
 - **GitHub Pages** (recomendado): Settings → Pages → Deploy from branch → branch principal, pasta `/`. O arquivo `index.htm` é servido como raiz.
 - Netlify/Vercel/Cloudflare Pages: arraste o arquivo ou aponte para o repositório.
 
-Requisitos do ambiente do visitante: internet liberada para `cdn.tailwindcss.com`, `fonts.googleapis.com`, `www.gstatic.com` (Firebase), `api.dicebear.com`, `raw.githubusercontent.com` (fonte/logo), `img.youtube.com`, `www.youtube.com`, `cdn.jsdelivr.net` (Three.js — opcional, com fallback 2D) e `noembed.com` (títulos — opcional).
+Requisitos do ambiente do visitante: internet liberada para `cdn.tailwindcss.com`, `fonts.googleapis.com`, `www.gstatic.com` (Firebase), `api.dicebear.com`, `raw.githubusercontent.com` (fonte DiscoDiva), `img.youtube.com`, `www.youtube.com`, `cdn.jsdelivr.net` (Three.js — opcional, com fallback 2D) e `noembed.com` (títulos — opcional).
+
+**Identidade visual**: o globo da marca é o arquivo local `GLOBO.png` e o nome "PRIVATE DAY" usa o lettering `LETTERING.png` (ambos na raiz do repositório, referenciados por caminho relativo — sirva os três arquivos juntos).
 
 ## Firebase
 
