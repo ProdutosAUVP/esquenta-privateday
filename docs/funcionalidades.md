@@ -36,7 +36,9 @@ Cole um link do YouTube no campo da fila. A música entra no fim da fila com seu
 - Se a **playlist da casa** estiver tocando (ninguém na mesa), uma **contagem regressiva de 5 segundos** aparece sobre o player ("🎵 Música de Fulano entrando na pista!") e a sua música assume.
 
 ### Votar para pular
-Botão **"Pular (x/y)"** no canto do player:
+Quem está com a música tocando vê o botão **"Pular minha vez"** — passa a vez direto (com a contagem de 5 s), sem precisar de votação.
+
+Para os demais, o botão **"Pular (x/y)"** no canto do player:
 - `x` = votos atuais, `y` = votos necessários (**maioria dos online**: `ceil(online/2)`, mínimo 1).
 - Cada pessoa vota uma vez por música (o botão trava depois do voto).
 - Ao atingir o limiar: contagem regressiva de 5 s ("A pista votou: próxima música!") e a música é pulada.
