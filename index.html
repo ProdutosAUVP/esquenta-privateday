@@ -598,6 +598,8 @@
         let currentVideo = null;
         let skipVotes = null;       // doc player/skipVotes: {videoId, votes:{uid:true}}
         let countdownState = null;  // doc player/countdown: {endsAt, reason}
+        let playbackState = null;   // doc player/playback: {videoId, state, time, at} publicado pelo DJ
+        let ytInfo = null;          // último estado do MEU player (via infoDelivery)
         let partyVotes = [];        // coleção partyVotes ("Essa vai pra festa!")
         let dmMessages = [];        // mensagens privadas envolvendo o usuário atual
         let dmThreads = [];         // solicitações/conversas (dmThreads/{convId}: {a,b,requestedBy,status})
@@ -937,6 +939,7 @@
                 const state = docs.find(s => s.id === 'state');
                 skipVotes      = docs.find(s => s.id === 'skipVotes') || null;
                 countdownState = docs.find(s => s.id === 'countdown') || null;
+                playbackState  = docs.find(s => s.id === 'playback') || null;
                 if (state) currentVideo = state;
                 // só recria o iframe quando o vídeo de fato muda; votos/contagem atualizam o overlay
                 const key = `${currentVideo?.videoId || 'fallback'}_${currentVideo?.startedAt || 0}`;
@@ -1192,9 +1195,15 @@
 
         function renderPlayer() {
             const c = document.getElementById('playerContainer');
+            ytInfo = null; // iframe novo, estado local zera
             if (currentVideo?.videoId) {
+                const isMe = currentUser && currentVideo.addedByUid === currentUser.uid;
+                // entra já no ponto certo da música (sincronizado com quem chegou antes)
+                const startSec = Math.max(0, Math.floor((Date.now() - (currentVideo.startedAt || Date.now())) / 1000));
+                // só o DJ tem os controles do YouTube; os demais assistem sincronizados
+                const ctrl = isMe ? 'controls=1' : 'controls=0&disablekb=1';
                 c.innerHTML = `
-<iframe id="ytFrame" class="w-full h-full" src="https://www.youtube.com/embed/${currentVideo.videoId}?autoplay=1&controls=1&enablejsapi=1"
+<iframe id="ytFrame" class="w-full h-full" src="https://www.youtube.com/embed/${currentVideo.videoId}?autoplay=1&${ctrl}&enablejsapi=1&start=${startSec}&rel=0&playsinline=1"
   frameBorder="0" allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture" allowFullScreen></iframe>
 <div id="playerOverlay" class="absolute inset-0 pointer-events-none"></div>`;
             } else {
@@ -1231,6 +1240,8 @@
                 const pCount = partyVoteCount();
                 const iParty = !!(currentUser && partyVotes.some(v => v.videoId === currentVideo.videoId && v.uid === currentUser.uid));
                 o.innerHTML = `
+${!isMe ? `<div class="absolute inset-0 pointer-events-auto" title="Só o DJ controla o player"></div>
+<div class="absolute bottom-2 right-2 bg-black/70 backdrop-blur-md text-[#FFF7EB]/60 text-[9px] px-2.5 py-1 rounded-full border border-[#FFF7EB]/10">🔒 Só o DJ controla o player</div>` : ''}
 ${isMe?`<div class="absolute top-2 left-2 bg-[#ff00cc] text-white text-[10px] px-3 py-1 rounded-full font-bold shadow-lg my-turn-badge">🎧 É a sua vez na mesa!</div>`:''}
 <div class="absolute top-2 right-2 flex flex-wrap justify-end gap-1.5 z-10">
   <button onclick="window.votePartySong()" ${iParty?'disabled':''} title="Vote pra essa tocar na festa de verdade!"
@@ -1375,7 +1386,54 @@ ${cd}`;
             const ended = (d.event === 'onStateChange' && d.info === 0) ||
                           (d.event === 'infoDelivery' && d.info && d.info.playerState === 0);
             if (ended) onVideoEnded();
+            // guarda o estado do MEU player (posição/tocando/pausado)
+            let newState;
+            if (d.event === 'infoDelivery' && d.info) {
+                if (typeof d.info.currentTime === 'number') ytInfo = {...(ytInfo || {}), time: d.info.currentTime, at: Date.now()};
+                if (typeof d.info.playerState === 'number') newState = d.info.playerState;
+            } else if (d.event === 'onStateChange' && typeof d.info === 'number') {
+                newState = d.info;
+            }
+            if (newState !== undefined) {
+                const prev = ytInfo?.state;
+                ytInfo = {...(ytInfo || {}), state: newState, at: Date.now()};
+                // DJ pausou/retomou → replica na hora para todo mundo
+                if (isCurrentDJ() && prev !== newState && (newState === 1 || newState === 2)) publishPlayback();
+            }
         });
+
+        // ── SINCRONIA DE REPRODUÇÃO (o DJ manda, os outros seguem) ──
+        const isCurrentDJ = () => !!(currentUser && currentVideo?.videoId && currentVideo.addedByUid === currentUser.uid);
+
+        async function publishPlayback() {
+            if (!isCurrentDJ() || !db || !ytInfo) return;
+            try {
+                await setDoc(pdoc('player', 'playback'), {
+                    videoId: currentVideo.videoId,
+                    state: ytInfo.state === 2 ? 'paused' : 'playing',
+                    time: ytInfo.time || 0,
+                    at: Date.now()
+                });
+            } catch(e) {}
+        }
+        setInterval(publishPlayback, 5000); // posição do DJ publicada a cada 5 s (cobre seeks também)
+
+        // não-DJs alinham o próprio player ao do DJ (pausa, retomada e drift > 3 s)
+        setInterval(() => {
+            if (!currentVideo?.videoId || isCurrentDJ() || countdownActive()) return;
+            if (!playbackState || playbackState.videoId !== currentVideo.videoId) return;
+            if (Date.now() - (playbackState.at || 0) > 15000) return; // DJ ausente: não força nada
+            if (playbackState.state === 'paused') {
+                if (ytInfo?.state === 1) ytCmd('pauseVideo');
+                if (ytInfo && Math.abs((ytInfo.time || 0) - (playbackState.time || 0)) > 3)
+                    ytCmd('seekTo', [playbackState.time || 0, true]);
+                return;
+            }
+            const expected = (playbackState.time || 0) + (Date.now() - playbackState.at) / 1000;
+            if (ytInfo?.state === 2) ytCmd('playVideo');
+            if (ytInfo && Math.abs((ytInfo.time || 0) - expected) > 3)
+                ytCmd('seekTo', [expected, true]);
+        }, 3000);
 
         // ── "FILTRO" DE ÁUDIO COM O MODAL ABERTO ──
         // O YouTube não expõe o áudio do embed pro Web Audio (cross-origin), então o
@@ -1434,6 +1492,7 @@ ${cd}`;
         async function setNowPlaying(vid, byName, byUid, title) {
             await setDoc(pdoc('player', 'state'), {videoId:vid, startedAt:Date.now(), addedByName:byName, addedByUid:byUid, title: title || null});
             await setDoc(pdoc('player', 'skipVotes'), {videoId:vid, votes:{}});
+            setDoc(pdoc('player', 'playback'), {videoId:vid, state:'playing', time:0, at:Date.now()}).catch(() => {});
             if (vid) addDoc(pcol('history'), {videoId:vid, byUid, byName, title: title || null, timestamp:Date.now()}).catch(() => {});
         }
 

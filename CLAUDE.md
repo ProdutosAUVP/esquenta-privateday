@@ -52,6 +52,7 @@ App de página única (**`index.html`**) — pista de dança virtual do esquenta
 | `player/state` | vídeo atual (`videoId`, `startedAt`, `addedByUid`, `addedByName`, `title`) |
 | `player/skipVotes` | votos de pular (`{videoId, votes:{uid:true}}`) — resetado a cada troca |
 | `player/countdown` | contagem regressiva (`{endsAt, reason}`) |
+| `player/playback` | sincronia de reprodução (`{videoId, state, time, at}`) — publicado pelo DJ; os demais seguem |
 | `partyVotes/{videoId_uid}` | votos "Essa vai pra festa!" (curadoria — nunca apagar) |
 | `history/{auto}` | músicas já tocadas (`videoId`, `byUid`, `byName`, `title`) — base do ranking |
 | `reactions/{auto}` | reações flutuantes (`uid`, `emoji`, `x`, `y`, `timestamp`) — o líder apaga as com >2 min |

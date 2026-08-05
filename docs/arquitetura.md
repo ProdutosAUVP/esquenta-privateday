@@ -72,6 +72,12 @@ Só vale se `videoId` bater com o vídeo atual. Resetado (`votes:{}`) a cada tro
 { endsAt, reason }   // endsAt null = sem contagem
 ```
 
+### `player/playback` — sincronia de reprodução (documento único)
+```js
+{ videoId, state, time, at }   // state: 'playing' | 'paused'; time em segundos; at = Date.now() do DJ
+```
+Publicado **pelo cliente do DJ** a cada 5 s e imediatamente ao pausar/retomar. Os demais clientes comparam a posição esperada (`time + (agora - at)`) com o próprio player a cada 3 s e corrigem com `seekTo` quando o drift passa de 3 s; pausa/retomada são replicadas. Quem entra no meio da música já monta o iframe com `start=<segundos decorridos>`. Só o DJ tem os controles do YouTube (`controls=1`); os demais recebem `controls=0&disablekb=1` + uma camada bloqueando cliques. Se o doc fica >15 s sem atualização (DJ saiu), ninguém força nada.
+
 ### `partyVotes/{videoId_uid}` — curadoria "Essa vai pra festa!"
 ```js
 { videoId, uid, name, addedByName, timestamp }
