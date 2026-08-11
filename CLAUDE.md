@@ -9,6 +9,7 @@ App de página única (**`index.html`**) — pista de dança virtual do esquenta
 ## Regras do projeto
 
 - **Tudo em um arquivo.** Não crie arquivos JS/CSS separados; mantenha o padrão de arquivo único do `index.html`.
+- **`elementor/esquenta-privateday.html` é gerado** por `tools/build-elementor.py` (embute os PNGs em base64 para o app virar um arquivo autossuficiente). Nunca edite esse arquivo à mão — altere o `index.html` e regenere. O script falha alto se os trechos que ele troca mudarem de forma.
 - **Idioma:** todo texto visível ao usuário, comentários e commits em **português (pt-BR)**.
 - **Estilo visual:** dark (`#050505`), paleta AUVP — laranja `#DB7944`, azul `#0B2A47`, vermelho `#932621`, creme `#FFF7EB` — com neons 80s (rosa `#ff00cc`, ciano `#00ffff`) apenas em detalhes da pista.
 - **Identidade:** sempre que usar o globo da marca, use `GLOBO.png`; para o nome "PRIVATE DAY" (ex.: header), use o lettering `LETTERING.png` — ambos na raiz do repo, por caminho relativo.
@@ -36,11 +37,17 @@ App de página única (**`index.html`**) — pista de dança virtual do esquenta
 - **Escape de HTML**: todo conteúdo vindo de usuário (nomes, mensagens) passa por `esc()` antes de entrar em `innerHTML`.
 - **Modo offline**: o app precisa abrir mesmo sem Firebase (`configValida === false` ou falha de auth) — mantenha os guards `if (!currentUser || !db) return;`.
 - **Timestamps**: `Date.now()` do cliente (sem serverTimestamp) — comparações toleram pequenos desvios de relógio.
+- **Mesa de DJ é só de quem tem ingresso** (`podeSerDJ()`): trava no envio da fila, no formulário e na promoção da música. O ingresso é declarado pela própria pessoa — a trava é de experiência, não de segurança.
+- **Canvas do WebGL: tamanho por CSS, resolução por `setSize(w, h, false)`.** Deixar o Three escrever o estilo dobra o canvas em tela retina e joga a cena para fora da área visível.
 - **WebGL é progressivo**: o Three.js entra por `import()` dinâmico dentro de try/catch; se falhar (CDN bloqueado, sem GPU), o globo 2D `#cssDiscoBall` permanece. Nunca torne o Three.js um import estático — derrubaria o app inteiro.
+- **Coroa VIP é selo de avatar** (`.vip-crown`), nunca ícone ao lado do nome — vale para header, chat e pista.
 - **Dados de usuário em animações/classes**: valores como `dance` e `emoji` são validados contra whitelists antes de virarem classe CSS/DOM.
 - **Silenciamento é local** (localStorage `esquentaMuted`) e a censura de palavrões acontece **no envio** (`censor()`); não há papel de admin.
 - **Perfil persistido no navegador** (`esquentaProfile`): carregado com merge defensivo na inicialização; `saveProfile()` deve ser chamado em toda mutação de `localProfile`. A chave `esquentaPerfilPronto` marca quem já concluiu a personalização — essa pessoa entra direto na pista (`enterParty()` no fim do script), sem o modal.
 - **Nunca use `localStorage` direto** — sempre o helper `store.get/set`, que grava em localStorage **e** em cookie. Em navegação privada do iOS e em iframe particionado o localStorage falha, e sem a reserva o visitante refaz o boneco a cada visita.
+- **Miniaturas do avatar usam `CARD_BASE` (config fixa), nunca a config atual** — é o que mantém o conjunto de URLs finito e permite pré-carregar tudo antes da entrada. Voltar a desenhar o card sobre `localProfile.avatarConfig` recarrega ~78 imagens a cada clique.
+- **Monte as opções uma vez** (`montarOpcoes`) e alterne só a classe de seleção (`marcarSelecao`). Reconstruir `innerHTML` a cada escolha repede imagens e zera o `scrollLeft` das faixas `.cfg-row`.
+- **A cortina só sobe com `assetsProntos`** (imagens + fontes), com teto de 20 s. Toda imagem do pré-carregamento resolve no `onerror` também — CDN fora do ar não pode prender ninguém no loading.
 - **CSS do modal precisa de `!important` em propriedades de layout** (`.cfg-row`, `.cfg-nav`, `.cfg-sec`): o Tailwind CDN injeta os estilos depois do bloco `<style>` e empata em especificidade, vencendo pela ordem.
 - **Carimbo de build**: `<meta name="app-build">` alimenta o rodapé do modal e o console. Atualize-o quando publicar algo que precise ser confirmado em produção (o GitHub Pages cacheia o HTML por 10 min).
 - **Online ≠ presente**: `activeUsers` (heartbeat < 120 s) mantém o avatar na pista; as regras de DJ/fila usam `isPresent(u)` — heartbeat < `PRESENCE_STALE_MS` (75 s) **e** sem `away` além de `AWAY_GRACE_MS` (45 s). Quem sai da tela perde a mesa e o lugar na fila; recarregar a página não custa nada.
@@ -54,7 +61,7 @@ App de página única (**`index.html`**) — pista de dança virtual do esquenta
 | `chat/{auto}` | chat público |
 | `dm/{auto}` | chat privado (`convId` = uids ordenados unidos por `_`) |
 | `dmThreads/{convId}` | solicitação de papo (`{a, b, requestedBy, status}`) — DM só abre com `status='accepted'` |
-| `queue/{auto}` | fila do DJ |
+| `queue/{auto}` | fila do DJ (`addedByVIP` marca quem tinha ingresso ao entrar na fila) |
 | `player/state` | vídeo atual (`videoId`, `startedAt`, `addedByUid`, `addedByName`, `title`) |
 | `player/skipVotes` | votos de pular (`{videoId, votes:{uid:true}}`) — resetado a cada troca |
 | `player/countdown` | contagem regressiva (`{endsAt, reason}`) |

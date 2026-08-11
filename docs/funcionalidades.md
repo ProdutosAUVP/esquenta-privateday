@@ -6,13 +6,16 @@ No **primeiro acesso**, o modal **"Crie seu Avatar"** aparece com a música da c
 
 Quem **já personalizou antes vai direto para a pista** — sem modal na cara de novo. O visual, o nome e o status de ingresso da última visita são reaproveitados, e um toast de boas-vindas lembra que o botão do avatar no header reabre a personalização.
 
+**Nada carrega na frente do usuário**: a tela de abertura só sai do caminho depois que **todas** as miniaturas de personagem, as imagens da marca e as fontes estão na memória do navegador — com barra de progresso e porcentagem enquanto isso. Se algum arquivo falhar (CDN fora do ar), o teto de 20 s libera a entrada mesmo assim, em vez de prender alguém na tela de loading.
+
 - **Preview + nome** ficam sempre visíveis no topo, com o botão **🎲 Aleatório** logo abaixo do preview para sortear outro visual completo a qualquer momento.
 - Cada opção de estilo é um **card com a imagem do avatar** usando aquela opção (miniaturas geradas pelo DiceBear) — nada de escolher só pelo texto.
-- **Uma linha por categoria**: cada catálogo (cabelo, roupas, olhos, cores…) fica numa faixa única, navegável por **scroll lateral** — no desktop e no mobile. O painel não estica em altura por causa de uma categoria grande.
+- **Uma linha por categoria**: cada catálogo (cabelo, roupas, olhos, cores…) fica numa faixa única, navegável por **scroll lateral** — no desktop e no mobile. O painel não estica em altura por causa de uma categoria grande, e a faixa **mantém a posição do scroll** ao escolher (antes, clicar na 15ª opção jogava a linha de volta ao começo).
+- **A cor vem logo depois da peça**: cabelo → cor do cabelo → cor do chapéu → acessórios → cor dos acessórios → barba → cor da barba → roupas → cor da roupa. As cores de cada elemento deixaram de ficar numa aba separada.
 - **Mobile**: as opções são divididas em três seções navegáveis por abas no topo do painel:
-  - **Estilo** — cabelo/chapéu, acessórios, barba, roupas
-  - **Rosto** — olhos, sobrancelhas, boca
-  - **Cores** — tom de pele, cor do cabelo, cor da roupa e cor da aura
+  - **Estilo** — cabelo/chapéu, acessórios, barba, roupas (cada um seguido das próprias cores)
+  - **Rosto** — tom de pele, olhos, sobrancelhas, boca
+  - **Aura** — cor do brilho do avatar na pista (e do nome no chat)
 - **Cor da aura**: paleta com 11 cores (dois tons de laranja — o laranja AUVP `#DB7944` e o neon `#ff6600`).
 - **Botões de entrada**:
   - **"Já tenho meu ingresso!"** → entra na festa como VIP (coroa dourada + brilho especial no avatar).
@@ -36,12 +39,15 @@ Enquanto o modal está aberto, o áudio do player fica abafado (volume ~10% + de
   - **Reações exclusivas douradas** (🥂 💎 👑 ✨) numa barra própria, com brilho dourado ao flutuar — só funcionam com o avatar dentro da área.
   - **Destaque visual**: taça 🥂 e aura dourada extra no avatar, visíveis para toda a pista.
   - **Privacidade do lounge**: quem está na área só recebe solicitações e mensagens privadas de quem **também** está lá dentro — de fora, o clique mostra um aviso (com link para comprar ingresso, se a pessoa não for VIP).
+- **Globo refletor 3D** pendurado no centro da pista, com feixes de luz saindo de dentro dele e se dissolvendo no ar. O enquadramento se ajusta à proporção da pista (larga e baixa no desktop, estreita no celular), então o globo fica sempre centralizado e nada é cortado.
 - **Mesa de DJ** no canto inferior direito: vinis giram e o equalizador anima quando há música; mostra quem está "na mesa" (dono da música atual). O avatar do DJ é teleportado para a mesa enquanto sua música toca.
-- VIPs têm coroa e aura laranja intensa; o DJ atual ganha aura rosa neon e fones.
+- VIPs têm coroa e aura laranja intensa; o DJ atual ganha aura rosa neon e fones. **A coroa é sempre um selo no canto (ou no topo) do avatar — nunca um ícone colado no nome**, tanto no header quanto no chat.
 
 ## Fila do DJ e player
 
 ### Adicionar música
+**A mesa de DJ é exclusiva de quem tem ingresso.** Para quem entrou pelo "Não tenho ingresso", o campo da fila fica travado com um aviso e um atalho para a página de ingressos; forçar o envio mostra o mesmo convite. Como o ingresso é declarado pela própria pessoa no modal de entrada (não há validação), a trava é de experiência — bloqueia o caminho normal e explica o porquê —, não de segurança.
+
 Cole um link do YouTube no campo da fila. A música entra no fim da fila com seu nome e o **título resolvido automaticamente** (oEmbed via noembed.com, sem chave de API); o título também aparece numa pílula sobre o player enquanto toca.
 
 **Para tocar, é preciso estar na pista**: a fila vive no Firestore e recarregar a página **não** custa o lugar (a volta acontece dentro da tolerância de ausência). Mas quem fecha o app, minimiza ou troca de aba por mais de ~45 s sai da pista e **perde a vez**: a música é removida da fila pelo cliente líder. Enquanto isso, a música aparece na lista marcada com **"· fora da pista ⚠️"** — o aviso some assim que a pessoa volta.
@@ -77,7 +83,7 @@ Botão ao lado do "Pular". Um clique = um voto por pessoa por música (fica lara
 ## Chat
 
 ### Chat ao vivo (público)
-- Últimas 50 mensagens, com cor da aura e coroa VIP de cada autor.
+- Últimas 50 mensagens, cada uma com o **avatar de quem escreveu** ao lado (com a coroa VIP no canto do avatar) e o nome na cor da aura da pessoa. Quem já saiu da pista aparece com um boneco neutro — o app nunca mostra o avatar de outra pessoa no lugar.
 - **Balão de fala na pista**: a mensagem enviada aparece por ~6 s num balão sobre o avatar de quem escreveu (limite de 90 caracteres no balão; autores silenciados não geram balão).
 - Mensagens do dia mostram só a hora (`14:32`); mensagens de dias anteriores mostram **data e hora** (`03/08 · 14:32`).
 - **Censura automática**: palavrões da lista `BANNED_WORDS` são mascarados com asteriscos no envio (chat e DM).
