@@ -40,6 +40,10 @@ Pista de dança virtual em tempo real para o esquenta do **AUVP Private Day 2026
   - **"Não tenho ingresso"** → abre a [página de ingressos](https://privateday.auvp.com.br/#ingressos) e entra como convidado.
 - Enquanto o painel de personalização está aberto, o áudio da música fica **abafado** (volume reduzido + desfoque no vídeo — simulação de filtro, já que o YouTube não expõe o áudio do embed ao Web Audio).
 
+## 🧩 Embutir no site (Elementor)
+
+`elementor/esquenta-privateday.html` é o app inteiro num arquivo só, com as imagens da marca embutidas — um upload, sem arquivo companheiro. Gere com `python3 tools/build-elementor.py` e embuta por iframe. Passo a passo em [docs/elementor.md](docs/elementor.md).
+
 ## 🚀 Como rodar
 
 1. Sirva o `index.html` em qualquer host estático (GitHub Pages, Netlify, etc.) — ou abra localmente.

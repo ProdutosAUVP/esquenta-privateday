@@ -9,6 +9,7 @@ App de página única (**`index.html`**) — pista de dança virtual do esquenta
 ## Regras do projeto
 
 - **Tudo em um arquivo.** Não crie arquivos JS/CSS separados; mantenha o padrão de arquivo único do `index.html`.
+- **`elementor/esquenta-privateday.html` é gerado** por `tools/build-elementor.py` (embute os PNGs em base64 para o app virar um arquivo autossuficiente). Nunca edite esse arquivo à mão — altere o `index.html` e regenere. O script falha alto se os trechos que ele troca mudarem de forma.
 - **Idioma:** todo texto visível ao usuário, comentários e commits em **português (pt-BR)**.
 - **Estilo visual:** dark (`#050505`), paleta AUVP — laranja `#DB7944`, azul `#0B2A47`, vermelho `#932621`, creme `#FFF7EB` — com neons 80s (rosa `#ff00cc`, ciano `#00ffff`) apenas em detalhes da pista.
 - **Identidade:** sempre que usar o globo da marca, use `GLOBO.png`; para o nome "PRIVATE DAY" (ex.: header), use o lettering `LETTERING.png` — ambos na raiz do repo, por caminho relativo.
