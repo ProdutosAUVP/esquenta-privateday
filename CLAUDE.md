@@ -40,6 +40,7 @@ App de página única (**`index.html`**) — pista de dança virtual do esquenta
 - **Mesa de DJ é só de quem tem ingresso** (`podeSerDJ()`): trava no envio da fila, no formulário e na promoção da música. O ingresso é declarado pela própria pessoa — a trava é de experiência, não de segurança.
 - **Canvas do WebGL: tamanho por CSS, resolução por `setSize(w, h, false)`.** Deixar o Three escrever o estilo dobra o canvas em tela retina e joga a cena para fora da área visível.
 - **WebGL é progressivo**: o Three.js entra por `import()` dinâmico dentro de try/catch; se falhar (CDN bloqueado, sem GPU), o globo 2D `#cssDiscoBall` permanece. Nunca torne o Three.js um import estático — derrubaria o app inteiro.
+- **Coroa VIP é selo de avatar** (`.vip-crown`), nunca ícone ao lado do nome — vale para header, chat e pista.
 - **Dados de usuário em animações/classes**: valores como `dance` e `emoji` são validados contra whitelists antes de virarem classe CSS/DOM.
 - **Silenciamento é local** (localStorage `esquentaMuted`) e a censura de palavrões acontece **no envio** (`censor()`); não há papel de admin.
 - **Perfil persistido no navegador** (`esquentaProfile`): carregado com merge defensivo na inicialização; `saveProfile()` deve ser chamado em toda mutação de `localProfile`. A chave `esquentaPerfilPronto` marca quem já concluiu a personalização — essa pessoa entra direto na pista (`enterParty()` no fim do script), sem o modal.

@@ -41,7 +41,7 @@ Enquanto o modal está aberto, o áudio do player fica abafado (volume ~10% + de
   - **Privacidade do lounge**: quem está na área só recebe solicitações e mensagens privadas de quem **também** está lá dentro — de fora, o clique mostra um aviso (com link para comprar ingresso, se a pessoa não for VIP).
 - **Globo refletor 3D** pendurado no centro da pista, com feixes de luz saindo de dentro dele e se dissolvendo no ar. O enquadramento se ajusta à proporção da pista (larga e baixa no desktop, estreita no celular), então o globo fica sempre centralizado e nada é cortado.
 - **Mesa de DJ** no canto inferior direito: vinis giram e o equalizador anima quando há música; mostra quem está "na mesa" (dono da música atual). O avatar do DJ é teleportado para a mesa enquanto sua música toca.
-- VIPs têm coroa e aura laranja intensa; o DJ atual ganha aura rosa neon e fones.
+- VIPs têm coroa e aura laranja intensa; o DJ atual ganha aura rosa neon e fones. **A coroa é sempre um selo no canto (ou no topo) do avatar — nunca um ícone colado no nome**, tanto no header quanto no chat.
 
 ## Fila do DJ e player
 
@@ -83,7 +83,7 @@ Botão ao lado do "Pular". Um clique = um voto por pessoa por música (fica lara
 ## Chat
 
 ### Chat ao vivo (público)
-- Últimas 50 mensagens, com cor da aura e coroa VIP de cada autor.
+- Últimas 50 mensagens, cada uma com o **avatar de quem escreveu** ao lado (com a coroa VIP no canto do avatar) e o nome na cor da aura da pessoa. Quem já saiu da pista aparece com um boneco neutro — o app nunca mostra o avatar de outra pessoa no lugar.
 - **Balão de fala na pista**: a mensagem enviada aparece por ~6 s num balão sobre o avatar de quem escreveu (limite de 90 caracteres no balão; autores silenciados não geram balão).
 - Mensagens do dia mostram só a hora (`14:32`); mensagens de dias anteriores mostram **data e hora** (`03/08 · 14:32`).
 - **Censura automática**: palavrões da lista `BANNED_WORDS` são mascarados com asteriscos no envio (chat e DM).
