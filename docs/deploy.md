@@ -4,7 +4,7 @@
 
 O app é um único arquivo estático (`index.html`). Qualquer host serve:
 
-- **GitHub Pages** (recomendado): Settings → Pages → Deploy from branch → branch principal, pasta `/`. O arquivo `index.html` é servido como raiz.
+- **GitHub Pages** (em uso): o workflow `.github/workflows/deploy-pages.yml` publica a cada push na `main`. Em **Settings → Pages → Build and deployment**, a origem precisa ser **GitHub Actions** — com "Deploy from a branch" o job de deploy é rejeitado pelo ambiente `github-pages` antes de começar (ver Solução de problemas).
 - Netlify/Vercel/Cloudflare Pages: arraste o arquivo ou aponte para o repositório.
 
 Requisitos do ambiente do visitante: internet liberada para `cdn.tailwindcss.com`, `fonts.googleapis.com`, `www.gstatic.com` (Firebase), `api.dicebear.com`, `raw.githubusercontent.com` (fonte DiscoDiva), `img.youtube.com`, `www.youtube.com`, `cdn.jsdelivr.net` (Three.js — opcional, com fallback 2D) e `noembed.com` (títulos — opcional).
@@ -67,3 +67,5 @@ Também dá para automatizar via REST (auth anônima + Firestore REST API) — f
 | Playlist da casa muda mas sem som | Política de autoplay do navegador | Comportamento esperado — o visitante clica em "🔊 Ativar som" |
 | Vídeo reinicia para todos ao votar | Regressão: iframe sendo recriado no overlay | Manter o padrão `renderPlayer`/`updatePlayerOverlay` (ver CLAUDE.md) |
 | Música não pula aos 10 min com a aba fechada | Só clientes abertos executam ações (não há backend) | Esperado — precisa de ao menos 1 participante online |
+| Deploy falha em ~2 s, sem log, com o job "deploy" vermelho | O job declara `environment: github-pages` e o GitHub avalia a proteção do ambiente **antes** de alocar runner: Pages sem "GitHub Actions" como origem, ou regra de proteção barrando a branch | Settings → Pages → Build and deployment → Source: **GitHub Actions**. Depois, Settings → Environments → `github-pages` → conferir se a `main` está permitida em *Deployment branches* |
+| O site não reflete o último merge | GitHub Pages serve o HTML com `Cache-Control: max-age=600`, e o navegador ainda guarda a própria cópia | Hard refresh (`Ctrl/Cmd+Shift+R`) e conferir o carimbo `build` no rodapé do modal de personalização (`<meta name="app-build">`) |
