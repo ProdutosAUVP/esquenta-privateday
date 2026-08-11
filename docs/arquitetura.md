@@ -28,10 +28,14 @@ Caminho base: `artifacts/{appId}/public/data/…` — `appId = auvp-privateday`.
   avatarConfig: { top, accessories, facialHair, clothing, eyes,
                   eyebrows, mouth, skinColor, hairColor, clothesColor },
   x, y,          // posição na pista (0–100 %)
-  lastUpdate     // heartbeat; considerado online se < 120 s
+  lastUpdate,    // heartbeat; considerado online se < 120 s
+  away,          // true = aba escondida/minimizada (visibilitychange)
+  awaySince      // Date.now() de quando saiu da tela (0 se está na tela)
 }
 ```
 Heartbeat a cada 30 s (`startHeartbeat`). Usuários sem update há 2 min somem da pista.
+
+**Online ≠ presente.** Continuar na lista da pista (`activeUsers`, < 120 s) mantém o avatar visível; para as regras de DJ e fila vale o conceito mais estrito de `isPresent(u)`: heartbeat com menos de `PRESENCE_STALE_MS` (75 s) **e** não estar `away` há mais de `AWAY_GRACE_MS` (45 s). `away` é publicado na hora pelo `visibilitychange` (e por `pagehide`, em melhor esforço) — quem fecha a aba sem conseguir escrever cai pelo heartbeat velho.
 
 ### `chat/{autoId}` — chat público
 ```js
@@ -102,7 +106,16 @@ Cada cliente anima apenas reações recentes (< 6 s) ainda não vistas (`docChan
 `renderPlayer()` recria o `<iframe id="ytFrame">` **apenas** quando `videoId`/`startedAt` mudam (chave `lastPlayerKey`). Tudo que muda com frequência (votos, contagem, avisos) é HTML dentro de `#playerOverlay`, atualizado por `updatePlayerOverlay()` — assim o vídeo nunca reinicia por causa de um voto.
 
 ### Eleição de líder
-Ações automáticas que só podem acontecer **uma vez** (pular aos 10 min, avançar ao fim do vídeo) são executadas apenas pelo cliente cujo `uid` é o **menor** entre os online (`isLeader()`). Os demais ignoram o gatilho. Se o líder cair, o próximo menor uid assume naturalmente no snapshot seguinte de `users`.
+Ações automáticas que só podem acontecer **uma vez** (pular aos 10 min, avançar ao fim do vídeo, faxina da fila) são executadas apenas pelo cliente cujo `uid` é o **menor** entre os **presentes** (`isLeader()`). Os demais ignoram o gatilho. Se o líder cair, o próximo menor uid assume naturalmente no snapshot seguinte de `users`. A eleição prioriza quem está com a aba na frente porque o navegador estrangula os timers de abas escondidas — um líder minimizado não rodaria as verificações a tempo; se ninguém estiver presente, cai de volta na lista completa de online.
+
+### Presença ativa (o DJ precisa ficar na pista)
+A pista depende de quem está de fato olhando: o evento de fim de vídeo só chega a quem tem o player vivo, então um DJ que fecha o app deixaria a música presa até o limite de 10 min. Três mecanismos, todos apoiados em `isPresent()`:
+
+1. **DJ ausente** — timer de 5 s no líder: se o dono de `player/state` não está presente (respeitando 30 s de respiro após o início da música, para o doc de presença chegar), dispara a contagem "🎧 Fulano saiu da pista — próxima música!". Quem perdeu a vez com a aba escondida recebe um toast ao voltar (`perdiAVezAusente`).
+2. **Faxina da fila** — timer de 10 s no líder: apaga itens de `queue` cujo dono não está presente, com respiro de 45 s a partir do `timestamp` do item (protege quem acabou de entrar na fila e ainda não bateu heartbeat). `playNextVideo()` repete a checagem antes de promover a próxima música, caso a faxina ainda não tenha rodado.
+3. **Vídeo que não toca** — `onError` da IFrame API (removido, privado, embed bloqueado, região) dispara a troca: o DJ resolve na hora, o líder assume em 6 s. Sem isso o vídeo nunca "termina" e a pista fica na tela preta.
+
+Complementarmente, um watchdog **local** (10 s) recria só o próprio iframe quando o player para de reportar `infoDelivery` por 45 s sem estar pausado nem terminado — travamento costuma atingir um cliente só, e `renderPlayer()` recalcula o `start` pelo `startedAt`, devolvendo a pessoa ao ponto certo. Cooldown de 90 s entre resgates.
 
 ### Contagem regressiva
 `startCountdown(reason, action)`:

@@ -108,6 +108,17 @@
         .av-card-on { border-color: #DB7944; background: rgba(219,121,68,.15); box-shadow: 0 0 8px rgba(219,121,68,.4); }
         .av-card-on span { color: #DB7944; font-weight: 600; }
 
+        /* uma única linha por categoria, navegável no scroll lateral (desktop e mobile) */
+        .cfg-row {
+            display: flex; flex-wrap: nowrap; gap: 6px;
+            overflow-x: auto; overflow-y: hidden; padding-bottom: 7px;
+            scroll-snap-type: x proximity; -webkit-overflow-scrolling: touch;
+            scrollbar-width: thin; scrollbar-color: #DB7944 rgba(255,247,235,.08);
+        }
+        .cfg-row > * { flex: 0 0 auto; scroll-snap-align: start; }
+        .cfg-row::-webkit-scrollbar { height: 4px; }
+        .cfg-row::-webkit-scrollbar-track { background: rgba(255,247,235,.08); border-radius: 4px; }
+
         /* ── GLOW DA CABINE ── */
         @keyframes booth-glow {
             0%,100% { box-shadow: 0 0 16px rgba(255,0,200,.5), 0 0 32px rgba(255,0,200,.2); }
@@ -400,8 +411,12 @@
             <!-- Preview + Nome + abas: fixos no topo enquanto as opções rolam -->
             <div class="sticky -top-4 md:-top-6 z-20 bg-[#0d0d0d] -mx-4 md:-mx-6 px-4 md:px-6 pt-2 border-b border-[#FFF7EB]/10 mb-4">
                 <div class="flex items-center gap-4 pb-3">
-                    <div id="avatarPreviewContainer" class="w-20 h-20 md:w-28 md:h-28 shrink-0 rounded-full bg-[#111] overflow-hidden shadow-xl transition-all relative">
-                        <img id="avatarPreviewImage" src="" alt="Preview" class="w-full h-full object-cover"/>
+                    <div class="shrink-0 flex flex-col items-center gap-2">
+                        <div id="avatarPreviewContainer" class="w-20 h-20 md:w-28 md:h-28 rounded-full bg-[#111] overflow-hidden shadow-xl transition-all relative">
+                            <img id="avatarPreviewImage" src="" alt="Preview" class="w-full h-full object-cover"/>
+                        </div>
+                        <button type="button" onclick="window.randomizarAvatar()" title="Sortear um visual novo"
+                            class="text-[10px] font-semibold px-3 py-1 rounded-full border border-[#FFF7EB]/20 text-[#FFF7EB]/70 hover:border-[#DB7944] hover:text-[#DB7944] transition whitespace-nowrap">🎲 Aleatório</button>
                     </div>
                     <div class="flex-1">
                         <label class="block text-xs font-medium text-[#FFF7EB]/50 mb-1 uppercase tracking-widest">Seu Nome / Apelido</label>
@@ -424,19 +439,19 @@
                 <div class="cfg-sec space-y-4" data-sec="estilo">
                     <div>
                         <label class="block text-[10px] font-bold text-[#DB7944] mb-2 uppercase tracking-widest">Cabelo / Chapéu</label>
-                        <div id="avatarTops" class="flex gap-1.5 overflow-x-auto pb-1 md:flex-wrap md:overflow-visible"></div>
+                        <div id="avatarTops" class="cfg-row"></div>
                     </div>
                     <div>
                         <label class="block text-[10px] font-bold text-[#DB7944] mb-2 uppercase tracking-widest">Acessórios</label>
-                        <div id="avatarAccessories" class="flex gap-1.5 overflow-x-auto pb-1 md:flex-wrap md:overflow-visible"></div>
+                        <div id="avatarAccessories" class="cfg-row"></div>
                     </div>
                     <div>
                         <label class="block text-[10px] font-bold text-[#DB7944] mb-2 uppercase tracking-widest">Barba / Bigode</label>
-                        <div id="avatarFacialHair" class="flex gap-1.5 overflow-x-auto pb-1 md:flex-wrap md:overflow-visible"></div>
+                        <div id="avatarFacialHair" class="cfg-row"></div>
                     </div>
                     <div>
                         <label class="block text-[10px] font-bold text-[#DB7944] mb-2 uppercase tracking-widest">Roupas</label>
-                        <div id="avatarClothes" class="flex gap-1.5 overflow-x-auto pb-1 md:flex-wrap md:overflow-visible"></div>
+                        <div id="avatarClothes" class="cfg-row"></div>
                     </div>
                 </div>
 
@@ -444,15 +459,15 @@
                 <div class="cfg-sec space-y-4" data-sec="rosto">
                     <div>
                         <label class="block text-[10px] font-bold text-[#DB7944] mb-2 uppercase tracking-widest">Olhos</label>
-                        <div id="avatarEyes" class="flex gap-1.5 overflow-x-auto pb-1 md:flex-wrap md:overflow-visible"></div>
+                        <div id="avatarEyes" class="cfg-row"></div>
                     </div>
                     <div>
                         <label class="block text-[10px] font-bold text-[#DB7944] mb-2 uppercase tracking-widest">Sobrancelhas</label>
-                        <div id="avatarEyebrows" class="flex gap-1.5 overflow-x-auto pb-1 md:flex-wrap md:overflow-visible"></div>
+                        <div id="avatarEyebrows" class="cfg-row"></div>
                     </div>
                     <div>
                         <label class="block text-[10px] font-bold text-[#DB7944] mb-2 uppercase tracking-widest">Boca</label>
-                        <div id="avatarMouths" class="flex gap-1.5 overflow-x-auto pb-1 md:flex-wrap md:overflow-visible"></div>
+                        <div id="avatarMouths" class="cfg-row"></div>
                     </div>
                 </div>
 
@@ -460,31 +475,31 @@
                 <div class="cfg-sec space-y-4" data-sec="cores">
                     <div>
                         <label class="block text-[10px] font-bold text-[#DB7944] mb-2 uppercase tracking-widest">Tom de Pele</label>
-                        <div id="avatarSkin" class="flex gap-2 flex-wrap"></div>
+                        <div id="avatarSkin" class="cfg-row"></div>
                     </div>
                     <div>
                         <label class="block text-[10px] font-bold text-[#DB7944] mb-2 uppercase tracking-widest">Cor do Cabelo</label>
-                        <div id="avatarHairColor" class="flex gap-2 flex-wrap"></div>
+                        <div id="avatarHairColor" class="cfg-row"></div>
                     </div>
                     <div>
                         <label class="block text-[10px] font-bold text-[#DB7944] mb-2 uppercase tracking-widest">Cor da Barba</label>
-                        <div id="avatarFacialHairColor" class="flex gap-2 flex-wrap"></div>
+                        <div id="avatarFacialHairColor" class="cfg-row"></div>
                     </div>
                     <div>
                         <label class="block text-[10px] font-bold text-[#DB7944] mb-2 uppercase tracking-widest">Cor da Roupa</label>
-                        <div id="avatarClothingColor" class="flex gap-2 flex-wrap"></div>
+                        <div id="avatarClothingColor" class="cfg-row"></div>
                     </div>
                     <div>
                         <label class="block text-[10px] font-bold text-[#DB7944] mb-2 uppercase tracking-widest">Cor do Chapéu / Gorro</label>
-                        <div id="avatarHatColor" class="flex gap-2 flex-wrap"></div>
+                        <div id="avatarHatColor" class="cfg-row"></div>
                     </div>
                     <div>
                         <label class="block text-[10px] font-bold text-[#DB7944] mb-2 uppercase tracking-widest">Cor dos Acessórios</label>
-                        <div id="avatarAccColor" class="flex gap-2 flex-wrap"></div>
+                        <div id="avatarAccColor" class="cfg-row"></div>
                     </div>
                     <div>
                         <label class="block text-[10px] font-bold text-[#DB7944] mb-2 uppercase tracking-widest">Cor da Aura na Pista</label>
-                        <div id="avatarColors" class="flex gap-2 flex-wrap"></div>
+                        <div id="avatarColors" class="cfg-row"></div>
                     </div>
                 </div>
             </div>
@@ -653,7 +668,9 @@
         let fallbackIndex = 1 + Math.floor(Math.random() * 40);
         let fallbackUnmuted = false;
         let lastPlayerKey = null;
-        let modalOpen = true; // o modal de personalização começa aberto
+        let perdiAVezAusente = false; // perdeu a mesa enquanto estava fora da tela (avisa ao voltar)
+        let modalOpen = true;    // modal de personalização (fechado no fim do script para quem já tem boneco)
+        let entrouDireto = false; // pulou o modal por já ter personalizado antes
         let playHistory = [];       // coleção history: músicas que já tocaram (ranking)
         let glPlaying = false;      // pista WebGL pulsa quando há música audível
         const seenReactions = new Set();
@@ -701,20 +718,58 @@
             dance: ''
         };
 
+        // ── AVATAR ALEATÓRIO ──
+        // No primeiro acesso ninguém entra na pista com o boneco padrão: sorteia-se
+        // um visual completo. O mesmo sorteio está no botão "🎲 Aleatório" do modal.
+        const sorteia = list => list[Math.floor(Math.random() * list.length)].v;
+        // clima de festa: fora os rostos tristes/enjoados do catálogo
+        const EYES_FESTA   = EYES.filter(o => ['default','happy','hearts','wink','winkWacky','squint','side','surprised'].includes(o.v));
+        const MOUTHS_FESTA = MOUTHS.filter(o => ['default','smile','twinkle','tongue','serious','grimace'].includes(o.v));
+        function randomAvatarConfig() {
+            const hair = sorteia(HAIR_COLORS);
+            return {
+                top:        sorteia(TOPS),
+                // acessório e barba só às vezes — senão todo mundo nasce de óculos e barbudo
+                accessories: Math.random() < 0.35 ? sorteia(ACCESSORIES.filter(o => o.v)) : '',
+                facialHair:  Math.random() < 0.35 ? sorteia(FACIAL_HAIR.filter(o => o.v)) : '',
+                clothing:   sorteia(CLOTHES),
+                eyes:       sorteia(EYES_FESTA),
+                eyebrows:   sorteia(EYEBROWS),
+                mouth:      sorteia(MOUTHS_FESTA),
+                skinColor:  sorteia(SKIN_COLORS),
+                hairColor:  hair,
+                facialHairColor: hair, // barba combinando com o cabelo
+                clothesColor:     sorteia(CLOTHES_COLORS),
+                hatColor:         sorteia(CLOTHES_COLORS),
+                accessoriesColor: sorteia(CLOTHES_COLORS)
+            };
+        }
+        const sorteiaAura = () => AURA_COLORS[Math.floor(Math.random() * AURA_COLORS.length)];
+
         // ── PERFIL SALVO NO NAVEGADOR ──
-        // Nome, avatar e preferências voltam como estavam na última visita
-        try {
-            const saved = JSON.parse(localStorage.getItem('esquentaProfile') || 'null');
-            if (saved && typeof saved === 'object') {
-                localProfile = {
-                    ...localProfile,
-                    ...saved,
-                    avatarConfig: {...localProfile.avatarConfig, ...(saved.avatarConfig || {})}
-                };
-                if (typeof localProfile.name !== 'string' || !localProfile.name.trim()) localProfile.name = 'Investidor';
-            }
-        } catch(e) {}
+        // Nome, avatar e preferências voltam como estavam na última visita.
+        // PRONTO_KEY marca quem já finalizou a personalização: essa pessoa entra
+        // direto na pista, sem o modal na cara de novo.
+        const PRONTO_KEY = 'esquentaPerfilPronto';
+        let perfilPronto = false;
+        let perfilSalvo = null;
+        try { perfilSalvo = JSON.parse(localStorage.getItem('esquentaProfile') || 'null'); } catch(e) {}
+        if (perfilSalvo && typeof perfilSalvo === 'object') {
+            localProfile = {
+                ...localProfile,
+                ...perfilSalvo,
+                avatarConfig: {...localProfile.avatarConfig, ...(perfilSalvo.avatarConfig || {})}
+            };
+            if (typeof localProfile.name !== 'string' || !localProfile.name.trim()) localProfile.name = 'Investidor';
+            try { perfilPronto = localStorage.getItem(PRONTO_KEY) === '1'; } catch(e) {}
+        } else {
+            // primeiro acesso: visual sorteado na hora, ninguém entra com o boneco padrão
+            localProfile.avatarConfig = randomAvatarConfig();
+            localProfile.color = sorteiaAura();
+        }
         const saveProfile = () => { try { localStorage.setItem('esquentaProfile', JSON.stringify(localProfile)); } catch(e) {} };
+        // grava o sorteio na hora: recarregar antes de entrar não troca o boneco
+        if (!perfilSalvo) saveProfile();
 
         // Valores antigos (salvos em perfis no Firestore antes da correção) → equivalente válido no v8
         const LEGACY_AVATAR = {
@@ -891,6 +946,8 @@
                 setupFirebaseListeners();
                 startHeartbeat();
             }
+            if (entrouDireto)
+                setTimeout(() => showToast(`🕺 Bem-vindo de volta, ${esc(localProfile.name)}! Toque no seu avatar no topo pra mudar o visual.`), 800);
         }
 
         // Timeout de segurança: se em 10 s nada acontecer, mostra o app mesmo assim
@@ -968,6 +1025,7 @@
                     .filter(u => u.lastUpdate && (now - u.lastUpdate) < 120000);
                 renderUsers();
                 renderDJBooth();
+                renderQueue(); // o aviso "fora da pista" depende da presença
                 updatePlayerOverlay();
             }, console.error);
 
@@ -1001,6 +1059,10 @@
                 skipVotes      = docs.find(s => s.id === 'skipVotes') || null;
                 countdownState = docs.find(s => s.id === 'countdown') || null;
                 playbackState  = docs.find(s => s.id === 'playback') || null;
+                // perdeu a mesa com a aba escondida? guarda pra avisar quando voltar
+                if (state && tabHidden && currentUser &&
+                    currentVideo?.addedByUid === currentUser.uid && state.addedByUid !== currentUser.uid)
+                    perdiAVezAusente = true;
                 if (state) currentVideo = state;
                 // só recria o iframe quando o vídeo de fato muda; votos/contagem atualizam o overlay
                 const key = `${currentVideo?.videoId || 'fallback'}_${currentVideo?.startedAt || 0}`;
@@ -1078,10 +1140,46 @@
             return spawnPoint;
         }
 
+        // ── PRESENÇA ATIVA: quem sai da tela sai da pista ──
+        // A pista depende de quem está de fato olhando: se o DJ minimiza, troca de
+        // aba ou fecha o app, ninguém sobra pra avançar a música e o vídeo fica
+        // preso. Por isso cada cliente publica se está com a aba visível (`away`),
+        // com um prazo de tolerância antes de perder a mesa/o lugar na fila.
+        const AWAY_GRACE_MS     = 45000; // fora da tela além disso = fora da pista
+        const PRESENCE_STALE_MS = 75000; // sem heartbeat por esse tempo = fechou a aba
+        let tabHidden   = document.hidden === true;
+        let hiddenSince = tabHidden ? Date.now() : 0;
+
+        // "presente" = heartbeat recente E não está fora da tela além da tolerância
+        const isPresent = u => {
+            if (!u || !u.lastUpdate) return false;
+            const now = Date.now();
+            if (now - u.lastUpdate > PRESENCE_STALE_MS) return false;
+            if (u.away && now - (u.awaySince || u.lastUpdate) > AWAY_GRACE_MS) return false;
+            return true;
+        };
+        const presentUser = uid => isPresent(activeUsers.find(u => u.id === uid));
+
+        document.addEventListener('visibilitychange', () => {
+            tabHidden   = document.hidden;
+            hiddenSince = tabHidden ? Date.now() : 0;
+            updatePresence(); // a pista sabe na hora que você saiu (ou voltou)
+            if (!tabHidden && perdiAVezAusente) {
+                perdiAVezAusente = false;
+                showToast('🎧 Você saiu da tela e passou a vez na mesa. Coloque outra música na fila!');
+            }
+        });
+        // fechar/recarregar: melhor esforço de avisar a ausência antes de sumir
+        // (se a escrita não completar, o heartbeat velho resolve pelo PRESENCE_STALE_MS)
+        window.addEventListener('pagehide', () => {
+            tabHidden = true; hiddenSince = Date.now();
+            updatePresence();
+        });
+
         async function updatePresence(x = null, y = null) {
             if (!currentUser || !db) return;
             const ref = doc(db, 'artifacts', appId, 'public', 'data', 'users', currentUser.uid);
-            const data = { ...localProfile, lastUpdate: Date.now() };
+            const data = { ...localProfile, lastUpdate: Date.now(), away: tabHidden, awaySince: tabHidden ? hiddenSince : 0 };
             if (x !== null && y !== null) { data.x = x; data.y = y; spawned = true; }
             else {
                 const me = activeUsers.find(u => u.id === currentUser.uid);
@@ -1243,6 +1341,8 @@
             queue.forEach((item, i) => {
                 const mine = currentUser && item.addedByUid === currentUser.uid;
                 const next = i === 0;
+                // dono ausente: a música cai fora quando chegar a vez dela
+                const fora = !!activeUsers.length && !presentUser(item.addedByUid);
                 const title = item.title || titleCache[item.videoId] || '';
                 if (!item.title && titleCache[item.videoId] === undefined)
                     fetchTitle(item.videoId).then(t => { if (t) renderQueue(); });
@@ -1257,7 +1357,7 @@
 </div>
 <div class="flex-1 overflow-hidden">
   ${title ? `<p class="text-[10px] text-[#FFF7EB]/90 truncate font-medium">${esc(title)}</p>` : `<p class="text-[10px] text-[#FFF7EB]/40 truncate italic">Carregando título...</p>`}
-  <p class="text-[9px] text-[#FFF7EB]/50 truncate">por <span class="${mine?'text-[#DB7944]':'text-[#FFF7EB]/80'} font-medium">${esc(item.addedByName)}</span>${mine?' <span class="text-[#DB7944]/60">· sua música 🎵</span>':''}</p>
+  <p class="text-[9px] text-[#FFF7EB]/50 truncate">por <span class="${mine?'text-[#DB7944]':'text-[#FFF7EB]/80'} font-medium">${esc(item.addedByName)}</span>${mine?' <span class="text-[#DB7944]/60">· sua música 🎵</span>':''}${fora?' <span class="text-[#932621]" title="Quem some da tela perde a vez">· fora da pista ⚠️</span>':''}</p>
 </div>`;
                 c.appendChild(div);
             });
@@ -1327,7 +1427,7 @@ ${!isMe ? (unlocked ? `
     class="pointer-events-auto bg-black/80 backdrop-blur-md text-[#FFF7EB]/80 text-[9px] px-2.5 py-1 rounded-full border border-[#FFF7EB]/15 hover:bg-[#DB7944] hover:text-white hover:border-[#DB7944] transition shadow-lg whitespace-nowrap">📺 Pular propaganda</button>
   <div class="hidden md:block bg-black/70 backdrop-blur-md text-[#FFF7EB]/60 text-[9px] px-2.5 py-1 rounded-full border border-[#FFF7EB]/10 whitespace-nowrap">🔒 Só o DJ controla o player</div>
 </div>`) : ''}
-${isMe?`<div class="absolute top-2 left-2 bg-[#ff00cc] text-white text-[10px] px-3 py-1 rounded-full font-bold shadow-lg my-turn-badge">🎧 É a sua vez na mesa!</div>`:''}
+${isMe?`<div class="absolute top-2 left-2 bg-[#ff00cc] text-white text-[10px] px-3 py-1 rounded-full font-bold shadow-lg my-turn-badge">🎧 Sua vez na mesa! <span class="font-normal opacity-80">fique na tela 👀</span></div>`:''}
 <div class="absolute top-2 right-2 max-w-[75%] flex flex-wrap justify-end gap-1.5 z-10">
   <button onclick="window.votePartySong()" ${iParty?'disabled':''} title="Vote pra essa tocar na festa de verdade!"
     class="pointer-events-auto backdrop-blur-md text-[10px] md:text-xs px-2.5 md:px-3 py-1.5 rounded-full border transition flex items-center gap-1 shadow-lg ${iParty?'bg-[#ff6600] border-[#ff6600] text-white cursor-default':'bg-black/80 text-[#FFF7EB] border-[#FFF7EB]/20 hover:bg-[#ff6600] hover:border-[#ff6600]'}">
@@ -1436,9 +1536,12 @@ ${cd}`;
         }, 200);
 
         // ── LÍDER: menor uid online executa ações automáticas (evita corrida) ──
+        // Prioriza quem está com a aba na frente: aba escondida tem timer estrangulado
+        // pelo navegador e não serviria como líder (as verificações não rodariam a tempo).
         const isLeader = () => {
             if (!currentUser) return false;
-            const ids = activeUsers.map(u => u.id).sort();
+            const presentes = activeUsers.filter(isPresent);
+            const ids = (presentes.length ? presentes : activeUsers).map(u => u.id).sort();
             return !ids.length || ids[0] === currentUser.uid;
         };
 
@@ -1451,9 +1554,44 @@ ${cd}`;
             if (currentVideo?.videoId) return;   // já tem música na mesa
             if (!queue.length) return;
             if (countdownActive() || !isLeader()) return;
-            const nome = queue[0].addedByName || 'Investidor';
+            // só chama pra mesa quem está na tela — músicas de gente ausente saem
+            // da fila dentro do playNextVideo
+            const proximo = queue.find(q => !activeUsers.length || presentUser(q.addedByUid));
+            if (!proximo) return;
+            const nome = proximo.addedByName || 'Investidor';
             startCountdown(`🎵 Música de ${nome} entrando na pista!`, () => window.playNextVideo());
         }, 4000);
+
+        // ── FAXINA DA FILA: QUEM SAIU DA PISTA PERDE O LUGAR ──
+        // Sem isso a fila acumula músicas de gente que já foi embora e o topo da
+        // lista vira um fantasma. O líder apaga; quem só recarregou a página volta
+        // dentro da tolerância e não perde nada.
+        setInterval(() => {
+            if (!currentUser || !db || !queue.length) return;
+            if (!activeUsers.length || !isLeader()) return;
+            queue.forEach(item => {
+                if (presentUser(item.addedByUid)) return;
+                // respiro pra quem acabou de entrar na fila e ainda não bateu heartbeat
+                if (Date.now() - (item.timestamp || 0) < AWAY_GRACE_MS) return;
+                deleteDoc(pdoc('queue', item.id)).catch(() => {});
+            });
+        }, 10000);
+
+        // ── O DJ PRECISA FICAR NA PISTA ──
+        // Se quem está na mesa fecha a aba, minimiza ou troca de app, ninguém sobra pra
+        // avançar quando o vídeo acaba (o evento de fim só chega pra quem está com o
+        // player vivo) — e a pista ficaria presa até o limite de 10 min. Passada a
+        // tolerância de ausência, o líder passa a vez pra próxima música.
+        setInterval(() => {
+            if (!currentUser || !db || !currentVideo?.videoId) return;
+            if (countdownActive() || !isLeader()) return;
+            if (!activeUsers.length) return; // sem dados de presença: não chuta
+            // respiro no começo da música: dá tempo do doc de presença do DJ chegar
+            if (Date.now() - (currentVideo.startedAt || 0) < 30000) return;
+            if (presentUser(currentVideo.addedByUid)) return;
+            const nome = currentVideo.addedByName || 'O DJ';
+            startCountdown(`🎧 ${nome} saiu da pista — próxima música!`, () => window.playNextVideo());
+        }, 5000);
 
         // ── LIMITE DE 10 MIN POR VÍDEO ──
         setInterval(() => {
@@ -1495,6 +1633,23 @@ ${cd}`;
             // 3º: última linha de defesa — qualquer cliente resolve após 9 s
             setTimeout(() => { if (stillSame()) window.playNextVideo(); }, 9000);
         }
+        // ── VÍDEO QUE NÃO TOCA (removido, privado, embed bloqueado, região) ──
+        // Sem isso o vídeo nunca "termina" e a pista fica na tela preta até os 10 min.
+        let erroTratadoKey = null;
+        function onPlayerError(code) {
+            if (!currentVideo?.videoId || countdownActive()) return;
+            const key = `${currentVideo.videoId}_${currentVideo.startedAt || 0}`;
+            if (erroTratadoKey === key) return;
+            erroTratadoKey = key;
+            console.warn('YouTube não conseguiu tocar o vídeo (código ' + code + ')');
+            const aindaOMesmo = () => currentVideo?.videoId &&
+                `${currentVideo.videoId}_${currentVideo.startedAt || 0}` === key && !countdownActive();
+            const passar = () => startCountdown('⚠️ Vídeo indisponível — próxima música!', () => window.playNextVideo());
+            // o DJ resolve na hora; se ele nem está aqui, o líder assume em 6 s
+            if (isCurrentDJ()) { passar(); return; }
+            setTimeout(() => { if (aindaOMesmo() && isLeader()) passar(); }, 6000);
+        }
+
         window.addEventListener('message', e => {
             if (e.origin !== 'https://www.youtube.com') return;
             let d; try { d = JSON.parse(e.data); } catch { return; }
@@ -1502,6 +1657,7 @@ ${cd}`;
             const ended = (d.event === 'onStateChange' && d.info === 0) ||
                           (d.event === 'infoDelivery' && d.info && d.info.playerState === 0);
             if (ended) onVideoEnded();
+            if (d.event === 'onError') onPlayerError(d.info);
             // guarda o estado do MEU player (posição/tocando/pausado)
             let newState;
             if (d.event === 'infoDelivery' && d.info) {
@@ -1563,6 +1719,23 @@ ${cd}`;
             if (ytInfo && Math.abs((ytInfo.time || 0) - expected) > 6)
                 syncSeek(expected);
         }, 3000);
+
+        // ── MEU PLAYER TRAVOU? RECARREGA SÓ O MEU IFRAME ──
+        // Buffer infinito / iframe morto costuma travar em um cliente só. Em vez de
+        // pular a música pra pista inteira, o cliente recria o próprio player — que
+        // volta no ponto certo (renderPlayer calcula o start pelo startedAt).
+        let ultimoResgateAt = 0;
+        setInterval(() => {
+            if (!currentVideo?.videoId || document.hidden || countdownActive()) return;
+            if (!ytInfo || ytInfo.state === 0 || ytInfo.state === 2) return; // terminou/pausado: não é travamento
+            if (playbackState?.state === 'paused') return;                   // o DJ pausou pra todo mundo
+            if (Date.now() - (currentVideo.startedAt || 0) < 30000) return;  // ainda carregando
+            if (Date.now() - (ytInfo.at || 0) < 45000) return;               // player deu sinal há pouco
+            if (Date.now() - ultimoResgateAt < 90000) return;                // um resgate por vez
+            ultimoResgateAt = Date.now();
+            console.warn('Player sem sinal há 45 s — recarregando o iframe');
+            renderPlayer();
+        }, 10000);
 
         // ── "FILTRO" DE ÁUDIO COM O MODAL ABERTO ──
         // O YouTube não expõe o áudio do embed pro Web Audio (cross-origin), então o
@@ -1636,6 +1809,13 @@ ${cd}`;
                 while (list.length && currentVideo?.videoId &&
                        list[0].videoId === currentVideo.videoId &&
                        (list[0].timestamp || 0) <= (currentVideo.startedAt || Infinity)) {
+                    try { await deleteDoc(pdoc('queue', list[0].id)); } catch(e) {}
+                    list.shift();
+                }
+                // quem saiu da tela perde a vez: a música só sobe pra mesa se o dono
+                // estiver presente pra tocá-la. Recarregar a página não custa o lugar —
+                // a pessoa volta em segundos, bem dentro da tolerância de ausência.
+                while (activeUsers.length && list.length && !presentUser(list[0].addedByUid)) {
                     try { await deleteDoc(pdoc('queue', list[0].id)); } catch(e) {}
                     list.shift();
                 }
@@ -2070,8 +2250,16 @@ ${cd}`;
             ).join('');
         }
 
+        // sem updatePresence aqui: a pista recebe o visual novo no heartbeat/ao entrar
         window.updateAvatar = (key, val) => { localProfile.avatarConfig[key] = val; saveProfile(); renderSettingsModal(); };
         window.updateProfileColor = col => { localProfile.color = col; saveProfile(); renderSettingsModal(); };
+
+        window.randomizarAvatar = () => {
+            localProfile.avatarConfig = randomAvatarConfig();
+            localProfile.color = sorteiaAura();
+            saveProfile();
+            renderSettingsModal();
+        };
 
         document.getElementById('profileName').addEventListener('input', e => {
             localProfile.name = e.target.value || 'Investidor';
@@ -2091,6 +2279,9 @@ ${cd}`;
         function enterParty(vip) {
             localProfile.isVIP = vip;
             saveProfile();
+            // marca que a personalização já foi feita: nas próximas visitas
+            // a pessoa cai direto na pista, sem passar pelo modal
+            try { localStorage.setItem(PRONTO_KEY, '1'); } catch(e) {}
             updatePresence();
             const ha = document.getElementById('headerAvatar');
             ha.src = getAvatarUrl(localProfile.avatarConfig);
@@ -2120,6 +2311,14 @@ ${cd}`;
 
         renderSettingsModal();
         window.setCfgTab('estilo');
+
+        // ── QUEM JÁ TEM BONECO VAI DIRETO PRA PISTA ──
+        // Sem modal na cara de novo: entra com o mesmo visual/ingresso da última vez.
+        // Para mudar o visual, o botão do avatar no header reabre a personalização.
+        if (perfilPronto) {
+            enterParty(localProfile.isVIP); // não reabre o link de ingressos
+            entrouDireto = true;
+        }
     </script>
 </body>
 </html>

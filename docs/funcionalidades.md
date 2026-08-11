@@ -2,11 +2,13 @@
 
 ## Entrada e personalização
 
-Ao abrir o app, o modal **"Crie seu Avatar"** aparece com a música da casa já tocando abafada ao fundo.
+No **primeiro acesso**, o modal **"Crie seu Avatar"** aparece com a música da casa já tocando abafada ao fundo — e o boneco já vem com um **visual sorteado** (cabelo, roupa, rosto, tom de pele e cor da aura): ninguém entra na pista com o mesmo avatar padrão. O sorteio evita rostos tristes/enjoados e coloca acessório e barba só de vez em quando.
 
-- **Preview + nome** ficam sempre visíveis no topo.
-- **Desktop (≥768px)**: painel largo (`max-w-3xl`), todas as seções visíveis, opções quebrando linha (sem scroll horizontal).
+Quem **já personalizou antes vai direto para a pista** — sem modal na cara de novo. O visual, o nome e o status de ingresso da última visita são reaproveitados, e um toast de boas-vindas lembra que o botão do avatar no header reabre a personalização.
+
+- **Preview + nome** ficam sempre visíveis no topo, com o botão **🎲 Aleatório** logo abaixo do preview para sortear outro visual completo a qualquer momento.
 - Cada opção de estilo é um **card com a imagem do avatar** usando aquela opção (miniaturas geradas pelo DiceBear) — nada de escolher só pelo texto.
+- **Uma linha por categoria**: cada catálogo (cabelo, roupas, olhos, cores…) fica numa faixa única, navegável por **scroll lateral** — no desktop e no mobile. O painel não estica em altura por causa de uma categoria grande.
 - **Mobile**: as opções são divididas em três seções navegáveis por abas no topo do painel:
   - **Estilo** — cabelo/chapéu, acessórios, barba, roupas
   - **Rosto** — olhos, sobrancelhas, boca
@@ -18,7 +20,7 @@ Ao abrir o app, o modal **"Crie seu Avatar"** aparece com a música da casa já 
 
 Enquanto o modal está aberto, o áudio do player fica abafado (volume ~10% + desfoque no vídeo). Ao entrar, o som volta ao normal.
 
-**Perfil salvo no navegador**: nome, avatar completo, cor da aura, passinho e status de ingresso ficam no `localStorage` (`esquentaProfile`) — na próxima visita tudo volta como estava.
+**Perfil salvo no navegador**: nome, avatar completo, cor da aura, passinho e status de ingresso ficam no `localStorage` (`esquentaProfile`) — na próxima visita tudo volta como estava. Uma segunda chave (`esquentaPerfilPronto`) marca quem já concluiu a personalização e é o que dispensa o modal nas visitas seguintes.
 
 ## Pista de dança
 
@@ -40,7 +42,7 @@ Enquanto o modal está aberto, o áudio do player fica abafado (volume ~10% + de
 ### Adicionar música
 Cole um link do YouTube no campo da fila. A música entra no fim da fila com seu nome e o **título resolvido automaticamente** (oEmbed via noembed.com, sem chave de API); o título também aparece numa pílula sobre o player enquanto toca.
 
-**O lugar na fila não se perde**: a fila vive no Firestore, então fechar a aba ou sair da página não remove a música. Se quem adicionou estiver offline na hora de tocar, o cliente líder coloca a música pra tocar mesmo assim, com o crédito de DJ preservado.
+**Para tocar, é preciso estar na pista**: a fila vive no Firestore e recarregar a página **não** custa o lugar (a volta acontece dentro da tolerância de ausência). Mas quem fecha o app, minimiza ou troca de aba por mais de ~45 s sai da pista e **perde a vez**: a música é removida da fila pelo cliente líder. Enquanto isso, a música aparece na lista marcada com **"· fora da pista ⚠️"** — o aviso some assim que a pessoa volta.
 
 - Se a **playlist da casa** estiver tocando (ninguém na mesa), uma **contagem regressiva de 5 segundos** aparece sobre o player ("🎵 Música de Fulano entrando na pista!") e a sua música assume.
 
@@ -65,6 +67,9 @@ Botão ao lado do "Pular". Um clique = um voto por pessoa por música (fica lara
 ### Troca automática
 - **10 minutos**: qualquer vídeo é pulado automaticamente ao completar 10 min de reprodução.
 - **Fim do vídeo**: quando o vídeo termina, a próxima música da fila entra sozinha.
+- **DJ que sai da tela**: o crachá "🎧 Sua vez na mesa!" avisa para **ficar na tela**. Se quem está na mesa fecha o app, minimiza ou troca de aba por mais de ~45 s, a pista não fica refém: o líder passa a vez com a contagem de 5 s ("🎧 Fulano saiu da pista — próxima música!"). Ao voltar, a pessoa recebe um toast explicando que perdeu a vez.
+- **Vídeo que não toca** (removido, privado, embed bloqueado, indisponível na região): o erro do player dispara a troca ("⚠️ Vídeo indisponível — próxima música!") em vez de deixar a pista na tela preta até os 10 min.
+- **Player travado**: se o *seu* player para de dar sinal por 45 s (buffer infinito, iframe morto), o app recarrega **só o seu iframe** e volta no ponto certo da música — sem pular a música para os outros.
 - **Fila vazia**: sem próxima música, o player volta para a **playlist da casa** (vídeo aleatório da playlist oficial do esquenta), mutada com botão "🔊 Ativar som" (regra de autoplay dos navegadores).
 
 ## Chat
