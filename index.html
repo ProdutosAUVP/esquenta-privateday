@@ -3,6 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- o GitHub Pages serve o HTML com cache de 10 min; isso faz o navegador
+         revalidar em vez de reexibir a versão antiga depois de um deploy -->
+    <meta http-equiv="Cache-Control" content="no-cache, must-revalidate">
+    <meta name="app-build" content="2026-08-11b">
     <title>Esquenta AUVP Private Day</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Anek+Latin:wght@400;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -108,14 +112,17 @@
         .av-card-on { border-color: #DB7944; background: rgba(219,121,68,.15); box-shadow: 0 0 8px rgba(219,121,68,.4); }
         .av-card-on span { color: #DB7944; font-weight: 600; }
 
-        /* uma única linha por categoria, navegável no scroll lateral (desktop e mobile) */
+        /* uma única linha por categoria, navegável no scroll lateral (desktop e mobile)
+           !important: o Tailwind CDN injeta os estilos DEPOIS deste bloco — qualquer
+           utilitário de layout que caia nestes elementos empataria em especificidade
+           e venceria pela ordem, quebrando a linha única (mesmo motivo do .cfg-nav) */
         .cfg-row {
-            display: flex; flex-wrap: nowrap; gap: 6px;
-            overflow-x: auto; overflow-y: hidden; padding-bottom: 7px;
+            display: flex !important; flex-wrap: nowrap !important; gap: 6px;
+            overflow-x: auto !important; overflow-y: hidden; padding-bottom: 7px;
             scroll-snap-type: x proximity; -webkit-overflow-scrolling: touch;
             scrollbar-width: thin; scrollbar-color: #DB7944 rgba(255,247,235,.08);
         }
-        .cfg-row > * { flex: 0 0 auto; scroll-snap-align: start; }
+        .cfg-row > * { flex: 0 0 auto !important; scroll-snap-align: start; }
         .cfg-row::-webkit-scrollbar { height: 4px; }
         .cfg-row::-webkit-scrollbar-track { background: rgba(255,247,235,.08); border-radius: 4px; }
 
@@ -514,6 +521,8 @@
                 </button>
             </div>
             <p class="text-[10px] text-[#FFF7EB]/35 text-center mt-2 font-light">Quem tem ingresso entra com coroa e brilho VIP. Sem ingresso? A gente te leva pra garantir o seu. 😉</p>
+            <!-- carimbo da versão publicada: ajuda a saber, na hora, se o navegador está com o HTML antigo em cache -->
+            <p class="text-[9px] text-[#FFF7EB]/15 text-center mt-1 font-light">build <span id="buildTag">—</span></p>
         </div>
     </div>
 
@@ -675,8 +684,33 @@
         let glPlaying = false;      // pista WebGL pulsa quando há música audível
         const seenReactions = new Set();
         const titleCache = {};      // videoId -> título (via oEmbed) | '' se falhou
+        // ── CARIMBO DA VERSÃO ──
+        // Aparece no rodapé do modal e no console: se o navegador estiver com o HTML
+        // antigo em cache, o build fica para trás e a causa é identificada na hora.
+        const BUILD = document.querySelector('meta[name="app-build"]')?.content || '?';
+        document.getElementById('buildTag').textContent = BUILD;
+        console.info(`Esquenta AUVP Private Day — build ${BUILD}`);
+
+        // ── PERSISTÊNCIA LOCAL (localStorage + reserva em cookie) ──
+        // Só o localStorage não basta: ele falha (ou é apagado a cada visita) em
+        // navegação privada do iOS, quando o app abre dentro de iframe de terceiro
+        // (armazenamento particionado) ou com "bloquear dados de sites" ligado.
+        // Nesses casos o cookie segura o perfil e ninguém refaz o boneco toda vez.
+        const store = {
+            get(chave) {
+                try { const v = localStorage.getItem(chave); if (v !== null) return v; } catch(e) {}
+                const m = document.cookie.match(new RegExp('(?:^|; )' + chave + '=([^;]*)'));
+                return m ? decodeURIComponent(m[1]) : null;
+            },
+            set(chave, valor) {
+                try { localStorage.setItem(chave, valor); } catch(e) {}
+                // 1 ano de validade; SameSite=Lax cobre inclusive quem chega pelo site do evento
+                try { document.cookie = `${chave}=${encodeURIComponent(valor)}; max-age=31536000; path=/; SameSite=Lax`; } catch(e) {}
+            }
+        };
+
         let mutedUids = [];
-        try { mutedUids = JSON.parse(localStorage.getItem('esquentaMuted') || '[]'); } catch(e) {}
+        try { mutedUids = JSON.parse(store.get('esquentaMuted') || '[]'); } catch(e) {}
         const chatBubbles = {};     // uid -> {text, until}: balão de fala sobre o avatar
 
         const esc = s => String(s ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
@@ -685,7 +719,7 @@
         const BANNED_WORDS = ['porra','caralho','merda','buceta','putaria','fdp','vsf','pqp','cacete','viado','arrombado','desgraçad','cuzão','vagabund'];
         const BANNED_RE = new RegExp(`\\b(${BANNED_WORDS.join('|')})\\w*`, 'gi');
         const censor = t => t.replace(BANNED_RE, m => m[0] + '*'.repeat(m.length - 1));
-        const saveMuted = () => { try { localStorage.setItem('esquentaMuted', JSON.stringify(mutedUids)); } catch(e) {} };
+        const saveMuted = () => store.set('esquentaMuted', JSON.stringify(mutedUids));
         window.toggleMute = uid => {
             mutedUids = mutedUids.includes(uid) ? mutedUids.filter(u => u !== uid) : [...mutedUids, uid];
             saveMuted();
@@ -753,7 +787,7 @@
         const PRONTO_KEY = 'esquentaPerfilPronto';
         let perfilPronto = false;
         let perfilSalvo = null;
-        try { perfilSalvo = JSON.parse(localStorage.getItem('esquentaProfile') || 'null'); } catch(e) {}
+        try { perfilSalvo = JSON.parse(store.get('esquentaProfile') || 'null'); } catch(e) {}
         if (perfilSalvo && typeof perfilSalvo === 'object') {
             localProfile = {
                 ...localProfile,
@@ -761,13 +795,13 @@
                 avatarConfig: {...localProfile.avatarConfig, ...(perfilSalvo.avatarConfig || {})}
             };
             if (typeof localProfile.name !== 'string' || !localProfile.name.trim()) localProfile.name = 'Investidor';
-            try { perfilPronto = localStorage.getItem(PRONTO_KEY) === '1'; } catch(e) {}
+            perfilPronto = store.get(PRONTO_KEY) === '1';
         } else {
             // primeiro acesso: visual sorteado na hora, ninguém entra com o boneco padrão
             localProfile.avatarConfig = randomAvatarConfig();
             localProfile.color = sorteiaAura();
         }
-        const saveProfile = () => { try { localStorage.setItem('esquentaProfile', JSON.stringify(localProfile)); } catch(e) {} };
+        const saveProfile = () => store.set('esquentaProfile', JSON.stringify(localProfile));
         // grava o sorteio na hora: recarregar antes de entrar não troca o boneco
         if (!perfilSalvo) saveProfile();
 
@@ -2281,7 +2315,7 @@ ${cd}`;
             saveProfile();
             // marca que a personalização já foi feita: nas próximas visitas
             // a pessoa cai direto na pista, sem passar pelo modal
-            try { localStorage.setItem(PRONTO_KEY, '1'); } catch(e) {}
+            store.set(PRONTO_KEY, '1');
             updatePresence();
             const ha = document.getElementById('headerAvatar');
             ha.src = getAvatarUrl(localProfile.avatarConfig);
