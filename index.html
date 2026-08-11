@@ -6,7 +6,7 @@
     <!-- o GitHub Pages serve o HTML com cache de 10 min; isso faz o navegador
          revalidar em vez de reexibir a versão antiga depois de um deploy -->
     <meta http-equiv="Cache-Control" content="no-cache, must-revalidate">
-    <meta name="app-build" content="2026-08-11f">
+    <meta name="app-build" content="2026-08-11g">
     <title>Esquenta AUVP Private Day</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Anek+Latin:wght@400;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -460,7 +460,7 @@
                     </div>
                     <div class="flex-1">
                         <label class="block text-xs font-medium text-[#FFF7EB]/50 mb-1 uppercase tracking-widest">Seu Nome / Apelido</label>
-                        <input type="text" id="profileName"
+                        <input type="text" id="profileName" maxlength="24"
                             class="w-full bg-black/60 border border-[#FFF7EB]/15 rounded-lg px-4 py-2.5 focus:outline-none focus:border-[#DB7944] focus:ring-1 focus:ring-[#DB7944] transition text-[#FFF7EB] font-light text-sm"
                             placeholder="Como quer ser chamado?"/>
                     </div>
@@ -1387,23 +1387,31 @@
                 const el = document.createElement('div');
                 el.className = 'absolute transform -translate-x-1/2 -translate-y-1/2 transition-all duration-700 ease-out flex flex-col items-center pointer-events-none';
                 el.style.cssText = `left:${posX}%;top:${posY}%;z-index:${bubble?55:isMe?50:isDJ?40:10}`;
+                const etiqueta = `${u.name}${isMe ? ' (Você)' : ''}`;
                 el.innerHTML = `
-<div class="relative">
-  ${bubble ? `<div class="chat-bubble absolute bottom-full left-1/2 px-2.5 py-1.5 rounded-xl text-[10px] leading-snug z-20"
-    style="margin-bottom:26px;background:#FFF7EB;color:#0a0a0a;max-width:150px;width:max-content;word-break:break-word;box-shadow:0 4px 14px rgba(0,0,0,.45);animation-delay:-${Date.now() - bubble.since}ms">
-    ${esc(bubble.text)}
-    <div style="position:absolute;top:100%;left:50%;margin-left:-5px;border:5px solid transparent;border-top-color:#FFF7EB"></div>
-  </div>` : ''}
-  ${isDJ ? `<div class="absolute -top-4 -right-3 text-[#ff00cc]" style="width:15px;height:15px">${Icons.headphones}</div>` : ''}
-  ${u.isVIP ? `<div class="absolute -top-5 left-1/2 -translate-x-1/2 text-[#DB7944]" style="width:20px;height:20px">${Icons.crown}</div>` : ''}
-  ${unread ? `<div class="absolute -top-1.5 -left-1.5 bg-[#ff2d55] text-white text-[9px] font-bold w-5 h-5 rounded-full flex items-center justify-center z-10 shadow-lg">${unread > 9 ? '9+' : unread}</div>` : ''}
-  ${inVipLounge ? `<div class="absolute -bottom-1 -right-2 text-sm z-10" style="filter:drop-shadow(0 0 6px rgba(255,215,0,.9))">🥂</div>` : ''}
-  <div class="avatar-hit w-14 h-14 rounded-full overflow-hidden bg-[#111] ${bounce}" style="box-shadow:${shadow}${loungeGlow}${durStyle}">
-    <img src="${getAvatarUrl(u.avatarConfig)}" alt="${esc(u.name)}" class="w-full h-full object-cover"/>
+<div class="relative flex flex-col items-center">
+  <!-- Caixa do avatar: coroa, fones, não-lidas, taça e balão se ancoram AQUI.
+       Ancorados na coluna, eles seguiam a largura do rótulo do nome — e um nome
+       comprido jogava a coroa para o meio do texto, longe do avatar. -->
+  <div class="relative">
+    ${bubble ? `<div class="chat-bubble absolute bottom-full left-1/2 px-2.5 py-1.5 rounded-xl text-[10px] leading-snug z-20"
+      style="margin-bottom:26px;background:#FFF7EB;color:#0a0a0a;max-width:150px;width:max-content;word-break:break-word;box-shadow:0 4px 14px rgba(0,0,0,.45);animation-delay:-${Date.now() - bubble.since}ms">
+      ${esc(bubble.text)}
+      <div style="position:absolute;top:100%;left:50%;margin-left:-5px;border:5px solid transparent;border-top-color:#FFF7EB"></div>
+    </div>` : ''}
+    ${isDJ ? `<div class="absolute -top-4 -right-3 text-[#ff00cc] z-10" style="width:15px;height:15px">${Icons.headphones}</div>` : ''}
+    ${u.isVIP ? `<div class="absolute -top-5 left-1/2 -translate-x-1/2 text-[#DB7944] z-10" style="width:20px;height:20px">${Icons.crown}</div>` : ''}
+    ${unread ? `<div class="absolute -top-1.5 -left-1.5 bg-[#ff2d55] text-white text-[9px] font-bold w-5 h-5 rounded-full flex items-center justify-center z-10 shadow-lg">${unread > 9 ? '9+' : unread}</div>` : ''}
+    ${inVipLounge ? `<div class="absolute -bottom-1 -right-2 text-sm z-10" style="filter:drop-shadow(0 0 6px rgba(255,215,0,.9))">🥂</div>` : ''}
+    <div class="avatar-hit w-14 h-14 rounded-full overflow-hidden bg-[#111] ${bounce}" style="box-shadow:${shadow}${loungeGlow}${durStyle}">
+      <img src="${getAvatarUrl(u.avatarConfig)}" alt="${esc(u.name)}" class="w-full h-full object-cover"/>
+    </div>
   </div>
-  <div class="mt-1.5 px-2 py-0.5 rounded text-[10px] whitespace-nowrap border backdrop-blur-sm flex items-center gap-1 font-light" style="background:rgba(0,0,0,.85);border-color:${isDJ?'rgba(255,0,204,.25)':color+'25'}">
-    <span style="color:${isDJ?'#ff00cc':color}">●</span>
-    ${esc(u.name)}${isMe?' (Você)':''}${isDJ?' 🎧':''}
+  <!-- rótulo com teto de largura: nome quilométrico não pode virar uma faixa
+       atravessando a pista e cobrindo quem está do lado -->
+  <div class="mt-1.5 px-2 py-0.5 rounded text-[10px] max-w-[150px] border backdrop-blur-sm flex items-center gap-1 font-light" title="${esc(etiqueta)}" style="background:rgba(0,0,0,.85);border-color:${isDJ?'rgba(255,0,204,.25)':color+'25'}">
+    <span class="shrink-0" style="color:${isDJ?'#ff00cc':color}">●</span>
+    <span class="truncate min-w-0">${esc(etiqueta)}</span>${isDJ?'<span class="shrink-0">🎧</span>':''}
   </div>
 </div>`;
                 if (!isMe && currentUser) {
