@@ -41,7 +41,7 @@ Enquanto o modal está aberto, o áudio do player fica abafado (volume ~10% + de
   - **Privacidade do lounge**: quem está na área só recebe solicitações e mensagens privadas de quem **também** está lá dentro — de fora, o clique mostra um aviso (com link para comprar ingresso, se a pessoa não for VIP).
 - **Globo refletor 3D** pendurado no centro da pista, com feixes de luz saindo de dentro dele e se dissolvendo no ar. O enquadramento se ajusta à proporção da pista (larga e baixa no desktop, estreita no celular), então o globo fica sempre centralizado e nada é cortado.
 - **Mesa de DJ** no canto inferior direito: vinis giram e o equalizador anima quando há música; mostra quem está "na mesa" (dono da música atual). O avatar do DJ é teleportado para a mesa enquanto sua música toca.
-- VIPs têm coroa e aura laranja intensa; o DJ atual ganha aura rosa neon e fones. **A coroa é sempre um selo no canto (ou no topo) do avatar — nunca um ícone colado no nome**, tanto no header quanto no chat.
+- VIPs têm coroa e aura laranja intensa; o DJ atual ganha aura rosa neon e fones. **A coroa é sempre um selo no canto superior direito do avatar — nunca um ícone colado no nome**, no header, no chat e na pista. Na pista cada canto do avatar tem um selo: não-lidas em cima à esquerda, coroa em cima à direita, fones do DJ embaixo à esquerda e taça do lounge embaixo à direita. Todos eles (e o balão de fala) se ancoram na caixa do avatar, então nomes compridos não os deslocam. O rótulo do nome tem teto de 150px com reticências (o nome inteiro aparece ao passar o mouse), e o campo de nome aceita até 24 caracteres.
 
 ## Fila do DJ e player
 
