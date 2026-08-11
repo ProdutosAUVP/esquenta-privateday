@@ -39,12 +39,15 @@ Enquanto o modal está aberto, o áudio do player fica abafado (volume ~10% + de
   - **Reações exclusivas douradas** (🥂 💎 👑 ✨) numa barra própria, com brilho dourado ao flutuar — só funcionam com o avatar dentro da área.
   - **Destaque visual**: taça 🥂 e aura dourada extra no avatar, visíveis para toda a pista.
   - **Privacidade do lounge**: quem está na área só recebe solicitações e mensagens privadas de quem **também** está lá dentro — de fora, o clique mostra um aviso (com link para comprar ingresso, se a pessoa não for VIP).
+- **Globo refletor 3D** pendurado no centro da pista, com feixes de luz saindo de dentro dele e se dissolvendo no ar. O enquadramento se ajusta à proporção da pista (larga e baixa no desktop, estreita no celular), então o globo fica sempre centralizado e nada é cortado.
 - **Mesa de DJ** no canto inferior direito: vinis giram e o equalizador anima quando há música; mostra quem está "na mesa" (dono da música atual). O avatar do DJ é teleportado para a mesa enquanto sua música toca.
 - VIPs têm coroa e aura laranja intensa; o DJ atual ganha aura rosa neon e fones.
 
 ## Fila do DJ e player
 
 ### Adicionar música
+**A mesa de DJ é exclusiva de quem tem ingresso.** Para quem entrou pelo "Não tenho ingresso", o campo da fila fica travado com um aviso e um atalho para a página de ingressos; forçar o envio mostra o mesmo convite. Como o ingresso é declarado pela própria pessoa no modal de entrada (não há validação), a trava é de experiência — bloqueia o caminho normal e explica o porquê —, não de segurança.
+
 Cole um link do YouTube no campo da fila. A música entra no fim da fila com seu nome e o **título resolvido automaticamente** (oEmbed via noembed.com, sem chave de API); o título também aparece numa pílula sobre o player enquanto toca.
 
 **Para tocar, é preciso estar na pista**: a fila vive no Firestore e recarregar a página **não** custa o lugar (a volta acontece dentro da tolerância de ausência). Mas quem fecha o app, minimiza ou troca de aba por mais de ~45 s sai da pista e **perde a vez**: a música é removida da fila pelo cliente líder. Enquanto isso, a música aparece na lista marcada com **"· fora da pista ⚠️"** — o aviso some assim que a pessoa volta.

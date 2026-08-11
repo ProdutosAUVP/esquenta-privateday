@@ -12,7 +12,7 @@
     <!-- o GitHub Pages serve o HTML com cache de 10 min; isso faz o navegador
          revalidar em vez de reexibir a versão antiga depois de um deploy -->
     <meta http-equiv="Cache-Control" content="no-cache, must-revalidate">
-    <meta name="app-build" content="2026-08-11d">
+    <meta name="app-build" content="2026-08-11e">
     <title>Esquenta AUVP Private Day</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Anek+Latin:wght@400;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -381,11 +381,17 @@
                 <div class="p-3 border-t border-[#DB7944]/25 shrink-0" style="background:rgba(11,42,71,.6)">
                     <form id="queueForm" class="flex gap-2">
                         <input type="text" id="videoUrlInput" placeholder="Cole o link do YouTube e entre na fila do DJ..."
-                            class="flex-1 bg-black/50 border border-[#DB7944]/25 rounded-full px-4 py-2 text-xs focus:outline-none focus:border-[#DB7944] transition text-[#FFF7EB] font-light"/>
-                        <button type="submit" class="bg-[#DB7944] text-white p-2 rounded-full hover:bg-[#c45d1b] transition shadow-lg" title="Adicionar à fila">
+                            class="flex-1 bg-black/50 border border-[#DB7944]/25 rounded-full px-4 py-2 text-xs focus:outline-none focus:border-[#DB7944] transition text-[#FFF7EB] font-light disabled:cursor-not-allowed"/>
+                        <button type="submit" id="queueSubmit" class="bg-[#DB7944] text-white p-2 rounded-full hover:bg-[#c45d1b] transition shadow-lg disabled:cursor-not-allowed" title="Adicionar à fila">
                             <span id="icon-plus"></span>
                         </button>
                     </form>
+                    <!-- mesa de DJ é exclusividade de quem tem ingresso -->
+                    <p id="queueLocked" class="hidden mt-2 text-[10px] text-[#FFF7EB]/55 font-light flex items-center gap-1.5 flex-wrap">
+                        <span class="text-[#DB7944]">👑</span> A mesa de DJ é de quem tem ingresso.
+                        <a href="https://privateday.auvp.com.br/#ingressos" target="_blank"
+                            class="text-[#DB7944] font-semibold hover:underline whitespace-nowrap">Garantir o meu →</a>
+                    </p>
                 </div>
             </div>
         </aside>
@@ -1059,6 +1065,7 @@
             renderPlayer();
             renderQueue();
             renderChat();
+            renderQueueForm();
             renderSettingsModal();
             if (currentUser) {
                 setupFirebaseListeners();
@@ -1696,6 +1703,8 @@ ${cd}`;
             if (!currentUser || !db || !queue.length) return;
             if (!activeUsers.length || !isLeader()) return;
             queue.forEach(item => {
+                // sem ingresso, sem mesa (docs antigos, sem o campo, continuam valendo)
+                if (item.addedByVIP === false) { deleteDoc(pdoc('queue', item.id)).catch(() => {}); return; }
                 if (presentUser(item.addedByUid)) return;
                 // respiro pra quem acabou de entrar na fila e ainda não bateu heartbeat
                 if (Date.now() - (item.timestamp || 0) < AWAY_GRACE_MS) return;
@@ -1891,6 +1900,28 @@ ${cd}`;
         });
 
         // ── FILA ──
+        // A mesa de DJ é exclusiva de quem tem ingresso. Como o ingresso é declarado pela
+        // própria pessoa (não há validação — ver docs/funcionalidades.md), a trava é de
+        // experiência, não de segurança: bloqueia o caminho normal e explica o porquê.
+        const podeSerDJ = () => !!localProfile.isVIP;
+        const avisoSemIngresso = () =>
+            showToast('🎧 A mesa de DJ é só pra quem tem ingresso do Private Day!', TICKETS_URL);
+
+        // deixa o formulário da fila coerente com o direito de assumir a mesa
+        function renderQueueForm() {
+            const inp = document.getElementById('videoUrlInput');
+            const btn = document.getElementById('queueSubmit');
+            const aviso = document.getElementById('queueLocked');
+            const liberado = podeSerDJ();
+            inp.disabled = btn.disabled = !liberado;
+            inp.placeholder = liberado
+                ? 'Cole o link do YouTube e entre na fila do DJ...'
+                : 'Só quem tem ingresso assume a mesa';
+            inp.classList.toggle('opacity-50', !liberado);
+            btn.classList.toggle('opacity-40', !liberado);
+            aviso.classList.toggle('hidden', liberado);
+        }
+
         const extractYouTubeId = url => {
             const m = url.match(/^.*(youtu\.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/);
             return m && m[2].length === 11 ? m[2] : null;
@@ -1899,12 +1930,15 @@ ${cd}`;
         document.getElementById('queueForm').addEventListener('submit', async e => {
             e.preventDefault();
             if (!currentUser) return;
+            if (!podeSerDJ()) { avisoSemIngresso(); return; }
             const inp = document.getElementById('videoUrlInput');
             const videoId = extractYouTubeId(inp.value);
             if (!videoId) { alert('Link do YouTube inválido.'); return; }
             if (!db) { alert('Firebase não configurado. Fila indisponível.'); return; }
             const title = await fetchTitle(videoId);
-            const docRef = await addDoc(pcol('queue'), {videoId, title: title || null, addedByName:localProfile.name, addedByUid:currentUser.uid, timestamp:Date.now()});
+            // addedByVIP viaja no doc: a checagem na hora de subir pra mesa não depende
+            // de a pessoa estar online para consultar o perfil dela
+            const docRef = await addDoc(pcol('queue'), {videoId, title: title || null, addedByName:localProfile.name, addedByUid:currentUser.uid, addedByVIP:true, timestamp:Date.now()});
             inp.value = '';
             // Se a pista está na playlist da casa, faz a contagem e entra com a música do usuário
             if (!currentVideo?.videoId && !countdownActive()) {
@@ -1935,6 +1969,11 @@ ${cd}`;
                 while (list.length && currentVideo?.videoId &&
                        list[0].videoId === currentVideo.videoId &&
                        (list[0].timestamp || 0) <= (currentVideo.startedAt || Infinity)) {
+                    try { await deleteDoc(pdoc('queue', list[0].id)); } catch(e) {}
+                    list.shift();
+                }
+                // sem ingresso, sem mesa (docs antigos, sem o campo, continuam valendo)
+                while (list.length && list[0].addedByVIP === false) {
                     try { await deleteDoc(pdoc('queue', list[0].id)); } catch(e) {}
                     list.shift();
                 }
@@ -2229,11 +2268,16 @@ ${cd}`;
                 const holder = document.getElementById('webglLayer');
                 const renderer = new THREE.WebGLRenderer({alpha: true, antialias: true});
                 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+                // O canvas recebe o TAMANHO por CSS (100%) e a RESOLUÇÃO por setSize(w,h,false).
+                // Deixar o Three escrever o estilo com o pixelRatio embutido fazia o canvas
+                // ficar com o dobro do container em tela retina/celular: a cena era desenhada
+                // fora da área visível e o globo aparecia deslocado, com os feixes cortados.
+                renderer.domElement.style.cssText = 'display:block;width:100%;height:100%';
                 holder.appendChild(renderer.domElement);
 
                 const scene = new THREE.Scene();
                 const cam = new THREE.PerspectiveCamera(50, 1, .1, 100);
-                cam.position.set(0, 0, 10);
+                const ALTURA_GLOBO = 2.7; // globo pendurado na parte de cima da pista
 
                 // globo de espelhos facetado
                 const ball = new THREE.Group();
@@ -2241,51 +2285,80 @@ ${cd}`;
                     new THREE.IcosahedronGeometry(1.15, 2),
                     new THREE.MeshStandardMaterial({color: 0xcccccc, metalness: 1, roughness: .18, flatShading: true})
                 ));
-                ball.position.set(0, 2.7, 0);
+                ball.position.set(0, ALTURA_GLOBO, 0);
                 scene.add(ball);
 
-                // haste do globo
+                // haste: longa o bastante para sempre sair pela borda de cima em qualquer
+                // proporção de tela — uma ponta solta no meio da pista denunciaria o truque.
+                // Começa dentro do globo, então nunca aparece descolada dele.
                 const wire = new THREE.Mesh(
-                    new THREE.CylinderGeometry(.02, .02, 2.2),
+                    new THREE.CylinderGeometry(.025, .025, 14),
                     new THREE.MeshBasicMaterial({color: 0x666666})
                 );
-                wire.position.set(0, 4.6, 0);
+                wire.position.set(0, ALTURA_GLOBO + 7, 0);
                 scene.add(wire);
 
                 // luzes coloridas girando ao redor do globo
                 const NEONS = [0xff00cc, 0x00ffff, 0xffdc00, 0xff6600];
                 const lightGroup = new THREE.Group();
                 NEONS.forEach((c, i) => {
-                    const l = new THREE.PointLight(c, 40, 40);
-                    l.position.setFromSphericalCoords(4.5, Math.PI / 2.3, i * Math.PI / 2);
+                    // luzes perto e fortes: com o padrão físico do Three (r155+) as antigas
+                    // mal acendiam o globo, que ficava quase preto no meio da pista
+                    const l = new THREE.PointLight(c, 110, 26);
+                    l.position.setFromSphericalCoords(3.6, Math.PI / 2.2, i * Math.PI / 2);
                     lightGroup.add(l);
                 });
                 lightGroup.position.copy(ball.position);
                 scene.add(lightGroup);
-                scene.add(new THREE.AmbientLight(0xffffff, .3));
+                scene.add(new THREE.AmbientLight(0xffffff, .5));
 
-                // feixes de luz saindo do globo
-                const beams = new THREE.Group();
-                NEONS.forEach((c, i) => {
-                    const cone = new THREE.Mesh(
-                        new THREE.ConeGeometry(1.6, 7.5, 20, 1, true),
-                        new THREE.MeshBasicMaterial({color: c, transparent: true, opacity: .1, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, depthWrite: false})
-                    );
-                    cone.position.y = -3.6;
-                    const pivot = new THREE.Group();
-                    pivot.rotation.z = (i - 1.5) * .42;
-                    pivot.add(cone);
-                    beams.add(pivot);
-                });
-                beams.position.copy(ball.position);
-                scene.add(beams);
+                // ── FEIXES DE LUZ ──
+                // Dois cuidados que mudam tudo na leitura da cena:
+                // 1. o ápice do cone nasce no CENTRO do globo (cone.position.y = -comprimento/2),
+                //    então o feixe fica preso à esfera em qualquer ângulo, em vez de flutuar;
+                // 2. a cor vai apagando ao longo do feixe (gradiente por vértice). Com blending
+                //    aditivo o preto não soma nada, então a ponta se dissolve no ar — antes o
+                //    cone tinha cor uniforme e terminava num corte reto, com cara de feixe cortado.
+                const N_FEIXES = 6, COMP_FEIXE = 11, RAIO_FEIXE = 1.3, INCLINACAO = .6;
+                const feixes = new THREE.Group();
+                const matsFeixe = [];
+                for (let i = 0; i < N_FEIXES; i++) {
+                    const cor = new THREE.Color(NEONS[i % NEONS.length]);
+                    const geo = new THREE.ConeGeometry(RAIO_FEIXE, COMP_FEIXE, 24, 16, true);
+                    const p = geo.attributes.position, cores = new Float32Array(p.count * 3);
+                    for (let v = 0; v < p.count; v++) {
+                        const t = (p.getY(v) + COMP_FEIXE / 2) / COMP_FEIXE; // 0 = ponta, 1 = globo
+                        const f = Math.pow(t, 1.8);
+                        cores[v * 3] = cor.r * f; cores[v * 3 + 1] = cor.g * f; cores[v * 3 + 2] = cor.b * f;
+                    }
+                    geo.setAttribute('color', new THREE.BufferAttribute(cores, 3));
+                    const mat = new THREE.MeshBasicMaterial({
+                        vertexColors: true, transparent: true, opacity: .13,
+                        blending: THREE.AdditiveBlending, side: THREE.DoubleSide, depthWrite: false
+                    });
+                    matsFeixe.push(mat);
+                    const cone = new THREE.Mesh(geo, mat);
+                    cone.position.y = -COMP_FEIXE / 2; // ápice exatamente no centro do globo
+
+                    // grupos aninhados (azimute → inclinação) evitam ambiguidade de ordem de
+                    // Euler: os feixes saem em leque para todos os lados, como num globo real
+                    const inclinacao = new THREE.Group();
+                    inclinacao.rotation.z = INCLINACAO;
+                    inclinacao.add(cone);
+                    const azimute = new THREE.Group();
+                    azimute.rotation.y = (i / N_FEIXES) * Math.PI * 2;
+                    azimute.add(inclinacao);
+                    feixes.add(azimute);
+                }
+                feixes.position.copy(ball.position);
+                scene.add(feixes);
 
                 // poeira brilhante da pista
                 const N = 220;
                 const pos = new Float32Array(N * 3);
                 for (let i = 0; i < N; i++) {
-                    pos[i*3] = (Math.random() - .5) * 15;
-                    pos[i*3+1] = (Math.random() - .5) * 9;
+                    pos[i*3] = (Math.random() - .5) * 18;
+                    pos[i*3+1] = (Math.random() - .5) * 11;
                     pos[i*3+2] = (Math.random() - .5) * 6;
                 }
                 const pg = new THREE.BufferGeometry();
@@ -2294,11 +2367,26 @@ ${cd}`;
                 const pts = new THREE.Points(pg, pm);
                 scene.add(pts);
 
+                // ── ENQUADRAMENTO ──
+                // A câmera recua o quanto for preciso para a cena inteira caber na proporção
+                // atual da pista — larga e baixa no desktop, estreita no celular. Com posição
+                // fixa, o que cabia dependia só da altura e as bordas cortavam o cenário.
+                const CENA = {largura: 12, altura: 10.5};
                 const resize = () => {
                     const w = holder.clientWidth, h = holder.clientHeight;
                     if (!w || !h) return;
-                    renderer.setSize(w, h, false);
+                    renderer.setSize(w, h, false); // resolução do buffer; o tamanho vem do CSS
                     cam.aspect = w / h;
+                    // quanto mais baixa e larga a pista, mais alto a câmera mira: assim o globo
+                    // desce em direção ao centro em vez de encostar na borda de cima e brigar
+                    // com o aviso "clique na pista para se mover"
+                    const alvoY = Math.min(1.9, Math.max(.5, (cam.aspect - 1.4) * 1.2 + .5));
+                    const tg = Math.tan(cam.fov * Math.PI / 360);
+                    cam.position.set(0, alvoY, Math.max(
+                        (CENA.altura  / 2) / tg,
+                        (CENA.largura / 2) / (tg * cam.aspect)
+                    ));
+                    cam.lookAt(0, alvoY, 0);
                     cam.updateProjectionMatrix();
                 };
                 new ResizeObserver(resize).observe(holder);
@@ -2314,9 +2402,9 @@ ${cd}`;
                     ball.rotation.y = s * .6;
                     ball.scale.setScalar(pulse);
                     lightGroup.rotation.y = -s * .8;
-                    beams.rotation.y = s * .5;
-                    beams.children.forEach((p, i) => {
-                        p.children[0].material.opacity = (glPlaying ? .13 : .06) + .05 * Math.sin(s * 2 + i);
+                    feixes.rotation.y = s * .35;
+                    matsFeixe.forEach((m, i) => {
+                        m.opacity = (glPlaying ? .15 : .07) + .05 * Math.sin(s * 2 + i);
                     });
                     pts.rotation.y = s * .05;
                     pm.opacity = .3 + (glPlaying ? .3 * Math.pow(1 - beat, 2) : .1);
@@ -2430,6 +2518,7 @@ ${cd}`;
         function enterParty(vip) {
             localProfile.isVIP = vip;
             saveProfile();
+            renderQueueForm(); // a fila abre ou tranca conforme o ingresso
             // marca que a personalização já foi feita: nas próximas visitas
             // a pessoa cai direto na pista, sem passar pelo modal
             store.set(PRONTO_KEY, '1');

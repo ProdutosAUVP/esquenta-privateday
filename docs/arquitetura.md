@@ -57,8 +57,9 @@ O papo só é liberado (envio de mensagens e abertura do painel) com `status ===
 
 ### `queue/{autoId}` — fila do DJ
 ```js
-{ videoId, addedByName, addedByUid, timestamp }
+{ videoId, title, addedByName, addedByUid, addedByVIP, timestamp }
 ```
+`addedByVIP` viaja no próprio doc para que a checagem na hora de subir para a mesa não dependa de a pessoa estar online. Docs antigos sem o campo continuam valendo; `addedByVIP === false` é descartado pela faxina da fila e na promoção.
 
 ### `player/state` — vídeo atual (documento único)
 ```js
@@ -142,6 +143,12 @@ Sem `videoId` no `player/state`, cada cliente monta o embed `videoseries?list=�
 O YouTube não expõe o áudio do embed ao Web Audio (cross-origin), então o efeito de frequências cortadas é **simulado**: `setVolume(10)` via postMessage + `blur/saturate` no iframe. Reaplicado a cada 1,5 s enquanto o modal está aberto (o player pode não estar pronto na primeira tentativa).
 
 ### Pista WebGL
+**Tamanho do canvas**: o canvas recebe o tamanho por CSS (`width/height: 100%`) e a resolução por `setSize(w, h, false)`. Deixar o Three escrever o estilo com o `pixelRatio` embutido fazia o canvas ficar com o **dobro** do container em tela retina/celular — a cena era desenhada fora da área visível, o globo aparecia encostado na borda direita e os feixes ficavam cortados. Bug invisível em telas com `devicePixelRatio: 1`, presente em praticamente todo celular.
+
+**Enquadramento**: a cada resize a câmera recua o suficiente para a cena caber na proporção atual (`max` entre a distância que satisfaz a altura e a que satisfaz a largura) e mira mais alto quanto mais baixa e larga for a pista, para o globo não encostar no topo.
+
+**Feixes**: o ápice de cada cone nasce no centro do globo (`cone.position.y = -comprimento/2`), então o feixe fica preso à esfera em qualquer ângulo; a cor vai apagando ao longo do comprimento por gradiente de vértice, e com blending aditivo o preto não soma nada — a ponta se dissolve em vez de terminar num corte reto. Os cones ficam em grupos aninhados (azimute → inclinação) para evitar ambiguidade de ordem de Euler.
+
 O Three.js entra por **import dinâmico** dentro de `try/catch` — se o CDN estiver bloqueado ou não houver WebGL, o globo 2D em CSS (`#cssDiscoBall`) permanece e nada mais é afetado. A cena (globo facetado espelhado, 4 point lights neon orbitando, 4 feixes cônicos aditivos e ~220 partículas) roda em `setAnimationLoop` e pulsa numa batida estimada de 118 BPM quando `glPlaying` é verdadeiro (vídeo tocando ou fallback com som ativado). O canvas fica em `#webglLayer`, atrás dos ladrilhos e dos avatares, com `ResizeObserver` para redimensionar.
 
 ### Pré-carregamento dos bonecos
