@@ -144,6 +144,13 @@ O YouTube não expõe o áudio do embed ao Web Audio (cross-origin), então o ef
 ### Pista WebGL
 O Three.js entra por **import dinâmico** dentro de `try/catch` — se o CDN estiver bloqueado ou não houver WebGL, o globo 2D em CSS (`#cssDiscoBall`) permanece e nada mais é afetado. A cena (globo facetado espelhado, 4 point lights neon orbitando, 4 feixes cônicos aditivos e ~220 partículas) roda em `setAnimationLoop` e pulsa numa batida estimada de 118 BPM quando `glPlaying` é verdadeiro (vídeo tocando ou fallback com som ativado). O canvas fica em `#webglLayer`, atrás dos ladrilhos e dos avatares, com `ResizeObserver` para redimensionar.
 
+### Pré-carregamento dos bonecos
+A cortina (`#loadingScreen`) só sobe quando a promessa `assetsProntos` resolve: imagens da marca, o avatar de quem chegou, **todas** as miniaturas das opções e `document.fonts.ready`. Cada imagem resolve tanto no `onload` quanto no `onerror` (uma falha não pode prender ninguém) e há um teto de `ASSETS_TIMEOUT_MS` (20 s) via `Promise.race`. O progresso alimenta a barra da tela de carregamento. `iniciarUI()` monta a UI e é guardada por `uiIniciada` — auth e timeout de segurança podem chamá-la, mas ela roda uma vez só.
+
+Isso só é possível porque as miniaturas usam **`CARD_BASE`**, uma config fixa: cada card mostra a opção desenhada sobre esse boneco neutro, então o conjunto de URLs é finito (uma por opção do catálogo) e constante. Antes, o card era desenhado sobre a config **atual** do usuário — qualquer clique mudava a URL de todos os ~78 cards e recarregava tudo. O custo é que o card não reflete as cores da pessoa; o preview grande (esse sim, com a config real) continua ao lado.
+
+Complementarmente, as opções são montadas **uma vez** (`montarOpcoes`) e a escolha só alterna classes (`marcarSelecao`). Reconstruir o `innerHTML` a cada clique repedia as imagens e zerava o `scrollLeft` das faixas. Por isso o estado de seleção das bolinhas de cor virou a classe `.cfg-dot-on` (antes eram utilitários do Tailwind alternados no template).
+
 ### Títulos via oEmbed
 `fetchTitle(videoId)` consulta `noembed.com` (proxy oEmbed com CORS liberado) e guarda em `titleCache` (memória). O título é persistido no doc da fila no momento do add e propagado para `player/state` e `history`; consumidores fazem fetch preguiçoso quando falta.
 

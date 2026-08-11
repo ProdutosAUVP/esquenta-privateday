@@ -6,13 +6,16 @@ No **primeiro acesso**, o modal **"Crie seu Avatar"** aparece com a música da c
 
 Quem **já personalizou antes vai direto para a pista** — sem modal na cara de novo. O visual, o nome e o status de ingresso da última visita são reaproveitados, e um toast de boas-vindas lembra que o botão do avatar no header reabre a personalização.
 
+**Nada carrega na frente do usuário**: a tela de abertura só sai do caminho depois que **todas** as miniaturas de personagem, as imagens da marca e as fontes estão na memória do navegador — com barra de progresso e porcentagem enquanto isso. Se algum arquivo falhar (CDN fora do ar), o teto de 20 s libera a entrada mesmo assim, em vez de prender alguém na tela de loading.
+
 - **Preview + nome** ficam sempre visíveis no topo, com o botão **🎲 Aleatório** logo abaixo do preview para sortear outro visual completo a qualquer momento.
 - Cada opção de estilo é um **card com a imagem do avatar** usando aquela opção (miniaturas geradas pelo DiceBear) — nada de escolher só pelo texto.
-- **Uma linha por categoria**: cada catálogo (cabelo, roupas, olhos, cores…) fica numa faixa única, navegável por **scroll lateral** — no desktop e no mobile. O painel não estica em altura por causa de uma categoria grande.
+- **Uma linha por categoria**: cada catálogo (cabelo, roupas, olhos, cores…) fica numa faixa única, navegável por **scroll lateral** — no desktop e no mobile. O painel não estica em altura por causa de uma categoria grande, e a faixa **mantém a posição do scroll** ao escolher (antes, clicar na 15ª opção jogava a linha de volta ao começo).
+- **A cor vem logo depois da peça**: cabelo → cor do cabelo → cor do chapéu → acessórios → cor dos acessórios → barba → cor da barba → roupas → cor da roupa. As cores de cada elemento deixaram de ficar numa aba separada.
 - **Mobile**: as opções são divididas em três seções navegáveis por abas no topo do painel:
-  - **Estilo** — cabelo/chapéu, acessórios, barba, roupas
-  - **Rosto** — olhos, sobrancelhas, boca
-  - **Cores** — tom de pele, cor do cabelo, cor da roupa e cor da aura
+  - **Estilo** — cabelo/chapéu, acessórios, barba, roupas (cada um seguido das próprias cores)
+  - **Rosto** — tom de pele, olhos, sobrancelhas, boca
+  - **Aura** — cor do brilho do avatar na pista (e do nome no chat)
 - **Cor da aura**: paleta com 11 cores (dois tons de laranja — o laranja AUVP `#DB7944` e o neon `#ff6600`).
 - **Botões de entrada**:
   - **"Já tenho meu ingresso!"** → entra na festa como VIP (coroa dourada + brilho especial no avatar).

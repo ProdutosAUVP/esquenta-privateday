@@ -6,7 +6,7 @@
     <!-- o GitHub Pages serve o HTML com cache de 10 min; isso faz o navegador
          revalidar em vez de reexibir a versão antiga depois de um deploy -->
     <meta http-equiv="Cache-Control" content="no-cache, must-revalidate">
-    <meta name="app-build" content="2026-08-11c">
+    <meta name="app-build" content="2026-08-11d">
     <title>Esquenta AUVP Private Day</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Anek+Latin:wght@400;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -123,6 +123,17 @@
             scrollbar-width: thin; scrollbar-color: #DB7944 rgba(255,247,235,.08);
         }
         .cfg-row > * { flex: 0 0 auto !important; scroll-snap-align: start; }
+
+        /* bolinhas de cor: estado de seleção numa classe só, para alternar sem
+           reconstruir a linha (reconstruir zerava o scroll e repedia as imagens) */
+        .cfg-dot {
+            width: 28px; height: 28px; border-radius: 50%; cursor: pointer;
+            border: 2px solid rgba(255,247,235,.12); opacity: .6; transition: all .15s ease;
+        }
+        .cfg-dot:hover { opacity: 1; }
+        .cfg-dot-on { border-color: #DB7944; opacity: 1; transform: scale(1.1); box-shadow: 0 0 8px rgba(219,121,68,.45); }
+        .cfg-dot-lg { width: 32px; height: 32px; border-color: transparent; }
+        .cfg-dot-lg.cfg-dot-on { border-color: #fff; }
         .cfg-row::-webkit-scrollbar { height: 4px; }
         .cfg-row::-webkit-scrollbar-track { background: rgba(255,247,235,.08); border-radius: 4px; }
 
@@ -222,9 +233,14 @@
     <div class="film-grain"></div>
 
     <!-- CARREGAMENTO -->
-    <div id="loadingScreen" class="fixed inset-0 bg-[#050505] z-[100] flex flex-col items-center justify-center">
+    <div id="loadingScreen" class="fixed inset-0 bg-[#050505] z-[100] flex flex-col items-center justify-center px-6">
         <img src="GLOBO.png" alt="Globo" class="w-24 h-24 mb-6 animate-pulse object-contain">
         <h1 class="font-discodiva text-4xl tracking-widest text-[#DB7944]">Carregando a pista...</h1>
+        <!-- barra de progresso do pré-carregamento (bonecos, imagens da marca, fontes) -->
+        <div class="w-56 max-w-[80vw] h-1.5 mt-6 rounded-full bg-[#FFF7EB]/10 overflow-hidden">
+            <div id="loadBar" class="h-full bg-[#DB7944] rounded-full transition-all duration-200" style="width:0%"></div>
+        </div>
+        <p id="loadLabel" class="text-[11px] text-[#FFF7EB]/45 mt-2.5 font-light tracking-wide">preparando os bonecos…</p>
     </div>
 
     <!-- HEADER -->
@@ -436,77 +452,68 @@
                 <nav class="cfg-nav flex overflow-x-auto">
                     <button type="button" data-tab="estilo" onclick="window.setCfgTab('estilo')" class="cfg-tab cfg-tab-on">Estilo</button>
                     <button type="button" data-tab="rosto" onclick="window.setCfgTab('rosto')" class="cfg-tab">Rosto</button>
-                    <button type="button" data-tab="cores" onclick="window.setCfgTab('cores')" class="cfg-tab">Cores</button>
+                    <button type="button" data-tab="aura" onclick="window.setCfgTab('aura')" class="cfg-tab">Aura</button>
                 </nav>
             </div>
 
             <div class="bg-black/40 rounded-xl border border-[#FFF7EB]/10 p-4 space-y-5" id="avatarSections">
 
-                <!-- SEÇÃO: ESTILO -->
-                <div class="cfg-sec space-y-4" data-sec="estilo">
-                    <div>
-                        <label class="block text-[10px] font-bold text-[#DB7944] mb-2 uppercase tracking-widest">Cabelo / Chapéu</label>
+                <!-- SEÇÃO: ESTILO — cada peça vem seguida da própria cor -->
+                <div class="cfg-sec space-y-5" data-sec="estilo">
+                    <div class="space-y-2">
+                        <label class="block text-[10px] font-bold text-[#DB7944] uppercase tracking-widest">Cabelo / Chapéu</label>
                         <div id="avatarTops" class="cfg-row"></div>
+                        <label class="block text-[9px] font-semibold text-[#FFF7EB]/45 uppercase tracking-widest pt-0.5">↳ Cor do cabelo</label>
+                        <div id="avatarHairColor" class="cfg-row"></div>
+                        <label class="block text-[9px] font-semibold text-[#FFF7EB]/45 uppercase tracking-widest pt-0.5">↳ Cor do chapéu / gorro</label>
+                        <div id="avatarHatColor" class="cfg-row"></div>
                     </div>
-                    <div>
-                        <label class="block text-[10px] font-bold text-[#DB7944] mb-2 uppercase tracking-widest">Acessórios</label>
+                    <div class="space-y-2">
+                        <label class="block text-[10px] font-bold text-[#DB7944] uppercase tracking-widest">Acessórios</label>
                         <div id="avatarAccessories" class="cfg-row"></div>
+                        <label class="block text-[9px] font-semibold text-[#FFF7EB]/45 uppercase tracking-widest pt-0.5">↳ Cor dos acessórios</label>
+                        <div id="avatarAccColor" class="cfg-row"></div>
                     </div>
-                    <div>
-                        <label class="block text-[10px] font-bold text-[#DB7944] mb-2 uppercase tracking-widest">Barba / Bigode</label>
+                    <div class="space-y-2">
+                        <label class="block text-[10px] font-bold text-[#DB7944] uppercase tracking-widest">Barba / Bigode</label>
                         <div id="avatarFacialHair" class="cfg-row"></div>
+                        <label class="block text-[9px] font-semibold text-[#FFF7EB]/45 uppercase tracking-widest pt-0.5">↳ Cor da barba</label>
+                        <div id="avatarFacialHairColor" class="cfg-row"></div>
                     </div>
-                    <div>
-                        <label class="block text-[10px] font-bold text-[#DB7944] mb-2 uppercase tracking-widest">Roupas</label>
+                    <div class="space-y-2">
+                        <label class="block text-[10px] font-bold text-[#DB7944] uppercase tracking-widest">Roupas</label>
                         <div id="avatarClothes" class="cfg-row"></div>
+                        <label class="block text-[9px] font-semibold text-[#FFF7EB]/45 uppercase tracking-widest pt-0.5">↳ Cor da roupa</label>
+                        <div id="avatarClothingColor" class="cfg-row"></div>
                     </div>
                 </div>
 
-                <!-- SEÇÃO: ROSTO -->
-                <div class="cfg-sec space-y-4" data-sec="rosto">
-                    <div>
-                        <label class="block text-[10px] font-bold text-[#DB7944] mb-2 uppercase tracking-widest">Olhos</label>
+                <!-- SEÇÃO: ROSTO — tom de pele abre, depois as feições (sem cor própria) -->
+                <div class="cfg-sec space-y-5" data-sec="rosto">
+                    <div class="space-y-2">
+                        <label class="block text-[10px] font-bold text-[#DB7944] uppercase tracking-widest">Tom de Pele</label>
+                        <div id="avatarSkin" class="cfg-row"></div>
+                    </div>
+                    <div class="space-y-2">
+                        <label class="block text-[10px] font-bold text-[#DB7944] uppercase tracking-widest">Olhos</label>
                         <div id="avatarEyes" class="cfg-row"></div>
                     </div>
-                    <div>
-                        <label class="block text-[10px] font-bold text-[#DB7944] mb-2 uppercase tracking-widest">Sobrancelhas</label>
+                    <div class="space-y-2">
+                        <label class="block text-[10px] font-bold text-[#DB7944] uppercase tracking-widest">Sobrancelhas</label>
                         <div id="avatarEyebrows" class="cfg-row"></div>
                     </div>
-                    <div>
-                        <label class="block text-[10px] font-bold text-[#DB7944] mb-2 uppercase tracking-widest">Boca</label>
+                    <div class="space-y-2">
+                        <label class="block text-[10px] font-bold text-[#DB7944] uppercase tracking-widest">Boca</label>
                         <div id="avatarMouths" class="cfg-row"></div>
                     </div>
                 </div>
 
-                <!-- SEÇÃO: CORES -->
-                <div class="cfg-sec space-y-4" data-sec="cores">
-                    <div>
-                        <label class="block text-[10px] font-bold text-[#DB7944] mb-2 uppercase tracking-widest">Tom de Pele</label>
-                        <div id="avatarSkin" class="cfg-row"></div>
-                    </div>
-                    <div>
-                        <label class="block text-[10px] font-bold text-[#DB7944] mb-2 uppercase tracking-widest">Cor do Cabelo</label>
-                        <div id="avatarHairColor" class="cfg-row"></div>
-                    </div>
-                    <div>
-                        <label class="block text-[10px] font-bold text-[#DB7944] mb-2 uppercase tracking-widest">Cor da Barba</label>
-                        <div id="avatarFacialHairColor" class="cfg-row"></div>
-                    </div>
-                    <div>
-                        <label class="block text-[10px] font-bold text-[#DB7944] mb-2 uppercase tracking-widest">Cor da Roupa</label>
-                        <div id="avatarClothingColor" class="cfg-row"></div>
-                    </div>
-                    <div>
-                        <label class="block text-[10px] font-bold text-[#DB7944] mb-2 uppercase tracking-widest">Cor do Chapéu / Gorro</label>
-                        <div id="avatarHatColor" class="cfg-row"></div>
-                    </div>
-                    <div>
-                        <label class="block text-[10px] font-bold text-[#DB7944] mb-2 uppercase tracking-widest">Cor dos Acessórios</label>
-                        <div id="avatarAccColor" class="cfg-row"></div>
-                    </div>
-                    <div>
-                        <label class="block text-[10px] font-bold text-[#DB7944] mb-2 uppercase tracking-widest">Cor da Aura na Pista</label>
+                <!-- SEÇÃO: AURA — brilho do avatar na pista, não faz parte do boneco -->
+                <div class="cfg-sec space-y-5" data-sec="aura">
+                    <div class="space-y-2">
+                        <label class="block text-[10px] font-bold text-[#DB7944] uppercase tracking-widest">Cor da Aura na Pista</label>
                         <div id="avatarColors" class="cfg-row"></div>
+                        <p class="text-[9px] text-[#FFF7EB]/35 font-light">É o brilho em volta do seu avatar na pista — e a cor do seu nome no chat.</p>
                     </div>
                 </div>
             </div>
@@ -845,6 +852,64 @@
             return `https://api.dicebear.com/8.x/avataaars/svg?${new URLSearchParams(params)}`;
         }
 
+        // ── PRÉ-CARREGAMENTO DOS BONECOS ──
+        // Base FIXA das miniaturas dos cards. Sem ela, cada card era desenhado sobre a
+        // config atual do usuário: um clique em qualquer opção trocava a URL de TODOS os
+        // cards e o modal recarregava ~78 imagens do zero, piscando. Com a base fixa o
+        // conjunto de URLs é finito e constante — dá pra carregar tudo antes de abrir a
+        // pista e nunca mais pedir nada à rede ao trocar de opção.
+        const CARD_BASE = {
+            top: 'shortFlat', accessories: '', facialHair: '', clothing: 'hoodie',
+            eyes: 'default', eyebrows: 'default', mouth: 'smile',
+            skinColor: 'edb98a', hairColor: '724133', clothesColor: '3c4f5c',
+            hatColor: '25557c', accessoriesColor: '262e33', facialHairColor: '724133'
+        };
+        // categoria → chave da config; usado tanto no render dos cards quanto no pré-carregamento
+        const CATEGORIAS = [
+            ['avatarTops', TOPS, 'top'], ['avatarAccessories', ACCESSORIES, 'accessories'],
+            ['avatarFacialHair', FACIAL_HAIR, 'facialHair'], ['avatarClothes', CLOTHES, 'clothing'],
+            ['avatarEyes', EYES, 'eyes'], ['avatarEyebrows', EYEBROWS, 'eyebrows'],
+            ['avatarMouths', MOUTHS, 'mouth']
+        ];
+        const urlDoCard = (chave, valor) => getAvatarUrl({...CARD_BASE, [chave]: valor}, 72);
+
+        // resolve sempre: uma imagem que falha (CDN fora do ar, rede ruim) não pode
+        // prender ninguém na tela de carregamento
+        const carregarImagem = url => new Promise(resolve => {
+            const img = new Image();
+            img.onload = img.onerror = () => resolve();
+            img.src = url;
+        });
+        const espera = ms => new Promise(r => setTimeout(r, ms));
+
+        // Promessa única: a cortina só sobe quando ela resolve (ou quando o teto de
+        // tempo estoura). O progresso alimenta a barra da tela de carregamento.
+        const ASSETS_TIMEOUT_MS = 20000;
+        const assetsProntos = (() => {
+            const urls = [
+                'GLOBO.png', 'LETTERING.png',
+                getAvatarUrl(localProfile.avatarConfig),            // o boneco de quem chegou
+                ...CATEGORIAS.flatMap(([, lista, chave]) => lista.map(o => urlDoCard(chave, o.v)))
+            ];
+            let feitos = 0;
+            const passo = () => {
+                feitos++;
+                const pct = Math.round((feitos / urls.length) * 100);
+                const barra = document.getElementById('loadBar');
+                const texto = document.getElementById('loadLabel');
+                if (barra) barra.style.width = `${pct}%`;
+                if (texto) texto.textContent = feitos < urls.length
+                    ? `carregando os bonecos… ${pct}%`
+                    : 'tudo pronto — abrindo a pista!';
+            };
+            const tudo = Promise.all([
+                ...urls.map(u => carregarImagem(u).then(passo)),
+                document.fonts?.ready ?? Promise.resolve()
+            ]);
+            // teto de segurança: CDN bloqueado/lento não pode impedir a entrada
+            return Promise.race([tudo, espera(ASSETS_TIMEOUT_MS)]);
+        })();
+
         // ── LADRILHOS 80s ──
         function buildDanceTiles() {
             const el = document.getElementById('danceTiles');
@@ -967,8 +1032,10 @@
 
         // ── INICIALIZAÇÃO DA UI (chamada após auth OK ou em modo offline) ──
         // iniciarUI não toca em currentUser — o caller define currentUser antes de chamar
+        let uiIniciada = false;
         function iniciarUI() {
-            document.getElementById('loadingScreen').style.display = 'none';
+            if (uiIniciada) return; // auth e timeout podem chamar os dois: monta uma vez só
+            uiIniciada = true;
             buildDanceTiles();
             renderDJBooth();
             lastPlayerKey = `${currentVideo?.videoId || 'fallback'}_${currentVideo?.startedAt || 0}`;
@@ -980,17 +1047,25 @@
                 setupFirebaseListeners();
                 startHeartbeat();
             }
+            // a cortina só sobe com todos os bonecos já carregados — nada de card vazio
+            assetsProntos.then(abrirAPista);
+        }
+
+        function abrirAPista() {
+            const ls = document.getElementById('loadingScreen');
+            if (!ls || ls.style.display === 'none') return;
+            ls.style.display = 'none';
             if (entrouDireto)
                 setTimeout(() => showToast(`🕺 Bem-vindo de volta, ${esc(localProfile.name)}! Toque no seu avatar no topo pra mudar o visual.`), 800);
         }
 
-        // Timeout de segurança: se em 10 s nada acontecer, mostra o app mesmo assim
+        // Timeout de segurança: se em 10 s a auth não resolver, monta o app mesmo assim
+        // (a cortina continua respeitando o pré-carregamento, com teto próprio)
         const authTimeout = setTimeout(() => {
-            if (document.getElementById('loadingScreen').style.display !== 'none') {
-                console.warn('Auth timeout – abrindo sem Firebase');
-                currentUser = null;
-                iniciarUI();
-            }
+            if (uiIniciada) return;
+            console.warn('Auth timeout – abrindo sem Firebase');
+            currentUser = null;
+            iniciarUI();
         }, 10000);
 
         // ── AUTH ──
@@ -2236,52 +2311,77 @@ ${cd}`;
         })();
 
         // ── MODAL DO AVATAR ──
+        // As opções são montadas UMA vez. Trocar de escolha só alterna a classe de
+        // selecionado: sem reconstruir innerHTML, o navegador não repede nenhuma
+        // imagem e — igualmente importante — a faixa não perde a posição do scroll
+        // lateral (antes, escolher a 15ª opção jogava a linha de volta ao começo).
+        let opcoesMontadas = false;
+
+        function montarOpcoes() {
+            // cada opção é um card com a IMAGEM do avatar usando aquela opção, desenhada
+            // sobre CARD_BASE — URLs fixas, já pré-carregadas antes de a pista abrir.
+            // Sem `loading="lazy"`: as imagens estão na memória e o lazy só adiaria o
+            // desenho das que ficam fora da parte visível da faixa.
+            CATEGORIAS.forEach(([containerId, options, key]) => {
+                document.getElementById(containerId).innerHTML = options.map(opt =>
+                    `<button type="button" data-chave="${key}" data-valor="${opt.v}" title="${opt.l}"
+                        onclick="window.updateAvatar('${key}','${opt.v}')" class="av-card">
+                        <img src="${urlDoCard(key, opt.v)}" alt="${opt.l}"/>
+                        <span>${opt.l}</span>
+                    </button>`).join('');
+            });
+
+            const circles = (id, items, key) => {
+                document.getElementById(id).innerHTML = items.map(s =>
+                    `<button type="button" data-chave="${key}" data-valor="${s.v}" title="${s.l}"
+                        onclick="window.updateAvatar('${key}','${s.v}')"
+                        class="cfg-dot" style="background:#${s.v}"></button>`).join('');
+            };
+            circles('avatarSkin',            SKIN_COLORS,    'skinColor');
+            circles('avatarHairColor',       HAIR_COLORS,    'hairColor');
+            circles('avatarFacialHairColor', HAIR_COLORS,    'facialHairColor');
+            circles('avatarClothingColor',   CLOTHES_COLORS, 'clothesColor');
+            circles('avatarHatColor',        CLOTHES_COLORS, 'hatColor');
+            circles('avatarAccColor',        CLOTHES_COLORS, 'accessoriesColor');
+
+            document.getElementById('avatarColors').innerHTML = AURA_COLORS.map(col =>
+                `<button type="button" data-chave="__aura" data-valor="${col}"
+                    onclick="window.updateProfileColor('${col}')"
+                    class="cfg-dot cfg-dot-lg" style="background:${col}"></button>`).join('');
+
+            opcoesMontadas = true;
+        }
+
+        function marcarSelecao() {
+            document.querySelectorAll('#avatarSections .av-card').forEach(b =>
+                b.classList.toggle('av-card-on', localProfile.avatarConfig[b.dataset.chave] === b.dataset.valor));
+            document.querySelectorAll('#avatarSections .cfg-dot').forEach(b => {
+                const aura = b.dataset.chave === '__aura';
+                const sel = aura ? localProfile.color === b.dataset.valor
+                                 : localProfile.avatarConfig[b.dataset.chave] === b.dataset.valor;
+                b.classList.toggle('cfg-dot-on', sel);
+                if (aura) b.style.boxShadow = sel ? `0 0 12px ${b.dataset.valor}90` : '';
+            });
+        }
+
         function renderSettingsModal() {
-            document.getElementById('avatarPreviewImage').src = getAvatarUrl(localProfile.avatarConfig);
+            // o preview grande é a única imagem que muda de URL a cada escolha: carrega
+            // fora da tela e só então troca, pra não piscar um círculo vazio no meio
+            const preview = document.getElementById('avatarPreviewImage');
+            const urlPreview = getAvatarUrl(localProfile.avatarConfig);
+            if (preview.getAttribute('src') !== urlPreview) {
+                const pre = new Image();
+                pre.onload = pre.onerror = () => preview.setAttribute('src', urlPreview);
+                pre.src = urlPreview;
+            }
             const c = localProfile.color;
             document.getElementById('avatarPreviewContainer').style.cssText =
                 `box-shadow: 0 0 0 3px ${c}, 0 0 24px ${c}60`;
-            document.getElementById('profileName').value = localProfile.name;
+            const nome = document.getElementById('profileName');
+            if (nome.value !== localProfile.name) nome.value = localProfile.name;
 
-            // cada opção vira um card com a IMAGEM do avatar usando aquela opção
-            function btns(containerId, options, key) {
-                document.getElementById(containerId).innerHTML = options.map(opt => {
-                    const sel = localProfile.avatarConfig[key] === opt.v;
-                    const url = getAvatarUrl({...localProfile.avatarConfig, [key]: opt.v}, 72);
-                    return `<button type="button" onclick="window.updateAvatar('${key}','${opt.v}')" title="${opt.l}"
-                        class="av-card ${sel ? 'av-card-on' : ''}">
-                        <img src="${url}" loading="lazy" alt="${opt.l}"/>
-                        <span>${opt.l}</span>
-                    </button>`;
-                }).join('');
-            }
-            btns('avatarTops',        TOPS,        'top');
-            btns('avatarAccessories', ACCESSORIES, 'accessories');
-            btns('avatarFacialHair',  FACIAL_HAIR, 'facialHair');
-            btns('avatarClothes',     CLOTHES,     'clothing');
-            btns('avatarEyes',        EYES,        'eyes');
-            btns('avatarEyebrows',    EYEBROWS,    'eyebrows');
-            btns('avatarMouths',      MOUTHS,      'mouth');
-
-            const circles = (id, items, key, colorFn, selectedFn) => {
-                document.getElementById(id).innerHTML = items.map(s =>
-                    `<button type="button" onclick="window.updateAvatar('${key}','${s.v}')" title="${s.l}"
-                        class="w-7 h-7 rounded-full border-2 transition ${selectedFn(s.v)?'border-[#DB7944] scale-110 shadow-md shadow-[#DB7944]/30':'border-[#FFF7EB]/10 opacity-60 hover:opacity-100'}"
-                        style="background:${colorFn(s)}"></button>`
-                ).join('');
-            };
-            circles('avatarSkin',          SKIN_COLORS,  'skinColor',   s=>`#${s.v}`, v=>localProfile.avatarConfig.skinColor===v);
-            circles('avatarHairColor',     HAIR_COLORS,  'hairColor',   s=>`#${s.v}`, v=>localProfile.avatarConfig.hairColor===v);
-            circles('avatarFacialHairColor', HAIR_COLORS, 'facialHairColor', s=>`#${s.v}`, v=>localProfile.avatarConfig.facialHairColor===v);
-            circles('avatarClothingColor', CLOTHES_COLORS,'clothesColor',s=>`#${s.v}`, v=>localProfile.avatarConfig.clothesColor===v);
-            circles('avatarHatColor',      CLOTHES_COLORS,'hatColor',    s=>`#${s.v}`, v=>localProfile.avatarConfig.hatColor===v);
-            circles('avatarAccColor',      CLOTHES_COLORS,'accessoriesColor', s=>`#${s.v}`, v=>localProfile.avatarConfig.accessoriesColor===v);
-
-            document.getElementById('avatarColors').innerHTML = AURA_COLORS.map(col =>
-                `<button type="button" onclick="window.updateProfileColor('${col}')"
-                    class="w-8 h-8 rounded-full transition border-2 ${localProfile.color===col?'scale-110 border-white shadow-lg':'border-transparent opacity-55 hover:opacity-100'}"
-                    style="background:${col};${localProfile.color===col?`box-shadow:0 0 12px ${col}90`:''}"></button>`
-            ).join('');
+            if (!opcoesMontadas) montarOpcoes();
+            marcarSelecao();
         }
 
         // sem updatePresence aqui: a pista recebe o visual novo no heartbeat/ao entrar
