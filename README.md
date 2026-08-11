@@ -23,6 +23,7 @@ Pista de dança virtual em tempo real para o esquenta do **AUVP Private Day 2026
 - **Playlist da casa (fallback)**: se ninguém está tocando nada, o player reproduz um vídeo aleatório da [playlist oficial](https://youtu.be/yY1881tE4bo?list=PLyMBoXJME_lqvOTGagEL0vh43fSsbpRW1). Quando alguém adiciona uma música, uma contagem regressiva aparece e a música do usuário assume a mesa.
 - **🔥 "Essa vai pra festa!"**: botão de voto por música, gravado no Firestore (`partyVotes`) para curadoria do gosto musical da galera para a festa real.
 - Avanço automático ao fim de cada vídeo (YouTube IFrame API).
+- **A pista não fica refém de quem sumiu**: quem está na mesa precisa ficar na tela — fechar o app, minimizar ou trocar de aba por mais de ~45 s passa a vez para a próxima música e tira a pessoa da fila (recarregar a página não custa o lugar). Vídeo indisponível também é pulado na hora, e um player travado se recarrega sozinho.
 - **Títulos das músicas** resolvidos automaticamente via oEmbed (sem chave de API) — aparecem na fila, sobre o player e no ranking.
 - **🏆 Ranking da noite** (botão no header): DJs que mais emplacaram músicas e as mais votadas para a festa.
 
@@ -32,6 +33,8 @@ Pista de dança virtual em tempo real para o esquenta do **AUVP Private Day 2026
 - **Moderação leve**: palavrões são censurados automaticamente no envio e qualquer pessoa pode silenciar (🔇) outro usuário localmente — mensagens, DMs e reações do silenciado somem para quem silenciou.
 
 ### Entrada
+- **Avatar sorteado no primeiro acesso** (com botão 🎲 para sortear de novo) e catálogos de personalização em **uma linha por categoria**, com scroll lateral.
+- **Quem já criou o boneco vai direto para a pista** nas próximas visitas — o modal só volta pelo botão do avatar no header.
 - Dois botões no final da personalização:
   - **"Já tenho meu ingresso!"** → entra como VIP (coroa + brilho).
   - **"Não tenho ingresso"** → abre a [página de ingressos](https://privateday.auvp.com.br/#ingressos) e entra como convidado.
